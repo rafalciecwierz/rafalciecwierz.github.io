@@ -1,9 +1,8 @@
 body {
 
 }
-.navbar_list{
-  font-size: 12px;
-
+.navbar_bg{
+  background:rgba(256,256,256,0.9);
 }
 
 .front_logo{
@@ -15,7 +14,7 @@ body {
   background-size: cover;
 }
 
-.hero-text {
+.front-text {
   background:rgba(1,1,1,0.5);
   text-align: center;
   position: absolute;
@@ -24,10 +23,14 @@ body {
   transform: translate(-10%, -50%);
   color: white;
   padding: 20px;
+  transition: background .35s ease-in-out;
 }
-.hero-text h1{
+.front-text:hover{
+  background:rgba(1,1,1,0.45);
+}
+.front-text h1{
   font-size:  24px;
 }
-.hero-text h3{
+.front-text h3{
   font-size:  14px;
 }

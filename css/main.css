@@ -1,7 +1,8 @@
 /* Table of contents - Designed by Rafał Ciećwierz - if you are reading this - have a nice day! :) */
-/* 1.LOGO SECTION */
-/* 2. First Section */
-@import url('https://fonts.googleapis.com/css?family=Lato:700|Open+Sans');
+/* 0.LOGO SECTION */
+/* 1. First Section- About Me */
+
+@import url('https://fonts.googleapis.com/css?family=Lato:700|Open+Sans:400,700');
 html {
   scroll-behavior: smooth;
 }
@@ -14,7 +15,13 @@ h2{
 .navbar_bg{
   background:rgba(256,256,256,0.9);
 }
-/* 1.LOGO SECTION */
+strong{
+  transition: 0.5s;
+}
+strong:hover{
+  color: #FF6663;
+}
+/* 0.LOGO SECTION */
 .front_logo{
   background-image: url(../img/front_logo.jpeg);
   height:100vh;
@@ -30,7 +37,7 @@ h2{
   border-radius: 20px;
   background:rgba(1,1,1,0.5);
   text-align: center;
-
+  margin: 0 15px;
   color: white;
   padding: 20px;
   transition: background .35s ease-in-out;
@@ -120,8 +127,9 @@ h2{
 }
 
 
-/* 2. First Section */
+/* 1. First Section */
 .card-box{
+  margin-top: 20px;
   display: flex;
   justify-content: center; /* align horizontal */
   align-items: center; /* align vertical */
@@ -179,6 +187,6 @@ h2{
   width: 10%; /* Change this to whatever width you want. */
   transition: width 0.35s ease-in-out;
   padding-top: 5px; /* This creates some space between the element and the border. */
-  border-bottom: 5px solid #FF6663; /* This creates the border. Replace black with whatever color you want. */
+  border-bottom: 4px solid #FF6663; /* This creates the border. Replace black with whatever color you want. */
   margin-bottom: 20px;
 }

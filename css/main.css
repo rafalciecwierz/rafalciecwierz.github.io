@@ -2,7 +2,9 @@
 /* 1.LOGO SECTION */
 /* 2. First Section */
 @import url('https://fonts.googleapis.com/css?family=Lato:700|Open+Sans');
-
+html {
+  scroll-behavior: smooth;
+}
 body {
   font-family: 'Open Sans', sans-serif;
 }
@@ -15,11 +17,12 @@ h2{
 /* 1.LOGO SECTION */
 .front_logo{
   background-image: url(../img/front_logo.jpeg);
-  height: 500px;
+  height:100vh;
   background-position: center;
   background-repeat: no-repeat;
   background-size: cover;
   display: flex;
+  flex-direction: column;
   justify-content: center; /* align horizontal */
   align-items: center; /* align vertical */
 }
@@ -58,14 +61,14 @@ h2{
 }
 
 
-.scroll-bar{
-  position: relative;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100px;
-}
+
 /* SCROLL DOWN ICON ANIMATION */
+.icon-box{
+  position: relative;
+  height: 100px;
+
+}
+
 .icon-scroll,
 .icon-scroll:before {
   position: absolute;

@@ -8,7 +8,7 @@
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
     <link rel="stylesheet" href="css/main.css">
-
+    <link rel="stylesheet" href="css/animations.css">
     <title>Piotr Hoppe - Kardiolog Tczew</title>
   </head>
   <body>
@@ -24,13 +24,13 @@
               <a class="nav-link" href="#">Start</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="#section_1">Kardiolog Piotr Hoppe</a>
+              <a class="nav-link" href="#section_1">O mnie</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="#">Leczenie chorób serca</a>
+              <a class="nav-link" href="#section_2">Oferta</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="#">Diagnostyka i leczenie schorzeń</a>
+              <a class="nav-link" href="#">Cennik</a>
             </li>
             <li class="nav-item">
               <a class="nav-link" href="#">Kontakt</a>
@@ -41,13 +41,48 @@
     </header>
         <!-- Main Section -->
     <main>
+      <!-- Front Logo-->
       <div class="front_logo">
         <div class="front-text">
           <h1>Indywidualna Specjalistyczna Praktyka Lekarska</br>Kardiologia i Choroby Wewnętrzne – Tczew​</h1>
           <h3>Piotr Hoppe</h3>
         </div>
       </div>
-      <section id="section_1" class="container" style="padding-top: 50px">
+      <div class="scroll-bar">
+        Scroll
+        <a href="#section_1"><div class='icon-scroll'></div></a>
+        Down
+      </div>
+      <!-- About me-->
+      <section id="section_1" class="animatedParent" data-appear-top-offset='-200'>
+        <div class="container animated fadeInUpShort" style="padding:50px 15px;">
+          <div class="row">
+            <div class="col-md-4">
+              <div class="card-box">
+                <div class="card">
+                  <div class="img-box">
+                    <img src="./img/card.jpg" alt="Piotr Hoppe">
+                  </div>
+                  <div class="content">
+                    <h2>Piotr Hoppe<br> <span>Kardiolog</span> </h2>
+                  </div>
+                </div>
+
+              </div>
+
+            </div>
+            <div class="col-md-8">
+              <h2 class="border-bot">Sprawdzony kardiolog w Twoim mieście!</h2>
+              <p>Jestem lekarzem z tytułem specjalisty chorób wewnętrznych i specjalistą kardiologiem. Posiadam wieloletnie doświadczenie w diagnostyce i leczeniu schorzeń wewnętrznych, a szczególnie chorób serca i układu krążenia. </p>
+              <p>Do każdego pacjenta podchodzę indywidualnie i całościowo. Dokładam wszelkich starań, aby zapewnić Państwu komfort, wysoką jakość i bezpieczeństwo w trakcie diagnostyki i terapii.</p>
+              <p>Stale podnoszę swoje kwalifikacje i wiedzę w ciągle rozwijających się licznych działach kardiologii, uczestnicząc w licznych konferencjach, sympozjach, kursach i szkoleniach w kraju i za granicą.</p>
+            </div>
+          </div>
+
+        </div>
+
+      </section>
+      <section id="section_2" class="container" style="padding-top: 50px">
           <div class="row">
             <div class="col-sm-8">
               <div class="stylebox">
@@ -61,7 +96,7 @@
               </div>
             </div>
           </div>
-          <div class="row">
+          <div class="row" style="background: #9DCBBA;">
             <div class="col-sm-4 bg-dark">
               <div class="stylebox">
                 FOTO
@@ -100,5 +135,7 @@
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+    <!-- CSS ANIMATIONS -->
+    <script type="text/javascript" src="./js/css3-animate-it.js"></script>
   </body>
 </html>

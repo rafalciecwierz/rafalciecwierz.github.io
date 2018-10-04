@@ -1,6 +1,8 @@
 /* Table of contents - Designed by Rafał Ciećwierz - if you are reading this - have a nice day! :) */
 /* 0.LOGO SECTION */
 /* 1. First Section- About Me */
+/* 2. Second Section- Offer */
+
 
 @import url('https://fonts.googleapis.com/css?family=Lato:700|Open+Sans:400,700');
 html {
@@ -184,9 +186,348 @@ strong:hover{
 .border-bot::after{
   content: ""; /* This is necessary for the pseudo element to work. */
   display: block; /* This will put the pseudo element on its own line. */
-  width: 10%; /* Change this to whatever width you want. */
+  width: 35px; /* Change this to whatever width you want. */
   transition: width 0.35s ease-in-out;
   padding-top: 5px; /* This creates some space between the element and the border. */
   border-bottom: 4px solid #FF6663; /* This creates the border. Replace black with whatever color you want. */
   margin-bottom: 20px;
 }
+
+
+/* 2. Second Section- Offer */
+
+.timeline{
+  box-sizing: border-box;
+  position: relative;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+/* The actual timeline (the vertical ruler) */
+.timeline::after {
+  content: '';
+  position: absolute;
+  width: 5px;
+  background-color: #FF6663;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+}
+/* Box for content */
+.container-box {
+  padding: 10px 40px;
+  position: relative;
+  background-color: #fff;
+  width: 50%;
+  transition: 0.5s;
+}
+.content{
+  padding: 10px 10px;
+  border-radius: 5px;
+}
+.content h4{
+  padding-bottom: 20px;
+}
+
+/* Place the container to the left */
+.left {
+  left: 0;
+  border-left: 8px solid #ebf4f1;
+}
+/* Place the container to the right */
+.right {
+  left: 50%;
+  border-right: 8px solid #ebf4f1;
+}
+/* Fix the circle for containers on the right side */
+.right::after {
+  left: -39px;
+}
+.timeline i{
+  color: #FF6663;
+  position: absolute;
+  font-size: 32px;
+  left:15px;
+  top:15px;
+  z-index: 4;
+  transition: 0.5s;
+}
+.timeline .timeline-image-l {
+  position: absolute;
+  z-index: 1;
+  right: -32px;
+  width: 60px;
+  height: 60px;
+  color: white;
+  border-radius: 100%;
+  background-color: #FFF;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.timeline .timeline-image-r {
+  position: absolute;
+  z-index: 1;
+  left: -29px;
+  width: 60px;
+  height: 60px;
+  color: white;
+  background-color: #FFF;
+  border-radius: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.timeline .stroke{
+  z-index: 3;
+  position: absolute;
+  width:100%;
+  height:100%;
+  border: 4px solid #FF6663;
+  border-radius:50%;
+  transition: 0.5s;
+}
+.timeline .fill{
+  z-index: 2;
+  width: 0%;
+  height: 0%;
+  border-radius: 50%;
+  background-color: #FF6663;
+  transition: 0.5s;
+}
+
+/* Animation for container-box */
+
+.container-box:hover{
+  background-color: #f5f9f8;
+}
+.container-box:hover .fill{
+  width: 100%;
+  height: 100%;
+}
+.container-box:hover .stroke{
+  border: 4px solid white;
+}
+.container-box:hover i{
+  color: white;
+}
+
+
+
+/* Media queries - Responsive timeline on screens less than 800px wide */
+@media screen and (max-width: 800px) {
+/* Place the timelime to the left */
+  .timeline::after {
+    left: 31px;
+  }
+  /* Full-width containers */
+  .container-box {
+    width: 100%;
+    padding-left: 70px;
+    padding-right: 25px;
+    border: 0px;
+  }
+
+  /* Make all right containers behave like the left ones */
+  .right {
+    left: 0%;
+  }
+  .timeline-image-l{
+    left: 3px;
+  }
+  .timeline-image-r{
+    left: 3px !important;
+  }
+
+
+}
+
+
+/* 2. STARY TAJMLAJN */
+/*
+.timeline {
+  position: relative;
+  padding: 0;
+  list-style: none;
+}
+
+.timeline:before {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 40px;
+  width: 2px;
+  margin-left: -1.5px;
+  content: '';
+  background-color: black;
+}
+
+.timeline > li {
+  position: relative;
+  min-height: 50px;
+  margin-bottom: 50px;
+}
+
+.timeline > li:after, .timeline > li:before {
+  display: table;
+  content: ' ';
+}
+
+.timeline > li:after {
+  clear: both;
+}
+
+.timeline > li .timeline-panel {
+  position: relative;
+  float: right;
+  width: 100%;
+  padding: 0 20px 0 100px;
+  text-align: left;
+}
+
+.timeline > li .timeline-panel:before {
+  right: auto;
+  left: -15px;
+  border-right-width: 15px;
+  border-left-width: 0;
+}
+
+.timeline > li .timeline-panel:after {
+  right: auto;
+  left: -14px;
+  border-right-width: 14px;
+  border-left-width: 0;
+}
+
+.timeline > li .timeline-image {
+  position: absolute;
+  z-index: 100;
+  left: 0;
+  width: 80px;
+  height: 80px;
+  margin-left: 0;
+  text-align: center;
+  color: white;
+  border: 7px solid black;
+  border-radius: 100%;
+  background-color: #fed136;
+}
+
+.timeline > li .timeline-image h4 {
+  font-size: 10px;
+  line-height: 14px;
+  margin-top: 12px;
+}
+
+.timeline > li.timeline-inverted > .timeline-panel {
+  float: right;
+  padding: 0 20px 0 100px;
+  text-align: left;
+}
+
+.timeline > li.timeline-inverted > .timeline-panel:before {
+  right: auto;
+  left: -15px;
+  border-right-width: 15px;
+  border-left-width: 0;
+}
+
+.timeline > li.timeline-inverted > .timeline-panel:after {
+  right: auto;
+  left: -14px;
+  border-right-width: 14px;
+  border-left-width: 0;
+}
+
+.timeline > li:last-child {
+  margin-bottom: 0;
+}
+
+.timeline .timeline-heading h4 {
+  margin-top: 0;
+  color: inherit;
+}
+
+.timeline .timeline-heading h4.subheading {
+  text-transform: none;
+}
+
+.timeline .timeline-body > ul,
+.timeline .timeline-body > p {
+  margin-bottom: 0;
+}
+
+@media (min-width: 768px) {
+  .timeline:before {
+    left: 50%;
+  }
+  .timeline > li {
+    min-height: 100px;
+    margin-bottom: 100px;
+  }
+  .timeline > li .timeline-panel {
+    float: left;
+    width: 41%;
+    padding: 0 20px 20px 30px;
+    text-align: right;
+  }
+  .timeline > li .timeline-image {
+    left: 50%;
+    width: 100px;
+    height: 100px;
+    margin-left: -50px;
+  }
+  .timeline > li .timeline-image h4 {
+    font-size: 13px;
+    line-height: 18px;
+    margin-top: 16px;
+  }
+  .timeline > li.timeline-inverted > .timeline-panel {
+    float: right;
+    padding: 0 30px 20px 20px;
+    text-align: left;
+  }
+}
+
+@media (min-width: 992px) {
+  .timeline > li {
+    margin-left: 250px;
+    min-height: 150px;
+  }
+  .timeline > li .timeline-panel {
+    padding: 0 20px 20px;
+  }
+  .timeline > li .timeline-image {
+    width: 150px;
+    height: 150px;
+    margin-left: -75px;
+  }
+  .timeline > li .timeline-image h4 {
+    font-size: 18px;
+    line-height: 26px;
+    margin-top: 30px;
+  }
+  .timeline > li.timeline-inverted > .timeline-panel {
+    padding: 0 20px 20px;
+  }
+}
+
+@media (min-width: 1200px) {
+  .timeline > li {
+    min-height: 170px;
+  }
+  .timeline > li .timeline-panel {
+    padding: 0 20px 20px 100px;
+  }
+  .timeline > li .timeline-image {
+    width: 170px;
+    height: 170px;
+    margin-left: -85px;
+  }
+  .timeline > li .timeline-image h4 {
+    margin-top: 40px;
+  }
+  .timeline > li.timeline-inverted > .timeline-panel {
+    padding: 0 100px 20px 20px;
+  }
+}
+*/

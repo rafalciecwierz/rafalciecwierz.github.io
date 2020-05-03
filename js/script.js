@@ -1,7 +1,7 @@
 const header = document.querySelector(".navbar_bg");
 const sectionOne = document.querySelector(".front-text");
 const sectionOneOptions = {
-	rootMargin: "-50%",
+	rootMargin: "-50% 0% 0% 0%",
 };
 // toDOO!
 const sectionOneObserver = new IntersectionObserver(

@@ -16,8 +16,38 @@ h2 {
   font-family: "Lato", sans-serif;
 }
 .navbar_bg {
-  background: rgba(256, 256, 256, 0.9);
+  --bg: rgba(256, 256, 256, 0);
+  --text: #fff;
+  padding: 5px 50px;
+  color: var(--text);
+  background: var(--bg);
+  transition: all 0.7s ease;
 }
+.nav-link {
+  margin-left: 5px;
+  padding: 10px 15px !important;
+  font-size: 18px;
+  color: var(--text) !important;
+  border-radius: 5px;
+  transition: all 0.7s ease;
+}
+.nav-link:hover {
+  /* background-color: rgba(255, 102, 99, 0.9); */
+  background-color: #fff;
+  text-decoration: underline;
+  color: #ff6663 !important;
+}
+.navbar-brand {
+  font-size: 24px;
+  color: var(--text) !important;
+  transition: all 0.7s ease;
+}
+.navbar_bg-scrolled {
+  --bg: rgba(256, 256, 256, 1);
+  --text: #000;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
 strong {
   transition: 0.5s;
 }
@@ -26,7 +56,8 @@ strong:hover {
 }
 /* 0.LOGO SECTION */
 .front_logo {
-  background-image: url(../img/front_logo.jpeg);
+  background-image: linear-gradient(to right, rgba(105, 151, 137, 0.8), rgba(82, 115, 115, 0.8)),
+    url(../img/front_logo.jpeg);
   height: 100vh;
   background-position: center;
   background-repeat: no-repeat;
@@ -38,15 +69,16 @@ strong:hover {
 }
 .front-text {
   border-radius: 20px;
-  background: rgba(1, 1, 1, 0.5);
+  background: rgba(1, 1, 1, 0.7);
   text-align: center;
   margin: 0 15px;
   color: white;
-  padding: 20px;
+  padding: 30px;
+  box-shadow: 20px 20px 40px rgba(1, 1, 1, 0.3);
   transition: background 0.35s ease-in-out;
 }
 .front-text:hover {
-  background: rgba(1, 1, 1, 0.55);
+  background: rgba(16, 24, 15, 0.7);
 }
 .front-text hr {
   border-color: white;
@@ -58,17 +90,17 @@ strong:hover {
   margin: 0 auto; /* This will center the border. */
   width: 50%; /* Change this to whatever width you want. */
   transition: width 0.35s ease-in-out;
-  padding-top: 5px; /* This creates some space between the element and the border. */
+  padding-top: 15px; /* This creates some space between the element and the border. */
   border-bottom: 1px solid white; /* This creates the border. Replace black with whatever color you want. */
 }
 .front-text:hover h1:after {
   width: 60%;
 }
 .front-text h1 {
-  font-size: 24px;
+  font-size: 36px;
 }
 .front-text h3 {
-  font-size: 14px;
+  font-size: 16px;
 }
 
 /* SCROLL DOWN ICON ANIMATION */
@@ -127,8 +159,15 @@ strong:hover {
   }
 }
 
+/* HEADINGS */
+
+.heading {
+  font-size: 48px;
+}
+
 /* 1. First Section */
 .about-section {
+  padding-top: 80px;
   background-color: #f2f2f2;
 }
 
@@ -195,6 +234,9 @@ strong:hover {
 }
 
 /* 2. Second Section- Offer */
+.section_offer {
+  padding-top: 80px;
+}
 
 .timeline {
   box-sizing: border-box;
@@ -340,7 +382,7 @@ strong:hover {
 /* 3. Third Section - Contact */
 
 .contact-section {
-  padding: 40px 0;
+  padding: 80px 0;
   background-color: #f2f2f2;
 }
 
@@ -350,6 +392,7 @@ strong:hover {
   background-color: #fff;
   margin-top: 40px;
   overflow: hidden;
+  box-shadow: 10px 10px 20px rgba(1, 1, 1, 0.2);
 }
 
 .contact-details {

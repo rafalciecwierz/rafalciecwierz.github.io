@@ -18,7 +18,7 @@ h2 {
 .navbar_bg {
   --bg: rgba(256, 256, 256, 0);
   --text: #fff;
-  padding: 5px 50px;
+
   color: var(--text);
   background: var(--bg);
   transition: all 0.7s ease;

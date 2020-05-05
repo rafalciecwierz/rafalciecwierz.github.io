@@ -4,11 +4,12 @@ const sectionStart = document.querySelector(".front_logo ");
 const sectionAbout = document.querySelector(".about-section");
 const sectionOffer = document.querySelector(".section_offer");
 const sectionContact = document.querySelector(".contact-section");
+const navLinks = document.querySelectorAll(".nav-link");
 
 const sectionOneOptions = {
 	rootMargin: "-50% 0% 0% 0%",
 };
-// toDOO!
+
 const sectionOneObserver = new IntersectionObserver(
 	(entries, sectionOneObserver) => {
 		entries.forEach((entry) => {
@@ -26,16 +27,21 @@ const activeStateObserver = new IntersectionObserver(
 			if (!entry.isIntersecting) {
 				// console.log("Poza obiektem");
 			} else {
-				console.log("W obiekcie");
-				console.log(entry.target.id);
+				navLinks.forEach((link) => {
+					if (entry.target.id === link.href.split("#")[1]) {
+						link.classList.add("active");
+					} else {
+						link.classList.remove("active");
+					}
+				});
 			}
 		});
 	},
-	{ rootMargin: "-200px" }
+	{ rootMargin: "-100px 0px -100px 0px" }
 );
-
+// For Animated Header when scroll
 sectionOneObserver.observe(sectionOne);
-
+// For detecting on witch page are we
 activeStateObserver.observe(sectionStart);
 activeStateObserver.observe(sectionAbout);
 activeStateObserver.observe(sectionOffer);

@@ -38,6 +38,11 @@ h2 {
 	text-decoration: underline;
 	color: #ff6663 !important;
 }
+
+.active {
+	font-weight: 700;
+}
+
 .navbar-brand {
 	font-size: 24px;
 	color: var(--text) !important;

@@ -5,7 +5,7 @@
 /* 3. Third Section - Contact */
 /* 4. Footer  */
 
-@import url("https://fonts.googleapis.com/css?family=Lato:700|Open+Sans:400,700");
+@import url("https://fonts.googleapis.com/css?family=Lato:700|Open+Sans:400,700&display=swap");
 html {
 	scroll-behavior: smooth;
 }
@@ -59,7 +59,6 @@ h2 {
 		margin-top: 5px;
 		padding: 15px;
 		border-radius: 10px;
-		/* background-color: rgba(105, 151, 137, 0.95); */
 		background-color: var(--bg-menu);
 	}
 	.navbar_bg-scrolled {
@@ -135,7 +134,7 @@ strong:hover {
 /* 0.LOGO SECTION */
 .front_logo {
 	background-image: linear-gradient(to right, rgba(105, 151, 137, 0.8), rgba(82, 115, 115, 0.8)),
-		url(../img/front_logo-big.jpeg);
+		url(../assets/front_logo-big.jpeg);
 	height: 105vh;
 	background-position: center;
 	background-repeat: no-repeat;
@@ -148,13 +147,13 @@ strong:hover {
 @media screen and (max-width: 1200px) {
 	.front_logo {
 		background-image: linear-gradient(to right, rgba(105, 151, 137, 0.8), rgba(82, 115, 115, 0.8)),
-			url(../img/front_logo-medium.jpeg);
+			url(../assets/front_logo-medium.jpeg);
 	}
 }
 @media screen and (max-width: 600px) {
 	.front_logo {
 		background-image: linear-gradient(to right, rgba(105, 151, 137, 0.8), rgba(82, 115, 115, 0.8)),
-			url(../img/front_logo-small.jpeg);
+			url(../assets/front_logo-small.jpeg);
 	}
 }
 

@@ -4,7 +4,6 @@ const sectionOne = document.querySelector(".front-text");
 const sectionOneOptions = {
 	rootMargin: "-50% 0% 0% 0%",
 };
-
 const sectionOneObserver = new IntersectionObserver(
 	(entries, sectionOneObserver) => {
 		entries.forEach((entry) => {
@@ -15,6 +14,5 @@ const sectionOneObserver = new IntersectionObserver(
 	},
 	sectionOneOptions
 );
-
 // For Animated Header when scroll
 sectionOneObserver.observe(sectionOne);

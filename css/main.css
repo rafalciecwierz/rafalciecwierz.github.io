@@ -397,6 +397,18 @@ strong:hover {
 	z-index: 4;
 	transition: 0.5s;
 }
+.timeline__icon {
+	position: absolute;
+	left: 50%;
+	top: 50%;
+	z-index: 4;
+	transform: translateX(-50%) translateY(-50%);
+}
+.timeline__icon path {
+	transition: 0.5s;
+	fill: #ff6663;
+}
+
 .timeline .timeline-image-l {
 	position: absolute;
 	z-index: 1;
@@ -453,8 +465,8 @@ strong:hover {
 .container-box:hover .stroke {
 	border: 4px solid white;
 }
-.container-box:hover i {
-	color: white;
+.container-box:hover .timeline__icon path {
+	fill: white;
 }
 
 /* Media queries - Responsive timeline on screens less than 800px wide */

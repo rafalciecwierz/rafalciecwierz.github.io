@@ -1,9 +1,17 @@
-/*animations*/
+/*
+##################################
+##################################
+
+########## ANIMATIONS
+
+##################################
+##################################
+*/
 .animated {
-    -webkit-animation-duration: 1s;
-    animation-duration: 1s;
-    -webkit-animation-fill-mode: both;
-    animation-fill-mode: both;
+	-webkit-animation-duration: 1s;
+	animation-duration: 1s;
+	-webkit-animation-fill-mode: both;
+	animation-fill-mode: both;
 }
 
 /*****************
@@ -14,65 +22,65 @@
 * fadeInUpShort
 *********************/
 @-webkit-keyframes fadeInUpShort {
-    0% {
-        opacity: 0;
-        -webkit-transform: translateY(20px);
-    }
-    100% {
-        opacity: 1;
-        -webkit-transform: translateY(0);
-    }
+	0% {
+		opacity: 0;
+		-webkit-transform: translateY(20px);
+	}
+	100% {
+		opacity: 1;
+		-webkit-transform: translateY(0);
+	}
 }
 
 @keyframes fadeInUpShort {
-    0% {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-    100% {
-        opacity: 1;
-        transform: translateY(0);
-    }
+	0% {
+		opacity: 0;
+		transform: translateY(20px);
+	}
+	100% {
+		opacity: 1;
+		transform: translateY(0);
+	}
 }
 .fadeInUpShort {
-    opacity: 0;
-    -webkit-transform: translateY(20px);
-    transform: translateY(20px);
+	opacity: 0;
+	-webkit-transform: translateY(20px);
+	transform: translateY(20px);
 }
 .fadeInUpShort.go {
-    -webkit-animation-name: fadeInUpShort;
-    animation-name: fadeInUpShort;
+	-webkit-animation-name: fadeInUpShort;
+	animation-name: fadeInUpShort;
 }
 
 /*********************
 * fadeInLeftShort
 *********************/
 @-webkit-keyframes fadeInLeftShort {
-    0% {
-        opacity: 0;
-        -webkit-transform: translateX(-20px);
-    }
-    100% {
-        opacity: 1;
-        -webkit-transform: translateX(0);
-    }
+	0% {
+		opacity: 0;
+		-webkit-transform: translateX(-20px);
+	}
+	100% {
+		opacity: 1;
+		-webkit-transform: translateX(0);
+	}
 }
 @keyframes fadeInLeftShort {
-    0% {
-        opacity: 0;
-        transform: translateX(-20px);
-    }
-    100% {
-        opacity: 1;
-        transform: translateX(0);
-    }
+	0% {
+		opacity: 0;
+		transform: translateX(-20px);
+	}
+	100% {
+		opacity: 1;
+		transform: translateX(0);
+	}
 }
 .fadeInLeftShort {
-    opacity: 0;
-    -webkit-transform: translateX(-20px);
-    transform: translateX(-20px);
+	opacity: 0;
+	-webkit-transform: translateX(-20px);
+	transform: translateX(-20px);
 }
 .fadeInLeftShort.go {
-    -webkit-animation-name: fadeInLeftShort;
-    animation-name: fadeInLeftShort;
+	-webkit-animation-name: fadeInLeftShort;
+	animation-name: fadeInLeftShort;
 }

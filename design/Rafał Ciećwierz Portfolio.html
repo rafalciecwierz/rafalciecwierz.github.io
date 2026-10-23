@@ -1,0 +1,936 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Rafał Ciećwierz Portfolio</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@200..900&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap">
+<style>
+  /* Layout: full-bleed sections on one dark ground, content in a 1240px column; hero = WebGL stage with HTML on top. Deliberately single dark theme (spec: dark, premium, vivid green accent). */
+  :root {
+    --bg: #090b0a;
+    --bg-2: #0f1311;
+    --bg-3: #151a17;
+    --line: rgba(214, 240, 224, 0.09);
+    --line-2: rgba(214, 240, 224, 0.16);
+    --fg: #edf3ef;
+    --muted: #94a199;
+    --green: #2fe88c;
+    --green-2: #1fb86c;
+    --green-ink: #03200f;
+    --display: "Unbounded", "Arial Black", system-ui, sans-serif;
+    --body: "Geist", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    --mono: "Geist Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+    --wrap: 1240px;
+    --gut-l: max(20px, env(safe-area-inset-left, 0px));
+    --gut-r: max(20px, env(safe-area-inset-right, 0px));
+    color-scheme: dark;
+  }
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+  body { background: var(--bg); color: var(--fg); font-family: var(--body); font-size: 16px; line-height: 1.6; -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+  body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 60; background: var(--bg); }
+  a { color: inherit; }
+  ::selection { background: var(--green); color: var(--green-ink); }
+  :focus-visible { outline: 2px solid var(--green); outline-offset: 3px; border-radius: 4px; }
+  .wrap { max-width: var(--wrap); margin-inline: auto; padding-left: var(--gut-l); padding-right: var(--gut-r); }
+  .skip { position: absolute; left: 16px; top: -60px; z-index: 100; background: var(--green); color: var(--green-ink); padding: 10px 14px; border-radius: 8px; font-weight: 600; text-decoration: none; }
+  .skip:focus { top: calc(12px + env(safe-area-inset-top, 0px)); }
+  h2, h3 { text-wrap: balance; }
+  .mono { font-family: var(--mono); }
+
+  /* ---------- React Bits labels ---------- */
+  .rb { position: absolute; z-index: 30; font: 500 10.5px/1 var(--mono); letter-spacing: 0.02em; color: var(--green); background: rgba(9, 11, 10, 0.86); border: 1px dashed rgba(47, 232, 140, 0.55); padding: 5px 7px; border-radius: 5px; pointer-events: none; white-space: nowrap; display: none; }
+  body.show-rb .rb { display: block; }
+  .rb-toggle { position: fixed; z-index: 70; right: max(16px, env(safe-area-inset-right, 0px)); bottom: calc(16px + env(safe-area-inset-bottom, 0px)); display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 14px; border-radius: 999px; border: 1px solid var(--line-2); background: rgba(15, 19, 17, 0.9); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); color: var(--fg); font: 500 12px var(--mono); cursor: pointer; }
+  .rb-toggle .sw { width: 26px; height: 14px; border-radius: 99px; background: var(--line-2); position: relative; transition: background .2s; }
+  .rb-toggle .sw::after { content: ""; position: absolute; top: 2px; left: 2px; width: 10px; height: 10px; border-radius: 50%; background: var(--fg); transition: transform .2s; }
+  body.show-rb .rb-toggle .sw { background: var(--green); }
+  body.show-rb .rb-toggle .sw::after { transform: translateX(12px); background: var(--green-ink); }
+
+  /* ---------- Header + PillNav ---------- */
+  .header { position: fixed; top: env(safe-area-inset-top, 0px); left: 0; right: 0; z-index: 50; padding-top: 14px; }
+  .header .wrap { display: flex; align-items: center; justify-content: space-between; gap: 16px; position: relative; }
+  .mark { font-family: var(--display); font-weight: 800; font-size: 15px; letter-spacing: 0.02em; text-decoration: none; display: inline-grid; place-items: center; width: 44px; height: 44px; border-radius: 12px; background: rgba(15, 19, 17, 0.75); border: 1px solid var(--line-2); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+  .pillnav { position: relative; display: flex; align-items: center; gap: 2px; padding: 5px; border-radius: 999px; background: rgba(15, 19, 17, 0.75); border: 1px solid var(--line-2); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+  .pillnav ul { list-style: none; display: flex; gap: 2px; margin: 0; padding: 0; position: relative; }
+  .pillnav a { position: relative; z-index: 1; display: inline-flex; align-items: center; min-height: 36px; padding: 0 16px; border-radius: 999px; text-decoration: none; font-size: 14px; font-weight: 500; color: var(--muted); transition: color .25s; }
+  .pillnav a.is-on { color: var(--green-ink); }
+  .pillnav a:hover:not(.is-on) { color: var(--fg); }
+  .pill { position: absolute; z-index: 0; top: 5px; left: 0; height: 36px; border-radius: 999px; background: var(--green); transition: transform .45s cubic-bezier(.2,.8,.2,1), width .45s cubic-bezier(.2,.8,.2,1), opacity .2s; opacity: 0; }
+  .header-cta { display: inline-flex; align-items: center; min-height: 44px; padding: 0 18px; border-radius: 999px; border: 1px solid var(--line-2); background: rgba(15, 19, 17, 0.75); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); font: 500 13px var(--mono); color: var(--fg); cursor: pointer; }
+  .header-cta:hover { border-color: var(--green); color: var(--green); }
+  .menu-btn { display: none; }
+  .mobile-panel { display: none; }
+  @media (max-width: 860px) {
+    .pillnav, .header-cta { display: none; }
+    .menu-btn { display: inline-flex; align-items: center; gap: 10px; min-height: 44px; padding: 0 16px; border-radius: 999px; border: 1px solid var(--line-2); background: rgba(15, 19, 17, 0.85); color: var(--fg); font: 500 13px var(--mono); cursor: pointer; }
+    .mobile-panel { position: fixed; inset: 0; z-index: 49; background: rgba(9, 11, 10, 0.97); padding: calc(96px + env(safe-area-inset-top, 0px)) var(--gut-r) 32px var(--gut-l); flex-direction: column; gap: 6px; }
+    .mobile-panel.open { display: flex; }
+    .mobile-panel a { font-family: var(--display); font-weight: 700; font-size: 34px; text-decoration: none; padding: 8px 0; border-bottom: 1px solid var(--line); }
+  }
+
+  /* ---------- Hero ---------- */
+  .hero { position: relative; min-height: clamp(640px, 100svh, 960px); display: flex; overflow: hidden; isolation: isolate; }
+  .hero-gl { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 0; display: block; }
+  .hero-inner { position: relative; z-index: 2; width: 100%; display: flex; flex-direction: column; justify-content: space-between; padding-block: calc(108px + env(safe-area-inset-top, 0px)) 56px; gap: 40px; pointer-events: none; }
+  .hero-inner a, .hero-inner button { pointer-events: auto; }
+  .avail { position: relative; align-self: flex-start; display: inline-flex; align-items: center; gap: 10px; padding: 8px 14px; border-radius: 999px; border: 1px solid var(--line-2); background: rgba(9, 11, 10, 0.6); font: 500 13px var(--mono); margin: 0; }
+  .avail .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); box-shadow: 0 0 0 0 rgba(47, 232, 140, 0.6); animation: ping 2s infinite; }
+  @keyframes ping { 70% { box-shadow: 0 0 0 8px rgba(47, 232, 140, 0); } 100% { box-shadow: 0 0 0 0 rgba(47, 232, 140, 0); } }
+  .shiny { color: rgba(237, 243, 239, 0.55); background: linear-gradient(110deg, rgba(237,243,239,0) 35%, rgba(237,243,239,1) 50%, rgba(237,243,239,0) 65%) 0 0 / 220% 100% no-repeat; -webkit-background-clip: text; background-clip: text; animation: shine 3.2s linear infinite; }
+  @keyframes shine { from { background-position: 120% 0; } to { background-position: -120% 0; } }
+  .hero-name { margin: 0; font-family: var(--display); font-weight: 800; font-size: clamp(32px, 10.4vw, 168px); line-height: 1; letter-spacing: 0; position: relative; }
+  .hero-name .line { display: block; }
+  .hero.gl-ready .hero-name .line { color: transparent; }
+  .hero-bottom { display: flex; align-items: flex-end; justify-content: space-between; gap: 32px; flex-wrap: wrap; }
+  .role { margin: 0; font-size: clamp(20px, 2.4vw, 30px); font-weight: 500; line-height: 1.3; display: flex; flex-wrap: wrap; align-items: center; gap: 10px; position: relative; }
+  .rotating { display: inline-flex; overflow: hidden; background: var(--green); color: var(--green-ink); border-radius: 10px; padding: 2px 12px 4px; transition: width .45s cubic-bezier(.2,.8,.2,1); white-space: pre; font-weight: 600; }
+  .rotating .ch { display: inline-block; transition: transform .5s cubic-bezier(.2,.9,.25,1.2), opacity .3s; }
+  .tagline { margin: 10px 0 0; color: var(--muted); font: 400 14px var(--mono); }
+  .cta { display: flex; gap: 12px; flex-wrap: wrap; position: relative; }
+
+  /* StarBorder button */
+  .star { position: relative; display: inline-block; padding: 1px; border-radius: 14px; overflow: hidden; border: 0; background: transparent; cursor: pointer; color: inherit; font: inherit; text-decoration: none; }
+  .star .sb-b, .star .sb-t { position: absolute; width: 300%; height: 50%; border-radius: 50%; opacity: .75; z-index: 0; background: radial-gradient(circle, var(--green), transparent 12%); }
+  .star .sb-b { bottom: -12px; right: -250%; animation: sb-bottom 5s linear infinite alternate; }
+  .star .sb-t { top: -12px; left: -250%; animation: sb-top 5s linear infinite alternate; }
+  @keyframes sb-bottom { 0% { transform: translateX(0); opacity: 1; } 100% { transform: translateX(-100%); opacity: 0; } }
+  @keyframes sb-top { 0% { transform: translateX(0); opacity: 1; } 100% { transform: translateX(100%); opacity: 0; } }
+  .star .sb-in { position: relative; z-index: 1; display: inline-flex; align-items: center; gap: 10px; min-height: 52px; padding: 0 24px; border-radius: 13px; background: linear-gradient(180deg, #121815, #0b0e0c); border: 1px solid var(--line-2); font-weight: 600; font-size: 15px; }
+  .btn-ghost { display: inline-flex; align-items: center; gap: 10px; min-height: 54px; padding: 0 24px; border-radius: 14px; background: var(--green); color: var(--green-ink); font-weight: 600; font-size: 15px; text-decoration: none; }
+  .magnet { transition: transform .35s cubic-bezier(.2,.8,.2,1); will-change: transform; }
+  .scroll-cue { position: absolute; z-index: 2; left: 50%; bottom: 18px; transform: translateX(-50%); font: 500 11px var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+
+  /* ---------- ScrollVelocity ---------- */
+  .velocity { border-block: 1px solid var(--line); padding-block: 22px; overflow: hidden; position: relative; background: var(--bg); }
+  .v-row { display: flex; width: max-content; will-change: transform; }
+  .v-row + .v-row { margin-top: 10px; }
+  .v-group { display: flex; flex-shrink: 0; }
+  .v-item { font-family: var(--display); font-weight: 700; font-size: clamp(26px, 4vw, 52px); line-height: 1.15; padding-right: 28px; display: inline-flex; align-items: center; gap: 28px; white-space: nowrap; }
+  .v-item::after { content: ""; width: .28em; height: .28em; background: var(--green); transform: rotate(45deg); }
+  .v-row.outline .v-item { color: transparent; -webkit-text-stroke: 1px rgba(237, 243, 239, 0.45); }
+  .v-row.outline .v-item::after { background: transparent; border: 1px solid var(--green); }
+
+  /* ---------- Sections ---------- */
+  section.block { padding-block: clamp(80px, 11vw, 150px); position: relative; scroll-margin-top: 60px; }
+  .sec-head { display: grid; grid-template-columns: minmax(0, 220px) minmax(0, 1fr); gap: 24px 40px; align-items: baseline; margin-bottom: clamp(40px, 6vw, 72px); }
+  .eyebrow { margin: 0; font: 500 12px var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--green); position: relative; }
+  .sec-title { margin: 0; font-family: var(--display); font-weight: 700; font-size: clamp(30px, 4.6vw, 60px); line-height: 1.05; letter-spacing: -0.01em; }
+  .sec-title em { font-style: normal; color: var(--muted); font-weight: 300; }
+  @media (max-width: 720px) { .sec-head { grid-template-columns: 1fr; } }
+
+  /* About / ScrollReveal + CountUp */
+  .about-grid { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); gap: 56px; align-items: start; }
+  .reveal-text { margin: 0 0 28px; font-size: clamp(21px, 2.3vw, 31px); line-height: 1.38; font-weight: 500; letter-spacing: -0.005em; max-width: 34ch; position: relative; }
+  .reveal-text .w { display: inline-block; transition: opacity .15s linear, filter .15s linear; }
+  .about-aside { display: grid; gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: 18px; overflow: hidden; position: relative; }
+  .stat { background: var(--bg); padding: 22px 24px; display: grid; gap: 4px; }
+  .stat b { font-family: var(--display); font-weight: 700; font-size: clamp(32px, 3.6vw, 46px); line-height: 1; font-variant-numeric: tabular-nums; }
+  .stat b .u { color: var(--green); }
+  .stat span { color: var(--muted); font-size: 14px; }
+  .hobby { margin-top: 8px; color: var(--muted); font: 400 14px var(--mono); }
+  @media (max-width: 860px) { .about-grid { grid-template-columns: 1fr; } }
+
+  /* Stack / SpotlightCard */
+  .legend { display: flex; flex-wrap: wrap; gap: 18px; margin: -36px 0 36px; color: var(--muted); font: 400 13px var(--mono); }
+  .legend span { display: inline-flex; align-items: center; gap: 8px; }
+  .stack-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr)); gap: 16px; position: relative; }
+  .spot { position: relative; border-radius: 20px; border: 1px solid var(--line); background: var(--bg-2); padding: 26px 26px 22px; overflow: hidden; }
+  .spot::before { content: ""; position: absolute; inset: 0; pointer-events: none; opacity: 0; transition: opacity .4s; background: radial-gradient(420px circle at var(--x, 50%) var(--y, 50%), rgba(47, 232, 140, 0.13), transparent 45%); }
+  .spot:hover::before { opacity: 1; }
+  .spot h3 { margin: 0 0 16px; font-family: var(--display); font-weight: 600; font-size: 18px; position: relative; }
+  .spot ul { list-style: none; margin: 0; padding: 0; display: grid; position: relative; }
+  .spot li { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 12px; padding: 9px 0; border-top: 1px solid var(--line); font-size: 15px; }
+  .lvl { display: inline-flex; align-items: center; gap: 8px; font: 400 12px var(--mono); color: var(--muted); }
+  .bars { display: inline-flex; gap: 3px; }
+  .bars i { width: 14px; height: 6px; border-radius: 2px; background: var(--line-2); }
+  .lvl.strong .bars i { background: var(--green); }
+  .lvl.medium .bars i:nth-child(-n+2) { background: var(--green); }
+  .lvl.low .bars i:first-child { background: var(--green); }
+  .lvl.strong { color: var(--fg); }
+
+  /* reveal helpers (AnimatedContent / FadeContent) */
+  .js-motion [data-reveal].pre { opacity: 0; transform: translateY(28px); filter: blur(6px); }
+  .js-motion [data-reveal] { transition: opacity .7s cubic-bezier(.2,.8,.2,1), transform .7s cubic-bezier(.2,.8,.2,1), filter .7s; }
+
+  /* Career timeline */
+  .timeline { position: relative; display: grid; gap: 22px; padding-left: 44px; }
+  .tl-track, .tl-fill { position: absolute; left: 13px; top: 8px; bottom: 8px; width: 2px; border-radius: 2px; }
+  .tl-track { background: var(--line-2); }
+  .tl-fill { background: linear-gradient(180deg, var(--green), var(--green-2)); transform-origin: top; transform: scaleY(0); box-shadow: 0 0 18px rgba(47, 232, 140, 0.5); }
+  .job { position: relative; border: 1px solid var(--line); border-radius: 20px; background: var(--bg-2); padding: clamp(20px, 3vw, 32px); display: grid; grid-template-columns: minmax(0, 260px) minmax(0, 1fr); gap: 18px 40px; }
+  .job::before { content: ""; position: absolute; left: -37px; top: 34px; width: 12px; height: 12px; border-radius: 50%; background: var(--bg); border: 2px solid var(--line-2); transition: background .3s, border-color .3s, box-shadow .3s; }
+  .job.lit::before { background: var(--green); border-color: var(--green); box-shadow: 0 0 0 5px rgba(47, 232, 140, 0.15); }
+  .job .when { font: 400 13px var(--mono); color: var(--muted); font-variant-numeric: tabular-nums; }
+  .job .co { margin: 6px 0 4px; font-family: var(--display); font-weight: 700; font-size: clamp(20px, 2.2vw, 26px); line-height: 1.15; }
+  .job .rl { margin: 0; color: var(--fg); font-weight: 500; }
+  .job .rl .arrow { color: var(--green); padding-inline: 4px; }
+  .promo { display: inline-flex; align-items: center; gap: 6px; margin-top: 12px; font: 500 11px var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--green); border: 1px solid rgba(47, 232, 140, 0.4); background: rgba(47, 232, 140, 0.08); padding: 5px 9px; border-radius: 999px; }
+  .job ul { margin: 0; padding-left: 18px; display: grid; gap: 8px; color: #c9d3cd; font-size: 15px; }
+  .job ul li::marker { color: var(--green); }
+  .tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 16px; }
+  .tag { font: 400 12px var(--mono); padding: 4px 9px; border-radius: 6px; background: var(--bg-3); border: 1px solid var(--line); color: var(--muted); }
+  .edu { margin-top: 28px; padding-left: 44px; color: var(--muted); font: 400 14px var(--mono); }
+  .edu b { color: var(--fg); font-weight: 500; }
+  @media (max-width: 760px) { .job { grid-template-columns: 1fr; } .timeline, .edu { padding-left: 34px; } .tl-track, .tl-fill { left: 8px; } .job::before { left: -32px; } }
+
+  /* Projects / MagicBento */
+  .bento { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); grid-auto-rows: minmax(260px, auto); gap: 16px; position: relative; }
+  .card { position: relative; border-radius: 22px; background: var(--bg-2); border: 1px solid var(--line); padding: 26px; display: flex; flex-direction: column; gap: 14px; overflow: hidden; transform-style: preserve-3d; transition: transform .35s cubic-bezier(.2,.8,.2,1), border-color .3s; --glow: 0; }
+  .card::after { content: ""; position: absolute; inset: 0; border-radius: inherit; padding: 1px; pointer-events: none; background: radial-gradient(320px circle at var(--gx, 50%) var(--gy, 50%), rgba(47, 232, 140, calc(var(--glow) * 0.9)), transparent 60%); -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0); }
+  .card.wide { grid-column: span 2; }
+  .card.tall { grid-row: span 2; }
+  .card-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .badge { font: 500 11px var(--mono); letter-spacing: .08em; text-transform: uppercase; padding: 5px 10px; border-radius: 999px; border: 1px solid var(--line-2); display: inline-flex; align-items: center; gap: 7px; }
+  .badge::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+  .badge.live { color: var(--green); border-color: rgba(47, 232, 140, 0.45); }
+  .badge.progress { color: #f5c451; border-color: rgba(245, 196, 81, 0.4); }
+  .badge.archived { color: var(--muted); }
+  .card h3 { margin: 0; font-family: var(--display); font-weight: 700; font-size: clamp(20px, 2vw, 26px); line-height: 1.15; }
+  .card p { margin: 0; color: #c2ccc6; font-size: 15px; max-width: 60ch; }
+  .card .sub { color: var(--muted); font: 400 12px var(--mono); }
+  .card .links { margin-top: auto; display: flex; gap: 16px; flex-wrap: wrap; }
+  .card .links a { font: 500 13px var(--mono); color: var(--fg); text-decoration: none; display: inline-flex; align-items: center; gap: 6px; min-height: 32px; border-bottom: 1px solid var(--line-2); }
+  .card .links a:hover { color: var(--green); border-color: var(--green); }
+  .viz { border-radius: 14px; border: 1px solid var(--line); background: var(--bg); padding: 16px; font: 400 13px/1.7 var(--mono); color: var(--muted); overflow-x: auto; }
+  .viz .g { color: var(--green); }
+  .flow { display: grid; gap: 8px; }
+  .flow div { border: 1px solid var(--line-2); border-radius: 10px; padding: 10px 12px; color: var(--fg); background: var(--bg-2); }
+  .flow .arr { border: 0; background: none; padding: 0 12px; color: var(--green); }
+  .lh { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; text-align: center; }
+  .lh div { display: grid; gap: 6px; justify-items: center; font-size: 11px; }
+  .lh svg { width: 52px; height: 52px; }
+  .particle { position: absolute; width: 4px; height: 4px; border-radius: 50%; background: var(--green); box-shadow: 0 0 8px var(--green); pointer-events: none; animation: float 2.4s ease-in-out infinite alternate; opacity: .8; }
+  @keyframes float { to { transform: translate(var(--dx), var(--dy)); opacity: .2; } }
+  @media (max-width: 900px) { .bento { grid-template-columns: 1fr; } .card.wide { grid-column: auto; } .card.tall { grid-row: auto; } }
+
+  /* Contact / DotGrid + VariableProximity */
+  .contact { overflow: hidden; border-top: 1px solid var(--line); }
+  .dotgrid { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 0; display: block; }
+  .contact .wrap { position: relative; z-index: 1; }
+  .vp { margin: 0 0 28px; font-family: var(--display); font-weight: 300; font-size: clamp(54px, 12vw, 190px); line-height: .95; letter-spacing: -0.02em; cursor: default; position: relative; }
+  .vp .l { display: inline-block; transition: font-weight .12s; }
+  .vp .l.dot { color: var(--green); }
+  .contact-lede { font-size: clamp(18px, 2vw, 24px); max-width: 40ch; margin: 0 0 40px; }
+  .contact-grid { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 40px; align-items: end; }
+  .clist { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--line-2); }
+  .clist li { display: grid; grid-template-columns: 110px minmax(0, 1fr) auto; gap: 16px; align-items: center; padding: 16px 0; border-bottom: 1px solid var(--line-2); }
+  .clist .k { font: 400 12px var(--mono); color: var(--muted); text-transform: uppercase; letter-spacing: .1em; }
+  .clist .v { font-size: 17px; font-weight: 500; overflow-wrap: anywhere; user-select: all; }
+  .clist a.v { text-decoration: none; }
+  .clist a.v:hover { color: var(--green); }
+  .todo { font: 500 12px var(--mono); color: #f5c451; border: 1px dashed rgba(245, 196, 81, 0.5); border-radius: 6px; padding: 3px 7px; }
+  .copy { min-height: 36px; padding: 0 12px; border-radius: 8px; border: 1px solid var(--line-2); background: var(--bg-2); color: var(--fg); font: 500 12px var(--mono); cursor: pointer; }
+  .copy:hover { border-color: var(--green); color: var(--green); }
+  .contact-side { display: grid; gap: 14px; justify-items: start; position: relative; }
+  .contact-side p { margin: 0; color: var(--muted); font-size: 14px; }
+  @media (max-width: 860px) { .contact-grid { grid-template-columns: 1fr; } .clist li { grid-template-columns: 1fr auto; } .clist .k { grid-column: 1 / -1; } }
+
+  footer { border-top: 1px solid var(--line); padding-block: 28px calc(88px + env(safe-area-inset-bottom, 0px)); color: var(--muted); font: 400 13px var(--mono); }
+  footer .wrap { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+  footer a { color: var(--fg); }
+
+  .spark { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 80; }
+  .toast { position: fixed; z-index: 90; left: 50%; bottom: calc(80px + env(safe-area-inset-bottom, 0px)); transform: translate(-50%, 20px); opacity: 0; transition: .3s; background: var(--fg); color: var(--bg); padding: 10px 16px; border-radius: 10px; font: 500 13px var(--mono); pointer-events: none; max-width: calc(100% - 40px); text-align: center; }
+  .toast.on { opacity: 1; transform: translate(-50%, 0); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .shiny, .avail .dot, .star .sb-b, .star .sb-t, .particle { animation: none; }
+    .shiny { color: var(--fg); background: none; }
+  }
+</style>
+
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="header">
+  <div class="wrap">
+    <a class="mark" href="#top" aria-label="Rafał Ciećwierz, back to top">RC</a>
+    <nav class="pillnav" aria-label="Main">
+      <span class="pill" aria-hidden="true"></span>
+      <ul>
+        <li><a href="#about">About</a></li>
+        <li><a href="#stack">Stack</a></li>
+        <li><a href="#career">Career</a></li>
+        <li><a href="#projects">Projects</a></li>
+        <li><a href="#contact">Contact</a></li>
+      </ul>
+      <span class="rb" style="top: calc(100% + 8px); left: 0">&lt;PillNav /&gt;</span>
+    </nav>
+    <button class="header-cta js-cv" type="button">Download CV ↓</button>
+    <button class="menu-btn" type="button" aria-expanded="false" aria-controls="mpanel">Menu</button>
+  </div>
+</header>
+<div class="mobile-panel" id="mpanel" role="dialog" aria-modal="true" aria-label="Menu">
+  <a href="#about">About</a><a href="#stack">Stack</a><a href="#career">Career</a><a href="#projects">Projects</a><a href="#contact">Contact</a>
+</div>
+
+<main id="main">
+  <!-- HERO -->
+  <section class="hero" id="top" aria-labelledby="hero-name">
+    <canvas class="hero-gl" aria-hidden="true"></canvas>
+    <span class="rb" style="top: calc(84px + env(safe-area-inset-top, 0px)); right: var(--gut-r)">&lt;FluidGlass mode="RC" /&gt;</span>
+    <div class="wrap hero-inner">
+      <p class="avail"><span class="dot" aria-hidden="true"></span><span class="shiny">Open to frontend roles · remote or hybrid</span><span class="rb" style="top: calc(100% + 8px); left: 0">&lt;ShinyText /&gt;</span></p>
+      <h1 class="hero-name" id="hero-name" aria-label="Rafał Ciećwierz"><span class="line" aria-hidden="true">RAFAŁ</span><span class="line" aria-hidden="true">CIEĆWIERZ</span></h1>
+      <div class="hero-bottom">
+        <div>
+          <p class="role">Frontend Engineer building <span class="rotating" aria-live="off">design systems</span><span class="rb" style="bottom: calc(100% + 8px); right: 0">&lt;RotatingText /&gt;</span></p>
+          <p class="tagline">React &amp; TypeScript · 5+ years building production apps</p>
+        </div>
+        <div class="cta">
+          <button class="star magnet js-cv" type="button"><span class="sb-b" aria-hidden="true"></span><span class="sb-t" aria-hidden="true"></span><span class="sb-in">Download CV <span aria-hidden="true">↓</span></span></button>
+          <a class="btn-ghost magnet" href="#contact">Get in touch <span aria-hidden="true">→</span></a>
+          <span class="rb" style="bottom: calc(100% + 8px); left: 0">&lt;StarBorder /&gt; + &lt;Magnet /&gt;</span>
+        </div>
+      </div>
+    </div>
+    <span class="scroll-cue" aria-hidden="true">Scroll</span>
+  </section>
+
+  <!-- VELOCITY -->
+  <div class="velocity" aria-hidden="true">
+    <span class="rb" style="top: 6px; right: var(--gut-r)">&lt;ScrollVelocity /&gt;</span>
+    <div class="v-row" data-speed="60"><div class="v-group"><span class="v-item">React</span><span class="v-item">TypeScript</span><span class="v-item">Next.js</span><span class="v-item">TanStack Query</span><span class="v-item">Storybook</span><span class="v-item">Module Federation</span><span class="v-item">Cypress</span><span class="v-item">NestJS</span></div></div>
+    <div class="v-row outline" data-speed="-50"><div class="v-group"><span class="v-item">Three.js</span><span class="v-item">GSAP</span><span class="v-item">Zod</span><span class="v-item">React Hook Form</span><span class="v-item">Vite</span><span class="v-item">PostgreSQL</span><span class="v-item">Redux</span><span class="v-item">Figma</span></div></div>
+  </div>
+
+  <!-- ABOUT -->
+  <section class="block" id="about" aria-labelledby="about-t">
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="eyebrow"><span class="decrypt">01 / About</span><span class="rb" style="top: calc(100% + 8px); left: 0">&lt;DecryptedText /&gt;</span></p>
+        <h2 class="sec-title" id="about-t">From QA automation <em>to leading a frontend team.</em></h2>
+      </div>
+      <div class="about-grid">
+        <div>
+          <p class="reveal-text js-sr">I'm a frontend engineer with 5+ years of commercial experience in React and TypeScript. I started my career in QA automation, moved into frontend development after three months at my team's request, and later led a team of six developers.</p>
+          <p class="reveal-text js-sr">I care about clean architecture, reusable UI and tests that actually protect the product. Lately I've been going deeper into the backend with NestJS and experimenting with motion and 3D in the browser.</p>
+          <p class="hobby">Outside of code: parkour and bass guitar.</p>
+          <span class="rb" style="top: -30px; left: 0">&lt;ScrollReveal /&gt;</span>
+        </div>
+        <div class="about-aside">
+          <span class="rb" style="top: 10px; right: 10px">&lt;CountUp /&gt;</span>
+          <div class="stat"><b><span class="cu" data-to="5">5</span><span class="u">+</span></b><span>years of commercial React &amp; TypeScript</span></div>
+          <div class="stat"><b><span class="cu" data-to="6">6</span></b><span>developers led as Front-end Team Leader</span></div>
+          <div class="stat"><b><span class="cu" data-from="11" data-to="80">80</span><span class="u">%+</span></b><span>unit test coverage, up from 11% at VML</span></div>
+          <div class="stat"><b><span class="cu" data-to="50">50</span><span class="u">+</span></b><span>components in a shared Storybook library</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- STACK -->
+  <section class="block" id="stack" aria-labelledby="stack-t">
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="eyebrow"><span class="decrypt">02 / Stack</span></p>
+        <h2 class="sec-title" id="stack-t">Tools I ship with <em>every week.</em></h2>
+      </div>
+      <div class="legend" aria-label="Legend">
+        <span><span class="lvl strong"><span class="bars" aria-hidden="true"><i></i><i></i><i></i></span></span>strong production experience</span>
+        <span><span class="lvl medium"><span class="bars" aria-hidden="true"><i></i><i></i><i></i></span></span>medium</span>
+        <span><span class="lvl low"><span class="bars" aria-hidden="true"><i></i><i></i><i></i></span></span>low</span>
+      </div>
+      <div class="stack-grid" id="stackGrid">
+        <span class="rb" style="top: -30px; right: 0">&lt;SpotlightCard /&gt; + &lt;AnimatedContent /&gt;</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- CAREER -->
+  <section class="block" id="career" aria-labelledby="career-t">
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="eyebrow"><span class="decrypt">03 / Career</span></p>
+        <h2 class="sec-title" id="career-t">Four companies, <em>two promotions.</em></h2>
+      </div>
+      <div class="timeline" id="timeline">
+        <span class="tl-track" aria-hidden="true"></span>
+        <span class="tl-fill" aria-hidden="true"></span>
+        <span class="rb" style="top: -30px; left: 0">scroll-drawn line (GSAP scrub) + &lt;FadeContent /&gt;</span>
+      </div>
+      <p class="edu"><b>Adam Mickiewicz University</b> · Engineer's degree in Computer Science · 2015 – 2021</p>
+    </div>
+  </section>
+
+  <!-- PROJECTS -->
+  <section class="block" id="projects" aria-labelledby="projects-t">
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="eyebrow"><span class="decrypt">04 / Projects</span></p>
+        <h2 class="sec-title" id="projects-t">Things I built <em>outside the day job.</em></h2>
+      </div>
+      <div class="bento" id="bento">
+        <span class="rb" style="top: -30px; right: 0">&lt;MagicBento /&gt;</span>
+        <article class="card wide">
+          <div class="card-top"><span class="sub">Full-stack showcase</span><span class="badge progress">In progress</span></div>
+          <h3>Ashen Contracts</h3>
+          <p>Browser-based idle/RPG game built as a full-stack showcase: pnpm monorepo with a Next.js app, NestJS API, shared Storybook UI library and shared TypeScript types. Architecture decisions documented in an ADR-style log.</p>
+          <div class="viz" aria-label="Monorepo structure"><span class="g">ashen-contracts/</span><br>├─ apps/web &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Next.js<br>├─ apps/api &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;NestJS · Prisma · PostgreSQL<br>├─ packages/ui &nbsp;Storybook<br>├─ packages/types<br>└─ docs/adr</div>
+          <div class="tags"><span class="tag">Next.js</span><span class="tag">NestJS</span><span class="tag">PostgreSQL</span><span class="tag">Prisma</span><span class="tag">Storybook</span><span class="tag">Docker</span><span class="tag">GitHub Actions</span></div>
+          <div class="links"><a href="https://github.com/rafalciecwierz/ashen-contracts" target="_blank" rel="noopener">Repository ↗</a></div>
+        </article>
+        <article class="card tall">
+          <div class="card-top"><span class="sub">Engineering thesis · team of 4</span><span class="badge archived">Archived</span></div>
+          <h3>Ultimate Frisbee Tournament Platform</h3>
+          <p>Built for the Polish Ultimate Players Association. I owned the entire NestJS + PostgreSQL backend, built live match scoring with Socket.io, designed the full UI in Figma, deployed to AWS and tested it at a live tournament in Szczecin.</p>
+          <div class="viz flow" aria-label="Live scoring flow"><div>Scorekeeper tablet view</div><div class="arr">↓ Socket.io</div><div>NestJS + PostgreSQL</div><div class="arr">↓ real time</div><div>Spectator view</div></div>
+          <div class="tags"><span class="tag">NestJS</span><span class="tag">PostgreSQL</span><span class="tag">Socket.io</span><span class="tag">Swagger</span><span class="tag">AWS</span><span class="tag">Nuxt</span><span class="tag">Figma</span></div>
+        </article>
+        <article class="card">
+          <div class="card-top"><span class="sub">You are here</span><span class="badge live">Live</span></div>
+          <h3>This website</h3>
+          <p>Procedural 3D hero and scroll-driven animations, built with a performance and accessibility budget.</p>
+          <div class="viz lh" aria-label="Lighthouse mobile budget">
+            <div><svg viewBox="0 0 52 52" aria-hidden="true"><circle cx="26" cy="26" r="22" fill="none" stroke="rgba(214,240,224,.16)" stroke-width="4"/><circle cx="26" cy="26" r="22" fill="none" stroke="#2fe88c" stroke-width="4" stroke-dasharray="124.4 138.2" transform="rotate(-90 26 26)"/><text x="26" y="31" text-anchor="middle" fill="#edf3ef" font-size="13" font-family="Geist Mono, monospace">90</text></svg>Perf</div>
+            <div><svg viewBox="0 0 52 52" aria-hidden="true"><circle cx="26" cy="26" r="22" fill="none" stroke="rgba(214,240,224,.16)" stroke-width="4"/><circle cx="26" cy="26" r="22" fill="none" stroke="#2fe88c" stroke-width="4" stroke-dasharray="131.3 138.2" transform="rotate(-90 26 26)"/><text x="26" y="31" text-anchor="middle" fill="#edf3ef" font-size="13" font-family="Geist Mono, monospace">95</text></svg>A11y</div>
+            <div><svg viewBox="0 0 52 52" aria-hidden="true"><circle cx="26" cy="26" r="22" fill="none" stroke="rgba(214,240,224,.16)" stroke-width="4"/><circle cx="26" cy="26" r="22" fill="none" stroke="#2fe88c" stroke-width="4" stroke-dasharray="131.3 138.2" transform="rotate(-90 26 26)"/><text x="26" y="31" text-anchor="middle" fill="#edf3ef" font-size="13" font-family="Geist Mono, monospace">95</text></svg>BP</div>
+            <div><svg viewBox="0 0 52 52" aria-hidden="true"><circle cx="26" cy="26" r="22" fill="none" stroke="rgba(214,240,224,.16)" stroke-width="4"/><circle cx="26" cy="26" r="22" fill="none" stroke="#2fe88c" stroke-width="4" stroke-dasharray="131.3 138.2" transform="rotate(-90 26 26)"/><text x="26" y="31" text-anchor="middle" fill="#edf3ef" font-size="13" font-family="Geist Mono, monospace">95</text></svg>SEO</div>
+          </div>
+          <div class="tags"><span class="tag">React</span><span class="tag">TypeScript</span><span class="tag">Three.js</span><span class="tag">GSAP</span><span class="tag">Vite</span></div>
+          <div class="links"><a href="https://github.com/rafalciecwierz/rafalciecwierz.github.io" target="_blank" rel="noopener">Repository ↗</a></div>
+        </article>
+        <article class="card">
+          <div class="card-top"><span class="sub">Experiment</span><span class="badge archived">Archived</span></div>
+          <h3>Next.js page transitions</h3>
+          <p>Comparison of three page-transition approaches in Next.js.</p>
+          <div class="tags"><span class="tag">Custom</span><span class="tag">Framer Motion</span><span class="tag">GSAP</span></div>
+          <div class="links"><a href="https://github.com/rafalciecwierz/Nextjs-page-transition" target="_blank" rel="noopener">Repository ↗</a></div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONTACT -->
+  <section class="block contact" id="contact" aria-labelledby="contact-t">
+    <canvas class="dotgrid" aria-hidden="true"></canvas>
+    <span class="rb" style="top: 24px; right: var(--gut-r)">&lt;DotGrid /&gt;</span>
+    <div class="wrap">
+      <p class="eyebrow" style="margin-bottom: 24px"><span class="decrypt">05 / Contact</span></p>
+      <h2 class="vp" id="contact-t" aria-label="Let's talk.">Let's talk.<span class="rb" style="bottom: 100%; left: 0">&lt;VariableProximity /&gt;</span></h2>
+      <div class="contact-grid">
+        <div>
+          <p class="contact-lede">Open to frontend roles (React / TypeScript), remote or hybrid.</p>
+          <ul class="clist">
+            <li><span class="k">Email</span><span class="v" id="email">rafal.ciecwierz4@gmail.com</span><button class="copy" type="button" id="copyEmail">Copy</button></li>
+            <li><span class="k">GitHub</span><a class="v" href="https://github.com/rafalciecwierz" target="_blank" rel="noopener">github.com/rafalciecwierz ↗</a><span></span></li>
+            <li><span class="k">LinkedIn</span><span class="v">LinkedIn</span><span class="todo">TODO: URL</span></li>
+            <li><span class="k">Calendly</span><span class="v">Book a 20-min call</span><span class="todo">TODO: URL</span></li>
+          </ul>
+        </div>
+        <div class="contact-side">
+          <p>Phone number is in the CV.</p>
+          <button class="star magnet js-cv" type="button"><span class="sb-b" aria-hidden="true"></span><span class="sb-t" aria-hidden="true"></span><span class="sb-in">Download CV <span aria-hidden="true">↓</span></span></button>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>Built with React, Three.js and GSAP · <a href="https://github.com/rafalciecwierz/rafalciecwierz.github.io" target="_blank" rel="noopener">source</a></span>
+    <span>© <span id="year">2026</span> Rafał Ciećwierz</span>
+  </div>
+</footer>
+
+<canvas class="spark" aria-hidden="true"></canvas>
+<button class="rb-toggle" type="button" aria-pressed="true"><span class="sw" aria-hidden="true"></span>React Bits labels</button>
+<div class="toast" role="status" aria-live="polite"></div>
+<span class="rb" style="position: fixed; left: max(16px, env(safe-area-inset-left, 0px)); bottom: calc(28px + env(safe-area-inset-bottom, 0px)); z-index: 70">&lt;ClickSpark /&gt; — kliknij gdziekolwiek</span>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(function () {
+  'use strict';
+  const RM = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const DPR = Math.min(window.devicePixelRatio || 1, 1.75);
+  const $ = (s, r) => (r || document).querySelector(s);
+  const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
+  const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+  document.body.classList.add('show-rb');
+  if (!RM) document.documentElement.classList.add('js-motion');
+  $('#year').textContent = new Date().getFullYear();
+
+  /* ================= CONTENT (would live in src/content/*.ts) ================= */
+  const stack = [
+    ['Frontend', [['React', 'strong'], ['TypeScript', 'strong'], ['JavaScript', 'strong'], ['HTML5', 'strong'], ['CSS / SCSS / Styled-components', 'strong'], ['Next.js', 'medium'], ['Gatsby', 'medium'], ['Module Federation', 'medium'], ['React Native', 'low']]],
+    ['Data & UI', [['TanStack Query', 'strong'], ['Redux', 'strong'], ['Zod', 'strong'], ['React Hook Form', 'strong'], ['Storybook', 'strong'], ['Ant Design', 'strong'], ['Material UI', 'strong'], ['Tailwind CSS', 'medium'], ['WebSockets', 'medium']]],
+    ['Testing', [['Jest / Vitest', 'strong'], ['React Testing Library', 'strong'], ['Cypress', 'strong']]],
+    ['Backend', [['Node.js', 'medium'], ['NestJS', 'medium'], ['PostgreSQL', 'medium'], ['Strapi', 'medium']]],
+    ['Tooling', [['Git', 'strong'], ['Figma', 'strong'], ['Postman', 'strong'], ['Vite', 'strong'], ['Webpack', 'strong'], ['Docker', 'medium'], ['Claude Code', 'medium']]]
+  ];
+  const career = [
+    { co: 'MUG Software', role: ['Front-end Software Engineer'], when: '04.2025 – 08.2026', bullets: [
+      'Maintained and extended a white-label React platform: a core repository with client-specific forks, propagating global changes upstream-to-fork while keeping client customizations isolated.',
+      'Developed and maintained a shared Storybook component library (50+ components), improving UI consistency and speeding up feature development.',
+      'Introduced TanStack Query (replacing Redux for server state) and Zod (replacing Yup), adopting them incrementally across the app as part of ongoing feature work.'],
+      tags: ['React', 'TypeScript', 'Styled Components', 'Jest', 'Redux', 'Storybook', 'Webpack', 'TanStack Query', 'Zod'] },
+    { co: 'VML Enterprise Solutions', role: ['Front-end Software Engineer'], when: '09.2024 – 04.2025', bullets: [
+      'Owned a reference-data micro-frontend (countries, currencies and other company-wide dictionaries) integrated into a large enterprise advertising platform via Webpack Module Federation.',
+      'Maintained and developed the module’s codebase, increasing unit test coverage from 11% to over 80%.',
+      'Took part in the migration of a subdomain to a standalone microservice.'],
+      tags: ['React', 'TypeScript', 'SCSS', 'Jest', 'React Hook Form', 'Webpack', 'Vite', 'Module Federation'] },
+    { co: 'Mood up', role: ['React Developer', 'Front-end Team Leader'], when: '10.2022 – 08.2024', promo: true, bullets: [
+      'Built the React/Redux interface for a smart intercom running on an embedded Raspberry Pi device.',
+      'Promoted to Front-end Team Leader; led a team of 6 developers delivering MVPs for international startup clients.',
+      'Delivered projects from requirements gathering and estimation with clients through development, testing (Jest) and deployment.',
+      'Led a headless CMS evaluation (Strapi, Sanity, Contentful, headless WordPress and others), narrowing the shortlist to Strapi and Payload CMS for the company’s stack.'],
+      tags: ['React', 'Gatsby', 'Next.js', 'React Native', 'TypeScript', 'SCSS', 'Strapi', 'Material UI', 'Ant Design', 'Webpack', 'Vite', 'Figma'] },
+    { co: 'mTab sp. z o.o.', role: ['QA Automation Engineer', 'JavaScript Developer'], when: '07.2021 – 09.2022', promo: true, bullets: [
+      'Promoted from QA Automation Engineer (Cypress E2E) to front-end developer after 3 months at the product team’s request.',
+      'Developed views and features in React for a data visualization platform with dynamic, reactive charts and presentation-style reports.',
+      'Built Node.js scripts run nightly by Jenkins that aggregated test results into reports and posted them to Slack.',
+      'Maintained and extended a legacy Backbone.js codebase.'],
+      tags: ['React', 'JavaScript', 'TypeScript', 'Redux', 'SCSS', 'Jest', 'Cypress', 'Node.js', 'Backbone.js'] }
+  ];
+  const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;');
+
+  const sg = $('#stackGrid');
+  stack.forEach(([group, items]) => {
+    const el = document.createElement('div');
+    el.className = 'spot'; el.setAttribute('data-reveal', '');
+    el.innerHTML = '<h3>' + esc(group) + '</h3><ul>' + items.map(([n, l]) =>
+      '<li><span>' + esc(n) + '</span><span class="lvl ' + l + '"><span class="bars" aria-hidden="true"><i></i><i></i><i></i></span>' + l + '</span></li>').join('') + '</ul>';
+    sg.appendChild(el);
+  });
+  const tl = $('#timeline');
+  career.forEach(j => {
+    const el = document.createElement('article');
+    el.className = 'job'; el.setAttribute('data-reveal', '');
+    const role = j.role.map(esc).join('<span class="arrow" aria-label="promoted to">→</span>');
+    el.innerHTML = '<div><div class="when">' + j.when + '</div><h3 class="co">' + esc(j.co) + '</h3><p class="rl">' + role + '</p>' +
+      (j.promo ? '<span class="promo">↑ Promoted</span>' : '') + '</div><div><ul>' + j.bullets.map(b => '<li>' + esc(b) + '</li>').join('') +
+      '</ul><div class="tags">' + j.tags.map(t => '<span class="tag">' + esc(t) + '</span>').join('') + '</div></div>';
+    tl.appendChild(el);
+  });
+
+  /* ================= small UI ================= */
+  const toastEl = $('.toast'); let toastT;
+  function toast(msg) { toastEl.textContent = msg; toastEl.classList.add('on'); clearTimeout(toastT); toastT = setTimeout(() => toastEl.classList.remove('on'), 2600); }
+  $$('.js-cv').forEach(b => b.addEventListener('click', () => toast('Prototype: wire this to /Rafal_Ciecwierz_CV.pdf')));
+  $('#copyEmail').addEventListener('click', () => {
+    const t = $('#email').textContent;
+    const done = () => toast('Email copied');
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(done, () => { selectEmail(); toast('Press Ctrl/Cmd + C to copy'); });
+    else { selectEmail(); toast('Press Ctrl/Cmd + C to copy'); }
+  });
+  function selectEmail() { const r = document.createRange(); r.selectNodeContents($('#email')); const s = getSelection(); s.removeAllRanges(); s.addRange(r); }
+  const rbBtn = $('.rb-toggle');
+  rbBtn.addEventListener('click', () => { const on = document.body.classList.toggle('show-rb'); rbBtn.setAttribute('aria-pressed', on); });
+
+  /* mobile menu with focus trap */
+  const mBtn = $('.menu-btn'), panel = $('#mpanel');
+  function setMenu(open) {
+    panel.classList.toggle('open', open); mBtn.setAttribute('aria-expanded', open); mBtn.textContent = open ? 'Close' : 'Menu';
+    if (open) panel.querySelector('a').focus(); else mBtn.focus();
+  }
+  mBtn.addEventListener('click', () => setMenu(!panel.classList.contains('open')));
+  panel.addEventListener('click', e => { if (e.target.tagName === 'A') setMenu(false); });
+  panel.addEventListener('keydown', e => {
+    if (e.key === 'Escape') setMenu(false);
+    if (e.key === 'Tab') {
+      const f = [...$$('a', panel), mBtn]; const i = f.indexOf(document.activeElement);
+      e.preventDefault(); f[(i + (e.shiftKey ? f.length - 1 : 1)) % f.length].focus();
+    }
+  });
+
+  /* ================= PillNav ================= */
+  const pill = $('.pill'), navLinks = $$('.pillnav a');
+  let activeLink = null;
+  function movePill(a) {
+    if (!a) { pill.style.opacity = 0; return; }
+    const ul = $('.pillnav').getBoundingClientRect(), r = a.getBoundingClientRect();
+    pill.style.width = r.width + 'px'; pill.style.transform = 'translateX(' + (r.left - ul.left - 1) + 'px)'; pill.style.opacity = 1;
+    navLinks.forEach(l => l.classList.toggle('is-on', l === a));
+  }
+  navLinks.forEach(a => { a.addEventListener('mouseenter', () => movePill(a)); a.addEventListener('focus', () => movePill(a)); });
+  $('.pillnav').addEventListener('mouseleave', () => movePill(activeLink));
+  const secObs = new IntersectionObserver(es => es.forEach(e => {
+    if (e.isIntersecting) { activeLink = navLinks.find(a => a.getAttribute('href') === '#' + e.target.id) || null; movePill(activeLink); }
+  }), { rootMargin: '-45% 0px -50% 0px' });
+  ['top', 'about', 'stack', 'career', 'projects', 'contact'].forEach(id => secObs.observe(document.getElementById(id)));
+
+  /* ================= Magnet ================= */
+  if (!RM) $$('.magnet').forEach(el => {
+    const pad = 60, k = 0.28;
+    window.addEventListener('pointermove', e => {
+      const r = el.getBoundingClientRect(), cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+      const inside = Math.abs(e.clientX - cx) < r.width / 2 + pad && Math.abs(e.clientY - cy) < r.height / 2 + pad;
+      el.style.transform = inside ? 'translate(' + (e.clientX - cx) * k + 'px,' + (e.clientY - cy) * k + 'px)' : '';
+    }, { passive: true });
+  });
+
+  /* ================= RotatingText ================= */
+  const rot = $('.rotating');
+  const words = ['design systems', 'micro-frontends', 'real-time UIs', '3D on the web'];
+  let wi = 0;
+  const meas = document.createElement('span');
+  meas.className = 'rotating'; meas.style.cssText = 'position:absolute;visibility:hidden;left:-9999px;top:0;transition:none';
+  document.body.appendChild(meas);
+  function setWord(w, enter) {
+    rot.innerHTML = ''; meas.textContent = w; rot.style.width = meas.getBoundingClientRect().width + 'px';
+    [...w].forEach((c, i) => {
+      const s = document.createElement('span'); s.className = 'ch'; s.textContent = c;
+      if (enter) { s.style.transform = 'translateY(110%)'; s.style.transitionDelay = (i * 0.025) + 's'; }
+      rot.appendChild(s);
+    });
+    rot.setAttribute('aria-label', w);
+    if (enter) requestAnimationFrame(() => requestAnimationFrame(() => $$('.ch', rot).forEach(s => s.style.transform = 'translateY(0)')));
+  }
+  if (document.fonts) document.fonts.ready.then(() => setWord(words[0], false)); else setWord(words[0], false);
+  if (!RM) setInterval(() => {
+    if (document.hidden) return;
+    $$('.ch', rot).forEach((s, i) => { s.style.transitionDelay = (i * 0.015) + 's'; s.style.transform = 'translateY(-120%)'; });
+    setTimeout(() => { wi = (wi + 1) % words.length; setWord(words[wi], true); }, 380);
+  }, 2600);
+
+  /* ================= DecryptedText ================= */
+  const glyphs = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789/#*+<>';
+  const decObs = new IntersectionObserver(es => es.forEach(e => {
+    if (!e.isIntersecting || RM) return; decObs.unobserve(e.target);
+    const el = e.target, final = el.textContent; let frame = 0; const total = final.length * 3 + 6;
+    const iv = setInterval(() => {
+      frame++; const solved = Math.floor(frame / 3);
+      el.textContent = [...final].map((c, i) => i < solved || c === ' ' || c === '/' ? c : glyphs[(Math.random() * glyphs.length) | 0]).join('');
+      if (frame >= total) { clearInterval(iv); el.textContent = final; }
+    }, 35);
+  }), { threshold: 1 });
+  $$('.decrypt').forEach(el => decObs.observe(el));
+
+  /* ================= CountUp ================= */
+  const cuObs = new IntersectionObserver(es => es.forEach(e => {
+    if (!e.isIntersecting) return; cuObs.unobserve(e.target);
+    const el = e.target, to = +el.dataset.to, from = +(el.dataset.from || 0);
+    if (RM) return;
+    const t0 = performance.now(), d = 1400;
+    (function step(t) {
+      const p = clamp((t - t0) / d, 0, 1), eased = 1 - Math.pow(1 - p, 3);
+      el.textContent = Math.round(from + (to - from) * eased);
+      if (p < 1) requestAnimationFrame(step);
+    })(t0);
+  }), { threshold: 0.6 });
+  $$('.cu').forEach(el => cuObs.observe(el));
+
+  /* ================= Reveal (AnimatedContent / FadeContent) ================= */
+  if (!RM) {
+    const revObs = new IntersectionObserver(es => es.forEach(e => {
+      if (!e.isIntersecting) return; revObs.unobserve(e.target);
+      setTimeout(() => e.target.classList.remove('pre'), (+e.target.dataset.i || 0) * 90);
+    }), { threshold: 0.15 });
+    const vh = window.innerHeight;
+    [sg, tl].forEach(parent => $$('[data-reveal]', parent).forEach((el, i) => {
+      if (el.getBoundingClientRect().top > vh) { el.classList.add('pre'); el.dataset.i = parent === sg ? i : 0; revObs.observe(el); }
+    }));
+  }
+
+  /* ================= SpotlightCard ================= */
+  $$('.spot').forEach(c => c.addEventListener('pointermove', e => {
+    const r = c.getBoundingClientRect(); c.style.setProperty('--x', (e.clientX - r.left) + 'px'); c.style.setProperty('--y', (e.clientY - r.top) + 'px');
+  }));
+
+  /* ================= MagicBento ================= */
+  const bento = $('#bento'), cards = $$('.card', bento);
+  bento.addEventListener('pointermove', e => {
+    cards.forEach(c => {
+      const r = c.getBoundingClientRect();
+      c.style.setProperty('--gx', (e.clientX - r.left) + 'px'); c.style.setProperty('--gy', (e.clientY - r.top) + 'px');
+      const dx = Math.max(r.left - e.clientX, 0, e.clientX - r.right), dy = Math.max(r.top - e.clientY, 0, e.clientY - r.bottom);
+      c.style.setProperty('--glow', clamp(1 - Math.hypot(dx, dy) / 260, 0, 1).toFixed(3));
+    });
+  });
+  bento.addEventListener('pointerleave', () => cards.forEach(c => c.style.setProperty('--glow', 0)));
+  cards.forEach(c => {
+    if (!RM) c.addEventListener('pointermove', e => {
+      const r = c.getBoundingClientRect(), px = (e.clientX - r.left) / r.width - 0.5, py = (e.clientY - r.top) / r.height - 0.5;
+      c.style.transform = 'perspective(900px) rotateX(' + (-py * 5) + 'deg) rotateY(' + (px * 6) + 'deg)';
+    });
+    c.addEventListener('pointerenter', () => {
+      c.style.borderColor = 'rgba(47,232,140,0.25)';
+      if (RM) return;
+      for (let i = 0; i < 10; i++) {
+        const p = document.createElement('span'); p.className = 'particle';
+        p.style.left = (Math.random() * 100) + '%'; p.style.top = (Math.random() * 100) + '%';
+        p.style.setProperty('--dx', (Math.random() * 60 - 30) + 'px'); p.style.setProperty('--dy', (Math.random() * 60 - 30) + 'px');
+        p.style.animationDelay = (Math.random() * -2) + 's'; c.appendChild(p);
+      }
+    });
+    c.addEventListener('pointerleave', () => { c.style.transform = ''; c.style.borderColor = ''; $$('.particle', c).forEach(p => p.remove()); });
+  });
+
+  /* ================= ScrollReveal (words) ================= */
+  const srEls = $$('.js-sr');
+  srEls.forEach(p => { p.innerHTML = p.textContent.split(' ').map(w => '<span class="w">' + esc(w) + '</span>').join(' '); });
+  function updateSR() {
+    if (RM) return;
+    const vh = window.innerHeight;
+    srEls.forEach(p => {
+      const r = p.getBoundingClientRect();
+      const prog = clamp((vh * 0.88 - r.top) / (r.height + vh * 0.35), 0, 1);
+      const ws = p.children, n = ws.length;
+      for (let i = 0; i < n; i++) {
+        const t = clamp(prog * (n + 6) - i, 0, 1) ;
+        ws[i].style.opacity = (0.32 + 0.68 * t).toFixed(3);
+        ws[i].style.filter = t >= 1 ? '' : 'blur(' + ((1 - t) * 3).toFixed(2) + 'px)';
+      }
+    });
+  }
+
+  /* ================= Career line (scrub) ================= */
+  const fill = $('.tl-fill'), jobs = $$('.job', tl);
+  function updateTL() {
+    const vh = window.innerHeight, r = tl.getBoundingClientRect();
+    const prog = RM ? 1 : clamp((vh * 0.6 - r.top) / r.height, 0, 1);
+    fill.style.transform = 'scaleY(' + prog.toFixed(4) + ')';
+    jobs.forEach(j => j.classList.toggle('lit', j.offsetTop + 34 <= prog * r.height + 8));
+  }
+
+  /* ================= ScrollVelocity ================= */
+  const rows = $$('.v-row').map(row => {
+    const g = row.firstElementChild;
+    // repeat items so one group is wider than the viewport, then clone the group for a seamless loop
+    const base = g.innerHTML; while (g.scrollWidth < window.innerWidth * 1.2) g.insertAdjacentHTML('beforeend', base);
+    row.appendChild(g.cloneNode(true));
+    return { row, g, x: 0, speed: +row.dataset.speed };
+  });
+  let lastY = window.scrollY, vel = 0, dirSign = 1;
+
+  /* ================= VariableProximity ================= */
+  const vp = $('.vp');
+  const vpText = "Let's talk.";
+  const vpLabel = vp.querySelector('.rb');
+  vp.textContent = '';
+  const letters = [...vpText].map(c => { const s = document.createElement('span'); s.className = 'l' + (c === '.' ? ' dot' : ''); s.textContent = c === ' ' ? ' ' : c; s.setAttribute('aria-hidden', 'true'); vp.appendChild(s); return s; });
+  vp.appendChild(vpLabel);
+  let mouse = { x: -9999, y: -9999 };
+  window.addEventListener('pointermove', e => { mouse.x = e.clientX; mouse.y = e.clientY; }, { passive: true });
+  function updateVP() {
+    letters.forEach(s => {
+      const r = s.getBoundingClientRect(); const d = Math.hypot(mouse.x - (r.left + r.width / 2), mouse.y - (r.top + r.height / 2));
+      const t = clamp(1 - d / 220, 0, 1); s.style.fontWeight = Math.round(300 + 600 * t * t);
+    });
+  }
+
+  /* ================= DotGrid ================= */
+  const contact = $('#contact'), dg = $('.dotgrid'), dctx = dg.getContext('2d');
+  let dots = [], dgW = 0, dgH = 0;
+  function sizeDG() {
+    const r = contact.getBoundingClientRect(); dgW = r.width; dgH = r.height;
+    dg.width = dgW * DPR; dg.height = dgH * DPR; dctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    dots = []; const gap = 30;
+    for (let y = gap / 2; y < dgH; y += gap) for (let x = gap / 2; x < dgW; x += gap) dots.push({ ox: x, oy: y, x, y, vx: 0, vy: 0 });
+  }
+  function drawDG() {
+    const r = contact.getBoundingClientRect(), mx = mouse.x - r.left, my = mouse.y - r.top;
+    dctx.clearRect(0, 0, dgW, dgH);
+    const R = 150;
+    for (const d of dots) {
+      const dx = d.x - mx, dy = d.y - my, dist = Math.hypot(dx, dy);
+      if (!RM && dist < R && dist > 0.1) { const f = (1 - dist / R) * 1.6; d.vx += dx / dist * f; d.vy += dy / dist * f; }
+      d.vx += (d.ox - d.x) * 0.08; d.vy += (d.oy - d.y) * 0.08; d.vx *= 0.82; d.vy *= 0.82; d.x += d.vx; d.y += d.vy;
+      const t = clamp(1 - dist / R, 0, 1);
+      dctx.fillStyle = t > 0 ? 'rgba(47,232,140,' + (0.18 + 0.8 * t).toFixed(3) + ')' : 'rgba(214,240,224,0.13)';
+      dctx.beginPath(); dctx.arc(d.x, d.y, 1.4 + t * 1.6, 0, 6.2832); dctx.fill();
+    }
+  }
+
+  /* ================= ClickSpark ================= */
+  const sc = $('.spark'), sctx = sc.getContext('2d'); let sparks = [];
+  function sizeSpark() { sc.width = innerWidth * DPR; sc.height = innerHeight * DPR; sctx.setTransform(DPR, 0, 0, DPR, 0, 0); }
+  window.addEventListener('click', e => {
+    if (RM) return; const t = performance.now();
+    for (let i = 0; i < 8; i++) sparks.push({ x: e.clientX, y: e.clientY, a: (i / 8) * Math.PI * 2, t });
+  });
+  function drawSparks(now) {
+    sctx.clearRect(0, 0, innerWidth, innerHeight);
+    sparks = sparks.filter(s => now - s.t < 420);
+    sctx.strokeStyle = '#2fe88c'; sctx.lineWidth = 2; sctx.lineCap = 'round';
+    for (const s of sparks) {
+      const p = (now - s.t) / 420, e = 1 - Math.pow(1 - p, 3), dist = e * 26, len = 10 * (1 - e);
+      const x1 = s.x + Math.cos(s.a) * dist, y1 = s.y + Math.sin(s.a) * dist;
+      sctx.beginPath(); sctx.moveTo(x1, y1); sctx.lineTo(x1 + Math.cos(s.a) * len, y1 + Math.sin(s.a) * len); sctx.stroke();
+    }
+  }
+
+  /* ================= FluidGlass hero (RC) ================= */
+  const hero = $('.hero'), hcv = $('.hero-gl');
+  let gl = null;
+  try { gl = initGlass(); } catch (err) { gl = null; }
+
+  function initGlass() {
+    const renderer = new THREE.WebGLRenderer({ canvas: hcv, antialias: true });
+    renderer.setPixelRatio(DPR);
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(35, 1, 0.1, 100);
+    camera.position.set(0, 0, 14);
+    const bg = document.createElement('canvas'), ctx = bg.getContext('2d');
+    const tex = new THREE.CanvasTexture(bg); tex.minFilter = THREE.LinearFilter; tex.generateMipmaps = false;
+    scene.background = tex;
+    let ready = false;
+
+    function drawBg() {
+      const hr = hero.getBoundingClientRect(), W = hr.width, H = hr.height;
+      bg.width = Math.round(W * DPR); bg.height = Math.round(H * DPR); ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+      ctx.fillStyle = '#090b0a'; ctx.fillRect(0, 0, W, H);
+      ctx.strokeStyle = 'rgba(214,240,224,0.05)'; ctx.lineWidth = 1;
+      for (let x = 0.5; x < W; x += 64) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke(); }
+      for (let y = 0.5; y < H; y += 64) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); }
+      // green disc with dark stripes: something with edges for the glass to bend
+      const m = Math.min(W, H), cx = W * 0.74, cy = H * 0.5, R = m * 0.27;
+      const grd = ctx.createRadialGradient(cx - R * 0.3, cy - R * 0.3, R * 0.1, cx, cy, R);
+      grd.addColorStop(0, '#5cffab'); grd.addColorStop(1, '#14a65d');
+      ctx.fillStyle = grd; ctx.beginPath(); ctx.arc(cx, cy, R, 0, Math.PI * 2); ctx.fill();
+      ctx.save(); ctx.beginPath(); ctx.arc(cx, cy, R, 0, Math.PI * 2); ctx.clip();
+      ctx.fillStyle = 'rgba(9,11,10,0.9)';
+      for (let y = cy - R; y < cy + R; y += 14) ctx.fillRect(cx - R, y + 8, R * 2, 3);
+      ctx.restore();
+      ctx.strokeStyle = 'rgba(47,232,140,0.35)'; ctx.beginPath(); ctx.arc(cx, cy, R * 1.28, 0, Math.PI * 2); ctx.stroke();
+      // small mono labels
+      ctx.font = '400 12px "Geist Mono", ui-monospace, monospace'; ctx.fillStyle = 'rgba(148,161,153,0.85)';
+      ctx.fillText('rafalciecwierz.github.io', 24, H - 24);
+      ctx.textAlign = 'right'; ctx.fillText('ior 1.15 · thickness 5 · chromaticAberration 0.1', W - 24, H - 24); ctx.textAlign = 'left';
+      // the name, drawn exactly where the HTML h1 lines sit so the glass refracts real-looking text
+      ready = true;
+      $$('.hero-name .line').forEach(sp => {
+        const sr = sp.getBoundingClientRect(), cs = getComputedStyle(sp);
+        ctx.font = cs.fontWeight + ' ' + cs.fontSize + ' ' + cs.fontFamily;
+        const tm = ctx.measureText(sp.textContent);
+        if (tm.fontBoundingBoxAscent === undefined) { ready = false; return; }
+        const fa = tm.fontBoundingBoxAscent, fd = tm.fontBoundingBoxDescent;
+        const base = sr.top - hr.top + (sr.height - (fa + fd)) / 2 + fa;
+        ctx.fillStyle = '#edf3ef'; ctx.fillText(sp.textContent, sr.left - hr.left, base);
+      });
+      tex.needsUpdate = true;
+    }
+
+    // RC shapes
+    function letterR() {
+      const s = new THREE.Shape();
+      s.moveTo(0, 0); s.lineTo(0, 3); s.lineTo(1.25, 3); s.absarc(1.25, 2.15, 0.85, Math.PI / 2, -Math.PI / 2, true);
+      s.lineTo(2.1, 0); s.lineTo(1.38, 0); s.lineTo(0.62, 1.3); s.lineTo(0.62, 0); s.lineTo(0, 0);
+      const h = new THREE.Path(); h.moveTo(0.62, 1.9); h.lineTo(1.25, 1.9); h.absarc(1.25, 2.15, 0.25, -Math.PI / 2, Math.PI / 2, false); h.lineTo(0.62, 2.4); h.lineTo(0.62, 1.9);
+      s.holes.push(h); return s;
+    }
+    function letterC(ox) {
+      const cx = ox + 1.5, cy = 1.5, R = 1.5, r = 0.9, a0 = 0.72, a1 = Math.PI * 2 - 0.72, s = new THREE.Shape();
+      s.moveTo(cx + R * Math.cos(a0), cy + R * Math.sin(a0)); s.absarc(cx, cy, R, a0, a1, false);
+      s.lineTo(cx + r * Math.cos(a1), cy + r * Math.sin(a1)); s.absarc(cx, cy, r, a1, a0, true); s.lineTo(cx + R * Math.cos(a0), cy + R * Math.sin(a0));
+      return s;
+    }
+    function smoothNormals(geo, deg) {
+      const pos = geo.attributes.position, n = pos.count, fn = new Float32Array(n * 3);
+      const a = new THREE.Vector3(), b = new THREE.Vector3(), c = new THREE.Vector3(), cb = new THREE.Vector3(), ab = new THREE.Vector3();
+      for (let i = 0; i < n; i += 3) {
+        a.fromBufferAttribute(pos, i); b.fromBufferAttribute(pos, i + 1); c.fromBufferAttribute(pos, i + 2);
+        cb.subVectors(c, b); ab.subVectors(a, b); cb.cross(ab).normalize();
+        for (let k = 0; k < 3; k++) { fn[(i + k) * 3] = cb.x; fn[(i + k) * 3 + 1] = cb.y; fn[(i + k) * 3 + 2] = cb.z; }
+      }
+      const groups = new Map();
+      for (let i = 0; i < n; i++) { const key = Math.round(pos.getX(i) * 1e4) + '_' + Math.round(pos.getY(i) * 1e4) + '_' + Math.round(pos.getZ(i) * 1e4); let g = groups.get(key); if (!g) groups.set(key, g = []); g.push(i); }
+      const cos = Math.cos(deg * Math.PI / 180), out = new Float32Array(n * 3);
+      groups.forEach(list => { for (const i of list) { let x = 0, y = 0, z = 0; for (const j of list) { if (fn[i*3]*fn[j*3] + fn[i*3+1]*fn[j*3+1] + fn[i*3+2]*fn[j*3+2] >= cos) { x += fn[j*3]; y += fn[j*3+1]; z += fn[j*3+2]; } } const l = Math.hypot(x, y, z) || 1; out[i*3] = x / l; out[i*3+1] = y / l; out[i*3+2] = z / l; } });
+      geo.setAttribute('normal', new THREE.BufferAttribute(out, 3));
+    }
+    const geo = new THREE.ExtrudeGeometry([letterR(), letterC(2.55)], { depth: 0.5, bevelEnabled: true, bevelThickness: 0.32, bevelSize: 0.2, bevelSegments: 12, curveSegments: 64 });
+    geo.center(); smoothNormals(geo, 70); geo.computeBoundingBox();
+    const gW = geo.boundingBox.max.x - geo.boundingBox.min.x, gH = geo.boundingBox.max.y - geo.boundingBox.min.y;
+
+    const uniforms = { uBg: { value: tex }, uRes: { value: new THREE.Vector2(1, 1) }, uCenter: { value: new THREE.Vector2(0.5, 0.5) }, uIor: { value: 1.15 }, uThickness: { value: 0.13 }, uChroma: { value: 0.06 }, uMagnify: { value: 0.2 } };
+    const mat = new THREE.ShaderMaterial({
+      uniforms,
+      vertexShader: 'varying vec3 vN; varying vec3 vV; void main(){ vec4 mv = modelViewMatrix * vec4(position,1.0); vN = normalize(normalMatrix * normal); vV = -mv.xyz; gl_Position = projectionMatrix * mv; }',
+      fragmentShader: [
+        'precision highp float;',
+        'uniform sampler2D uBg; uniform vec2 uRes; uniform vec2 uCenter; uniform float uIor; uniform float uThickness; uniform float uChroma; uniform float uMagnify;',
+        'varying vec3 vN; varying vec3 vV;',
+        'float tap(vec2 uv, int ch){ vec3 c = texture2D(uBg, clamp(uv, vec2(0.001), vec2(0.999))).rgb; return ch == 0 ? c.r : (ch == 1 ? c.g : c.b); }',
+        'void main(){',
+        '  vec2 uv = gl_FragCoord.xy / uRes; vec3 n = normalize(vN); vec3 v = normalize(vV); float ndv = clamp(dot(n, v), 0.0, 1.0);',
+        '  vec2 base = uCenter + (uv - uCenter) * (1.0 - uMagnify); vec3 col;',
+        '  for (int ch = 0; ch < 3; ch++) { float ior = uIor + (float(ch) - 1.0) * uChroma; vec3 r = refract(-v, n, 1.0 / ior); vec2 o = r.xy * uThickness * vec2(uRes.y / uRes.x, 1.0) * 2.0;',
+        '    col[ch] = (tap(base + o, ch) + tap(base + o * 1.06, ch) + tap(base + o * 0.94, ch)) / 3.0; }',
+        '  float fres = pow(1.0 - ndv, 3.0); col = mix(col, vec3(0.86, 1.0, 0.92), fres * 0.5);',
+        '  vec3 L1 = normalize(vec3(-0.5, 0.8, 0.6)); vec3 L2 = normalize(vec3(0.7, -0.3, 0.5));',
+        '  col += (pow(max(dot(n, normalize(L1 + v)), 0.0), 90.0) + 0.4 * pow(max(dot(n, normalize(L2 + v)), 0.0), 40.0)) * 0.85;',
+        '  gl_FragColor = vec4(col, 1.0);',
+        '}'].join('\n')
+    });
+    const mesh = new THREE.Mesh(geo, mat); scene.add(mesh);
+
+    let vW = 1, vH = 1, baseScale = 1;
+    function resize() {
+      const r = hero.getBoundingClientRect();
+      renderer.setSize(r.width, r.height, false);
+      camera.aspect = r.width / r.height; camera.updateProjectionMatrix();
+      vH = 2 * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)) * camera.position.z; vW = vH * camera.aspect;
+      baseScale = Math.min((vW * (r.width < 700 ? 0.5 : 0.24)) / gW, (vH * 0.3) / gH);
+      uniforms.uRes.value.set(r.width * DPR, r.height * DPR);
+      drawBg();
+      hero.classList.toggle('gl-ready', ready);
+    }
+    const ptr = { x: 0, y: 0, active: false };
+    hero.addEventListener('pointermove', e => { const r = hero.getBoundingClientRect(); ptr.x = ((e.clientX - r.left) / r.width) * 2 - 1; ptr.y = -((e.clientY - r.top) / r.height) * 2 + 1; ptr.active = true; });
+    hero.addEventListener('pointerleave', () => { ptr.active = false; });
+    const proj = new THREE.Vector3();
+    let t = 0;
+    function frame(dt) {
+      t += dt;
+      const hr = hero.getBoundingClientRect(), exit = clamp(-hr.top / hr.height, 0, 1);
+      let tx, ty;
+      if (RM) { tx = vW * 0.22; ty = -vH * 0.02; }
+      else if (ptr.active) { tx = ptr.x * vW / 2; ty = ptr.y * vH / 2; }
+      else { tx = vW * 0.2 + Math.sin(t * 0.5) * vW * 0.12; ty = Math.sin(t * 0.8) * vH * 0.1; }
+      const k = RM ? 1 : 1 - Math.exp(-dt * 6);
+      const vx = tx - mesh.position.x, vy = ty - mesh.position.y;
+      mesh.position.x += vx * k; mesh.position.y += vy * k;
+      const kr = RM ? 1 : 1 - Math.exp(-dt * 4), idle = RM ? 0 : 1;
+      mesh.rotation.y += (clamp(vx * 0.12, -0.6, 0.6) + Math.sin(t * 0.7) * 0.14 * idle - mesh.rotation.y) * kr;
+      mesh.rotation.x += (clamp(-vy * 0.12, -0.6, 0.6) + Math.cos(t * 0.6) * 0.08 * idle - mesh.rotation.x) * kr;
+      // scroll exit: fly up, spin and shrink as the hero leaves
+      const ex = RM ? 0 : exit;
+      mesh.rotation.z = ex * 1.4;
+      mesh.scale.setScalar(baseScale * (1 - 0.35 * ex));
+      const py = mesh.position.y + ex * vH * 0.9;
+      const saveY = mesh.position.y; mesh.position.y = py;
+      proj.copy(mesh.position).project(camera);
+      uniforms.uCenter.value.set(proj.x * 0.5 + 0.5, proj.y * 0.5 + 0.5);
+      renderer.render(scene, camera);
+      mesh.position.y = saveY;
+    }
+    resize();
+    return { resize, frame, redraw: () => { drawBg(); hero.classList.toggle('gl-ready', ready); } };
+  }
+
+  /* ================= visibility + main loop ================= */
+  let heroVis = true, contactVis = false;
+  new IntersectionObserver(es => es.forEach(e => { heroVis = e.isIntersecting; })).observe(hero);
+  new IntersectionObserver(es => es.forEach(e => { contactVis = e.isIntersecting; })).observe(contact);
+
+  function onResize() { if (gl) gl.resize(); sizeDG(); sizeSpark(); movePill(activeLink); if (rows) rows.forEach(r => r.w = r.g.offsetWidth); }
+  window.addEventListener('resize', onResize);
+  rows.forEach(r => r.w = r.g.offsetWidth);
+  sizeDG(); sizeSpark();
+  if (document.fonts) document.fonts.ready.then(() => { if (gl) gl.redraw(); rows.forEach(r => r.w = r.g.offsetWidth); });
+
+  let last = performance.now();
+  function loop(now) {
+    const dt = Math.min((now - last) / 1000, 0.05); last = now;
+    // scroll velocity
+    const y = window.scrollY, dy = y - lastY; lastY = y;
+    vel += ((dt > 0 ? dy / dt : 0) - vel) * 0.15;
+    if (Math.abs(dy) > 0.5) dirSign = dy > 0 ? 1 : -1;
+    if (!RM) {
+      const factor = 1 + Math.min(Math.abs(vel) / 350, 6);
+      rows.forEach(r => { r.x += r.speed * dirSign * factor * dt; const w = r.w || 1; r.x = ((r.x % w) + w) % w; r.row.style.transform = 'translate3d(' + (-r.x) + 'px,0,0)'; });
+    }
+    if (gl && heroVis) gl.frame(dt);
+    updateSR(); updateTL();
+    if (contactVis) { drawDG(); if (!RM) updateVP(); }
+    drawSparks(now);
+    requestAnimationFrame(loop);
+  }
+  requestAnimationFrame(loop);
+})();
+</script>
+
+</body></html>

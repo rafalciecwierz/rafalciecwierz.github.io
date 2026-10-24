@@ -91,7 +91,7 @@ How the directions spread across the axes from the research. No two directions s
 
 ## 02 — Swiss Signal (`swiss-signal`)
 
-**Status:** approved.
+**Status:** dark variant built; light variant to build. **Files:** `design/prototypes/02-swiss-signal-dark.html`.
 
 **Concept:** Rafał's name *is* the hero. It is set enormous on a strict, visible grid, in the tradition of 1950s Swiss posters. The type is alive: it changes width and weight as you scroll and move the cursor, and it reflows into the grid section by section. Ł and Ć become graphic marks: the stroke of the Ł extends into a grid line, and the acute accent of the Ć becomes the site's "signal" accent, used for active states and links. Serious structure, with a wink in the details.
 
@@ -112,6 +112,16 @@ How the directions spread across the axes from the research. No two directions s
 - **Contact:** the email set huge.
 
 **Dark take:** black ground, off-white type, **cobalt blue** as the signal colour, and the grid lines glowing faintly. The night version is more cinematic: the type moves more, and the accent glows.
+
+**As built (dark), task 2.4: "Night Grid".** The concept, hero and sections above belong to this variant; the light variant gets its own.
+- **Palette:** black `#000000`, ink `#EDEBE6`, muted `#8E8C86`, cobalt `#2F5BFF` (fills, marks, large type; white on it is 5.2:1), light cobalt `#7B9BFF` for small text and links.
+- **Type:** Archivo (variable `wdth` 62–125 and `wght`) for the name, headings, stack, quotes and buttons; Hanken Grotesk for body text.
+- **Layout:** a 12/8/4-column grid whose column lines glow faintly and brighten around the cursor. Huge left-aligned section titles. Sections: hero, About, Stack, Career, "Signals" (team quotes, new, after Career, not in the nav), Projects, Contact.
+- **Hero moment:** "RAFAŁ / CIEĆWIERZ" fitted to the grid by the width axis (RAFAŁ wide at about 4/5 of the width, CIEĆWIERZ narrower at full width). Letters swell towards the cursor (a tap pulse on touch). The Ł stroke runs out into a tapering grid line. On scroll the name compresses to its narrowest width and docks into the header as a two-line lockup; the Ć acute then hops out to mark the active nav link. When the name is width-limited (phones, portrait tablets), the hero hugs its content instead of filling the screen.
+- **Section forms:** About lead with VariableProximity; stack as a real table (area × strong/medium/low) where weight is the level; career as numbered steps (04 → 01) on a grid column line that fills with cobalt on scroll, promotions in cobalt; quotes set large with acute-shaped quote marks; projects as rows whose names widen on hover; the email fitted to the grid width under a field of magnet lines that point at it.
+- **Effects:** KineticName (custom, TextPressure ported in), SignalAccent, HeadingReveal (GSAP SplitText), StackReveal and CareerLine (GSAP ScrollTrigger), VariableProximity and MagnetLines (React Bits, ported), FitText, GridGlow, GridOverlay (`G` easter egg, also a footer button), console message.
+- **Left out on purpose:** WebGL, Lenis smooth scroll, ScrollFloat, glass, bento cards and anything from prototype 01.
+- **Dependencies:** GSAP 3.13 (ScrollTrigger, SplitText) only; the React build needs `gsap` + `@gsap/react`.
 
 **Light take:** a white page, black type, **signal red-orange** as the accent, and printed-poster calm. Stricter and quieter, with motion limited to the hero and hover states.
 

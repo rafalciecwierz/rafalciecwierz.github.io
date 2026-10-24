@@ -1,0 +1,1184 @@
+<!doctype html>
+<!--
+  Prototype 02 — Swiss Signal (`swiss-signal`), DARK variant: "Night Grid".
+  Direction brief: docs/design/DIRECTIONS.md, section 02.
+
+  Concept: the name is the hero. "RAFAŁ / CIEĆWIERZ" is set enormous on a strict 12-column grid
+  (4 on phones) whose column lines glow faintly in cobalt. One variable font (Archivo, width and
+  weight axes) does all the kinetic work: the two lines are fitted to the grid by changing their
+  width, letters swell towards the cursor, and on scroll the name compresses to its narrowest
+  width and docks into the header as a small two-line lockup. The diacritics are graphic marks:
+  the stroke of the Ł runs out into a grid line, and the acute of the Ć is the cobalt "signal"
+  that marks the active section in the navigation, the promotions and the quote marks.
+  It shares only the style (Swiss grid, kinetic type) with the light variant.
+
+  Effects (each is a named function in the script below):
+  - KineticName ......... custom: fits both lines to the grid with the `wdth` axis, TextPressure-
+                          style swelling under the cursor (taps on touch), and the scroll dock into
+                          the header (rAF + scroll position, no library)
+  - TextPressure ........ React Bits idea, ported into KineticName (per-letter wdth/wght)
+  - SignalAccent ........ custom: the Ć acute leaves the lockup and hops between nav links
+  - HeadingReveal ....... GSAP SplitText + ScrollTrigger: headings expand from the narrowest width
+  - StackReveal ......... GSAP ScrollTrigger: stack names expand into their columns
+  - CareerLine .......... GSAP ScrollTrigger (scrub): a grid column line fills as the timeline
+  - VariableProximity ... React Bits component, ported: letters get heavier near the cursor
+                          (About lead and team quotes); the width axis pays the weight back, so
+                          the text never re-wraps
+  - MagnetLines ......... React Bits component, ported: a field of lines that points at the cursor,
+                          and at the email when the cursor is away
+  - FitText ............. custom: the email is fitted to the grid width with the `wdth` axis
+  - GridGlow ............ custom CSS: the column lines brighten around the cursor
+  - GridOverlay ......... custom easter egg: press G (or the footer button) for the design grid
+  - MobileMenu, ConsoleHello: custom
+
+  Libraries in this file: GSAP 3.13.0 core, ScrollTrigger and SplitText (jsDelivr, pinned).
+  Fonts: Archivo (variable wdth 62–125, wght 100–900) and Hanken Grotesk (Google Fonts, latin-ext).
+  React build would need: gsap + @gsap/react only. No WebGL, no other dependency.
+
+  Reduced motion: no smooth scroll, no dock (the header lockup is shown from the start), no
+  pressure, no heading or stack reveals, the career line is drawn in full, no proximity effect,
+  the magnet lines point at the email and stay still, the signal moves without the hop.
+  No WebGL is used, so there is no WebGL fallback to provide.
+
+  Content: all copy lives in the CONTENT object at the top of the script. Additions beyond
+  brief section 5 are marked `NEW CONTENT` there.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Rafał Ciećwierz · Frontend Engineer</title>
+<meta name="description" content="Rafał Ciećwierz, Frontend Engineer. React and TypeScript, 5+ years building production apps. Open to frontend roles, remote or hybrid.">
+<meta name="theme-color" content="#000000">
+<link rel="icon" href="data:,">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&family=Hanken+Grotesk:wght@300..800&display=swap">
+<style>
+  /* ================= Tokens ================= */
+  :root {
+    --black: #000000;       /* ground */
+    --ink: #EDEBE6;         /* type */
+    --muted: #8E8C86;       /* secondary type, 6.3:1 on black */
+    --cobalt: #2F5BFF;      /* the signal: fills, marks, large type (white on it is 5.2:1) */
+    --signal: #7B9BFF;      /* the signal for small text and links, 7.4:1 on black */
+    --line: rgba(237, 235, 230, 0.14);
+    --grid-line: rgba(47, 91, 255, 0.2);
+
+    --display: 'Archivo', 'Arial Narrow', Arial, sans-serif;
+    --text: 'Hanken Grotesk', Arial, sans-serif;
+
+    /* the grid */
+    --cols: 4;
+    --pad: clamp(16px, 3.2vw, 56px);
+    --gap: clamp(12px, 1.6vw, 24px);
+    --maxw: 1760px;
+    --hh: 64px;             /* header height */
+    --section: clamp(112px, 14vw, 220px);
+  }
+  @media (min-width: 768px) { :root { --cols: 8; } }
+  @media (min-width: 1024px) { :root { --cols: 12; } }
+
+  /* Registered so CSS transitions and GSAP can animate the font axes. */
+  @property --w { syntax: '<number>'; inherits: true; initial-value: 100; }
+  @property --g { syntax: '<number>'; inherits: true; initial-value: 400; }
+
+  /* ================= Base ================= */
+  *, *::before, *::after { box-sizing: border-box; }
+  html { background: var(--black); color: var(--ink); overflow-x: clip; scroll-padding-top: var(--hh); -webkit-text-size-adjust: 100%; }
+  @media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+  body { margin: 0; font: 400 17px/1.55 var(--text); background: var(--black); overflow-x: clip; }
+  a { color: inherit; }
+  ul, ol { margin: 0; padding: 0; list-style: none; }
+  h1, h2, h3, p, figure, blockquote { margin: 0; }
+  button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; }
+  :focus-visible { outline: 3px solid var(--signal); outline-offset: 3px; }
+  ::selection { background: var(--cobalt); color: #fff; }
+  .sr-only { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+  .skip { position: fixed; left: 12px; top: -80px; z-index: 200; background: var(--cobalt); color: #fff; padding: 12px 16px; font-weight: 600; text-decoration: none; }
+  .skip:focus { top: 12px; }
+
+  .wrap { width: 100%; max-width: var(--maxw); margin-inline: auto; padding-inline: var(--pad); }
+  .grid { display: grid; grid-template-columns: repeat(var(--cols), minmax(0, 1fr)); column-gap: var(--gap); }
+  .full { grid-column: 1 / -1; }
+
+  /* Archivo with both axes driven by --w and --g */
+  .ax { font-family: var(--display); font-variation-settings: "wdth" var(--w), "wght" var(--g); }
+
+  /* ================= The grid, glowing ================= */
+  .gridbg { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
+  .gridbg .wrap { height: 100%; }
+  .gridbg .grid { height: 100%; }
+  .gridbg i { position: relative; }
+  .gridbg i::before, .gridbg i:last-child::after { content: ''; position: absolute; top: 0; bottom: 0; left: 0; width: 1px; background: currentColor; }
+  .gridbg i:last-child::after { left: auto; right: 0; }
+  .gridbg .base { color: var(--grid-line); }
+  .gridbg .glow { position: absolute; inset: 0; color: rgba(123, 155, 255, 0.75); opacity: 0; transition: opacity .4s;
+    -webkit-mask-image: radial-gradient(260px 260px at var(--mx, 50%) var(--my, 50%), #000 0%, transparent 100%);
+            mask-image: radial-gradient(260px 260px at var(--mx, 50%) var(--my, 50%), #000 0%, transparent 100%); }
+  .gridbg .glow i::before, .gridbg .glow i:last-child::after { box-shadow: 0 0 10px 1px rgba(47, 91, 255, 0.8); }
+  .gridbg.lit .glow { opacity: 1; }
+  @media (max-width: 1023px) { .gridbg i:nth-child(n+9) { display: none; } .gridbg i:nth-child(8)::after { content: ''; position: absolute; top: 0; bottom: 0; right: 0; width: 1px; background: currentColor; } }
+  @media (max-width: 767px) { .gridbg i:nth-child(n+5) { display: none; } .gridbg i:nth-child(4)::after { content: ''; position: absolute; top: 0; bottom: 0; right: 0; width: 1px; background: currentColor; } }
+
+  /* ================= Header ================= */
+  .hdr { position: fixed; inset: 0 0 auto; z-index: 50; height: var(--hh); transition: background-color .3s; }
+  .hdr.is-docked { background: rgba(0, 0, 0, 0.92); box-shadow: 0 1px 0 var(--line); }
+  .hdr-in { height: 100%; display: flex; align-items: center; gap: 24px; }
+  .lockup { text-decoration: none; display: block; opacity: 0; transition: opacity .2s; margin-right: auto; padding: 4px 0; }
+  .hdr.is-docked .lockup { opacity: 1; }
+  .nm { display: block; font-family: var(--display); line-height: 0.98; color: var(--ink); white-space: nowrap; }
+  .lockup .nm { font-size: 18px; }
+  .lockup .ch { --w: 62; --g: 800; }
+  .lockup .mk-acute { width: 3px; height: 4px; top: -3px; }
+
+  .nav { position: relative; display: none; }
+  .nav ul { display: flex; gap: clamp(16px, 2vw, 32px); }
+  .nav a { --w: 90; --g: 600; text-decoration: none; font-size: 15px; padding: 10px 0; display: block; transition: color .2s, --w .3s; }
+  .nav a:hover { --w: 110; }
+  .nav a[aria-current] { color: var(--ink); }
+  .nav a:not([aria-current]) { color: var(--muted); }
+  .nav a:not([aria-current]):hover { color: var(--ink); }
+  .signal { position: absolute; left: 0; top: 0; width: 0; height: 0; opacity: 0; transition: transform .55s cubic-bezier(.3, 1.25, .5, 1), opacity .25s; pointer-events: none; }
+  .signal.on { opacity: 1; }
+  .signal i { position: absolute; left: -5px; top: -5px; width: 7px; height: 9px; background: var(--cobalt); transform: skewX(-32deg); }
+  .signal.hop i { animation: hop .55s cubic-bezier(.3, .7, .4, 1); }
+  @keyframes hop { 0% { translate: 0 0; } 45% { translate: 0 -6px; } 100% { translate: 0 0; } }
+
+  .hdr-cv { --w: 90; --g: 700; font-size: 15px; text-decoration: none; padding: 9px 14px; background: var(--cobalt); color: #fff; transition: --w .3s; }
+  .hdr-cv:hover { --w: 115; }
+  .menu-btn { --w: 90; --g: 700; font-size: 15px; padding: 9px 2px; text-decoration: underline; text-underline-offset: 4px; }
+  @media (min-width: 1024px) {
+    .nav { display: block; }
+    .menu-btn { display: none; }
+  }
+
+  .menu { position: fixed; inset: 0; z-index: 120; background: var(--black); display: flex; flex-direction: column; padding: 16px var(--pad) 32px; }
+  .menu[hidden] { display: none; }
+  .menu-top { display: flex; justify-content: flex-end; height: calc(var(--hh) - 16px); align-items: center; }
+  .menu ul { margin-top: 4vh; }
+  .menu li a { --w: 62; --g: 800; display: block; font-size: clamp(48px, 15vw, 96px); line-height: 1; text-decoration: none; padding: 6px 0; position: relative; }
+  .menu li a[aria-current] { color: var(--signal); }
+  .menu .menu-cv { margin-top: auto; align-self: flex-start; }
+
+  main, footer { position: relative; z-index: 1; }
+
+  /* ================= Buttons ================= */
+  .btn { --w: 100; --g: 700; display: inline-grid; place-items: center; min-height: 52px; padding: 0 22px; font-size: 17px; text-decoration: none; transition: --w .35s cubic-bezier(.3, 1.2, .5, 1), background-color .2s, color .2s; }
+  /* The label is drawn twice: an invisible copy at the widest setting reserves the space, so the
+     hover expansion never changes the button size or pushes its neighbours. */
+  .btn > span, .btn::after { grid-area: 1 / 1; }
+  .btn::after { content: attr(data-label); font-variation-settings: "wdth" 125, "wght" 700; visibility: hidden; }
+  .btn:hover { --w: 125; }
+  .btn-primary { background: var(--cobalt); color: #fff; }
+  .btn-ghost { box-shadow: inset 0 0 0 2px var(--ink); color: var(--ink); }
+  .btn-ghost:hover { background: var(--ink); color: var(--black); }
+
+  /* ================= Hero ================= */
+  .hero { position: relative; min-height: 100svh; display: flex; flex-direction: column; padding-top: calc(var(--hh) + clamp(8px, 2vh, 28px)); padding-bottom: clamp(24px, 4vh, 56px); }
+  .hero > .wrap { flex: 1; display: flex; flex-direction: column; justify-content: space-between; gap: clamp(28px, 5vh, 72px); }
+  .name { font: inherit; }
+  .name-vis { position: relative; z-index: 60; font-size: 12.5vw; transform-origin: 0 0; padding-top: .08em; }
+  .line { display: block; }
+  .line-in { display: inline-block; transform-origin: 0 50%; }
+  .ch { display: inline-block; position: relative; font-variation-settings: "wdth" var(--w), "wght" var(--g); --g: 800; }
+  .l1 .ch { --w: 125; }
+  .l2 .ch { --w: 75; }
+  /* The diacritics are drawn as marks, so they can live their own life. */
+  .mk { position: absolute; display: block; pointer-events: none; }
+  .mk-acute { background: var(--cobalt); width: .09em; height: .12em; left: 50%; top: -.115em; transform: skewX(-40deg); }
+  .mk-stroke { background: currentColor; width: .34em; height: .095em; left: -.015em; top: .5em; transform: skewY(-26deg); transform-origin: 0 50%; }
+  .hero-rule { position: absolute; left: 0; top: 0; right: 0; height: 12px; z-index: 59; pointer-events: none; transform-origin: 0 50%;
+    background: linear-gradient(90deg, var(--ink) 0%, var(--ink) 18%, var(--cobalt) 70%);
+    clip-path: polygon(0 0, 100% calc(50% - 1px), 100% calc(50% + 1px), 0 100%); }
+  .js .hero-rule { opacity: 0; }
+  .js .hero-rule.is-ready { opacity: 1; }
+  @media (prefers-reduced-motion: no-preference) {
+    .hero-rule.is-ready { animation: drawRule 1.1s .25s cubic-bezier(.6, 0, .2, 1) both; }
+    .name-vis .mk-acute { animation: dropAcute .7s .9s cubic-bezier(.3, 1.6, .5, 1) both; }
+  }
+  @keyframes drawRule { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+  @keyframes dropAcute { from { translate: 0 -0.6em; opacity: 0; } to { translate: 0 0; opacity: 1; } }
+
+  .hero-meta { row-gap: 20px; align-items: end; }
+  /* Tall screens (phones, portrait tablets): the name is limited by the width, so the hero hugs
+     its content instead of filling the screen. KineticName sets .is-hug when that happens. */
+  .hero.is-hug { min-height: 0; padding-bottom: 8px; }
+  .hero.is-hug > .wrap { justify-content: flex-start; gap: clamp(40px, 7vh, 96px); }
+  @media (max-width: 767px) { .hero-avail { order: 3; } }
+  .hero-role { grid-column: 1 / -1; }
+  .role { --w: 100; --g: 700; font-size: clamp(28px, 3.2vw, 52px); line-height: 1; }
+  .tagline { color: var(--muted); font-size: clamp(16px, 1.25vw, 19px); margin-top: 10px; max-width: 36ch; }
+  .hero-cta { grid-column: 1 / -1; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .hero-avail { grid-column: 1 / -1; color: var(--muted); font-size: 15px; display: flex; gap: 10px; align-items: baseline; max-width: 34ch; }
+  .hero-avail::before { content: ''; flex: none; width: 9px; height: 9px; background: var(--cobalt); transform: translateY(-1px); }
+  @media (min-width: 768px) {
+    .hero-avail { order: 3; }
+    .hero-role { grid-column: 1 / 5; }
+    .hero-cta { grid-column: 5 / 9; }
+    .hero-avail { grid-column: 1 / 9; }
+  }
+  @media (min-width: 1024px) {
+    .hero-avail { grid-column: 1 / 4; grid-row: 1; align-self: end; order: 0; }
+    .hero-role { grid-column: 4 / 9; grid-row: 1; }
+    .hero-cta { grid-column: 9 / 13; grid-row: 1; }
+  }
+
+  /* ================= Sections ================= */
+  .sec { padding-block: var(--section) 0; }
+  .sec:last-of-type { padding-bottom: var(--section); }
+  .h2 { --w: 100; --g: 800; font-family: var(--display); font-variation-settings: "wdth" var(--w), "wght" var(--g); font-size: clamp(64px, 13vw, 232px); line-height: .82; letter-spacing: -0.01em; grid-column: 1 / -1; margin-left: -0.05em; }
+  .h2 .sc { font-variation-settings: "wdth" var(--w), "wght" 800; }
+  .intro { grid-column: 1 / -1; color: var(--muted); font-size: clamp(18px, 1.5vw, 22px); line-height: 1.45; max-width: 40ch; margin-top: clamp(20px, 2.5vw, 36px); }
+  @media (min-width: 1024px) { .intro { grid-column: 7 / 13; } }
+  .sec-body { margin-top: clamp(48px, 7vw, 112px); }
+
+  /* About */
+  .lead { --w: 100; --g: 400; grid-column: 1 / -1; font-family: var(--display); font-variation-settings: "wdth" var(--w), "wght" var(--g); font-size: clamp(26px, 3.3vw, 54px); line-height: 1.12; letter-spacing: -0.005em; }
+  .about-side { grid-column: 1 / -1; color: var(--muted); margin-top: 40px; font-size: 16px; }
+  .about-side strong { display: block; color: var(--ink); font-weight: 600; margin-bottom: 4px; }
+  .about-more { grid-column: 1 / -1; margin-top: 24px; max-width: 62ch; font-size: clamp(17px, 1.3vw, 20px); }
+  @media (min-width: 768px) { .about-side { grid-column: 1 / 4; } .about-more { grid-column: 4 / 9; margin-top: 40px; } }
+  @media (min-width: 1024px) { .lead { grid-column: 1 / 12; } .about-side { grid-column: 1 / 4; margin-top: 64px; } .about-more { grid-column: 4 / 10; margin-top: 64px; } }
+
+  /* VariableProximity: one span per letter, words kept together */
+  .vw { white-space: nowrap; }
+  .vc { font-variation-settings: "wdth" var(--w), "wght" var(--g); }
+
+  /* Stack: a typographic table where weight is the level */
+  .stack-t { width: 100%; border-collapse: collapse; grid-column: 1 / -1; table-layout: fixed; }
+  .stack-t th, .stack-t td { text-align: left; vertical-align: top; padding: 0; }
+  .stack-t thead th { font-family: var(--display); font-size: 15px; color: var(--muted); padding-bottom: 16px; font-weight: normal; }
+  .stack-t thead .lvl b { display: block; color: var(--ink); font-size: clamp(20px, 1.8vw, 28px); font-weight: normal; line-height: 1.1; margin-bottom: 4px; }
+  .stack-t tbody tr { border-top: 1px solid var(--line); }
+  .stack-t tbody th { --w: 100; --g: 700; font-family: var(--display); font-variation-settings: "wdth" var(--w), "wght" var(--g); font-size: clamp(18px, 1.6vw, 24px); padding: 18px 0; color: var(--muted); }
+  .stack-t td { padding: 16px 0 22px; }
+  .st-list { display: flex; flex-wrap: wrap; gap: 2px 0.75em; }
+  .st { font-family: var(--display); font-variation-settings: "wdth" var(--w), "wght" var(--g); font-size: clamp(21px, 2vw, 32px); line-height: 1.15; }
+  .lv-strong { --g: 800; }
+  .lv-medium { --g: 430; }
+  .lv-low { --g: 200; }
+  .stack-t .col-area { width: 22%; } .stack-t .col-strong { width: 44%; } .stack-t .col-medium { width: 22%; } .stack-t .col-low { width: 12%; }
+  .stack-t td:not(:last-child), .stack-t thead th:not(:last-child) { padding-right: var(--gap); }
+  @media (max-width: 767px) {
+    .stack-t, .stack-t tbody, .stack-t tr, .stack-t td, .stack-t tbody th { display: block; width: 100%; }
+    .stack-t thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+    .stack-t tbody th { padding: 18px 0 6px; color: var(--ink); }
+    .stack-t td { padding: 4px 0 8px; display: grid; grid-template-columns: 72px 1fr; gap: 12px; }
+    .stack-t td::before { content: attr(data-level); color: var(--muted); font-size: 14px; padding-top: 6px; }
+    .stack-t td:empty, .stack-t td.is-empty { display: none; }
+    .stack-t tbody tr:last-child td:last-child { padding-bottom: 0; }
+  }
+
+  /* Career: a column line of the grid is the timeline */
+  .steps { position: relative; grid-column: 1 / -1; }
+  .tl { position: absolute; top: 0; bottom: 0; width: 2px; left: calc((100% - 3 * var(--gap)) / 4 + var(--gap) / 2 - 1px); background: var(--line); }
+  .tl-fill { position: absolute; inset: 0; background: var(--cobalt); box-shadow: 0 0 14px rgba(47, 91, 255, 0.7); transform-origin: 50% 0; }
+  .step { position: relative; padding-block: 0 clamp(56px, 7vw, 112px); }
+  .step:last-child { padding-bottom: 0; }
+  .step-num { --w: 62; --g: 800; grid-column: 1 / 2; font-family: var(--display); font-variation-settings: "wdth" var(--w), "wght" var(--g); font-size: clamp(44px, 8vw, 136px); line-height: .8; color: transparent; -webkit-text-stroke: 1.5px var(--muted); transition: color .5s, -webkit-text-stroke-color .5s; }
+  .step.is-on .step-num { color: var(--ink); -webkit-text-stroke-color: var(--ink); }
+  .step.is-promo.is-on .step-num { color: var(--cobalt); -webkit-text-stroke-color: var(--cobalt); }
+  .step-head, .step-body { grid-column: 2 / -1; }
+  .step-co { --w: 100; --g: 700; font-family: var(--display); font-variation-settings: "wdth" var(--w), "wght" var(--g); font-size: clamp(26px, 2.6vw, 44px); line-height: 1.02; }
+  .step-dates { color: var(--muted); margin-top: 8px; font-variant-numeric: tabular-nums; }
+  .step-role { --w: 100; --g: 600; font-family: var(--display); font-variation-settings: "wdth" var(--w), "wght" var(--g); font-size: clamp(19px, 1.6vw, 24px); line-height: 1.25; margin-top: 18px; }
+  .step-role .arr { color: var(--signal); padding-inline: .2em; }
+  .promo { display: inline-flex; align-items: center; gap: 10px; margin-top: 10px; color: var(--signal); font-size: 15px; font-weight: 600; }
+  .promo i, .q-mark i { display: inline-block; width: 7px; height: 11px; background: var(--cobalt); transform: skewX(-32deg); }
+  .bullets { margin-top: 16px; max-width: 64ch; }
+  .bullets li { position: relative; padding-left: 18px; margin-top: 8px; color: var(--ink); }
+  .bullets li::before { content: ''; position: absolute; left: 0; top: .72em; width: 8px; height: 2px; background: var(--muted); }
+  .tags { display: flex; flex-wrap: wrap; gap: 4px 14px; margin-top: 16px; color: var(--muted); font-size: 14px; }
+  .edu { grid-column: 2 / -1; margin-top: clamp(48px, 6vw, 96px); padding-top: 18px; border-top: 1px solid var(--line); }
+  .edu .lbl { color: var(--muted); font-size: 14px; }
+  .edu p:nth-child(2) { --w: 100; --g: 700; font-family: var(--display); font-variation-settings: "wdth" var(--w), "wght" var(--g); font-size: 20px; margin-top: 6px; }
+  .edu p:nth-child(3) { color: var(--muted); }
+  @media (min-width: 768px) {
+    .tl { left: calc((100% - 7 * var(--gap)) / 8 + var(--gap) / 2 - 1px); }
+    .step-head { grid-column: 2 / 5; }
+    .step-body { grid-column: 5 / 9; }
+    .step-role { margin-top: 0; }
+    .edu { grid-column: 2 / 9; }
+  }
+  @media (min-width: 1024px) {
+    .tl { left: calc(2 * (100% - 11 * var(--gap)) / 12 + 1.5 * var(--gap) - 1px); }
+    .step-num { grid-column: 1 / 3; }
+    .step-head { grid-column: 3 / 6; }
+    .step-body { grid-column: 6 / 13; }
+    .edu { grid-column: 3 / 13; }
+  }
+
+  /* Signals: the team quotes */
+  .quotes { grid-column: 1 / -1; }
+  .quote { padding-block: clamp(36px, 4vw, 64px); border-top: 1px solid var(--line); }
+  .quote:first-child { border-top: 0; padding-top: 0; }
+  .quote figcaption { grid-column: 1 / -1; grid-row: 2; margin-top: 20px; font-size: 15px; color: var(--muted); }
+  .quote figcaption b { display: block; color: var(--ink); font-weight: 600; font-size: 17px; }
+  .q-mark { display: flex; gap: 5px; margin-bottom: 14px; }
+  .q-mark i { width: 10px; height: 16px; }
+  .quote blockquote { grid-column: 1 / -1; grid-row: 1; }
+  .quote blockquote p { --w: 92; --g: 420; font-family: var(--display); font-variation-settings: "wdth" var(--w), "wght" var(--g); font-size: clamp(25px, 3vw, 50px); line-height: 1.12; letter-spacing: -0.005em; }
+  .quote blockquote p + p { margin-top: .5em; }
+  @media (min-width: 768px) { .quote figcaption { grid-column: 1 / 3; grid-row: 1; margin-top: 0; } .quote blockquote { grid-column: 3 / 9; } }
+  @media (min-width: 1024px) { .quote figcaption { grid-column: 1 / 4; } .quote blockquote { grid-column: 4 / 13; } }
+
+  /* Projects: a growing list of rows */
+  .proj { grid-column: 1 / -1; border-bottom: 1px solid var(--line); }
+  .pr { padding-block: 28px 32px; border-top: 1px solid var(--line); row-gap: 14px; }
+  .pr-head { grid-column: 1 / -1; }
+  .pr-name { --w: 92; --g: 750; font-family: var(--display); font-variation-settings: "wdth" var(--w), "wght" var(--g); font-size: clamp(30px, 3.6vw, 64px); line-height: .98; position: relative; transition: --w .45s cubic-bezier(.3, 1.2, .5, 1), color .25s; }
+  .pr-name i { position: absolute; left: -0.32em; top: .08em; width: .12em; height: .2em; background: var(--cobalt); transform: skewX(-32deg) scale(0); transform-origin: 50% 100%; transition: transform .35s cubic-bezier(.3, 1.6, .5, 1); }
+  .pr:hover .pr-name, .pr:focus-within .pr-name { --w: 118; }
+  .pr:hover .pr-name i, .pr:focus-within .pr-name i { transform: skewX(-32deg) scale(1); }
+  .pr-meta { display: flex; flex-wrap: wrap; gap: 6px 18px; margin-top: 12px; font-size: 15px; color: var(--muted); }
+  .status { display: inline-flex; align-items: center; gap: 8px; color: var(--ink); }
+  .status::before { content: ''; width: 10px; height: 10px; box-shadow: inset 0 0 0 2px var(--cobalt); }
+  .status.s-live::before { background: var(--cobalt); }
+  .status.s-progress::before { background: linear-gradient(90deg, var(--cobalt) 50%, transparent 50%); }
+  .pr-body { grid-column: 1 / -1; max-width: 62ch; }
+  .pr-links { grid-column: 1 / -1; display: flex; flex-direction: column; gap: 6px; }
+  .pr-links a, .link { color: var(--signal); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 4px; transition: text-decoration-thickness .2s; }
+  .pr-links a:hover, .link:hover { text-decoration-thickness: 3px; }
+  .pr-links .none { color: var(--muted); font-size: 15px; }
+  @media (min-width: 768px) { .pr-head { grid-column: 1 / 5; } .pr-body { grid-column: 5 / 9; } .pr-links { grid-column: 5 / 9; } }
+  @media (min-width: 1024px) { .pr-head { grid-column: 1 / 6; } .pr-body { grid-column: 6 / 11; } .pr-links { grid-column: 11 / 13; } }
+
+  /* Contact */
+  .magnet { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(var(--mcols, 8), 1fr); row-gap: clamp(18px, 2.4vw, 34px); margin-top: clamp(40px, 6vw, 96px); }
+  .magnet span { justify-self: center; width: 2px; height: clamp(18px, 2.2vw, 32px); background: var(--cobalt); opacity: .85; transform: rotate(var(--a, 0deg)); transition: transform .3s ease-out; }
+  .email-wrap { grid-column: 1 / -1; margin-top: clamp(32px, 4vw, 64px); }
+  .email-big { --w: 100; --g: 800; display: inline-block; white-space: nowrap; font-family: var(--display); font-variation-settings: "wdth" var(--w), "wght" var(--g); font-size: 7vw; line-height: 1; text-decoration: none; color: var(--ink); background: linear-gradient(var(--cobalt), var(--cobalt)) 0 100% / 0 .08em no-repeat; transition: background-size .45s cubic-bezier(.6, 0, .2, 1), color .2s; padding-bottom: .06em; }
+  .email-big:hover, .email-big:focus-visible { background-size: 100% .08em; }
+  .contact-row { grid-column: 1 / -1; margin-top: clamp(32px, 4vw, 56px); row-gap: 28px; align-items: start; }
+  .copy-box { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+  .copy-btn { --w: 100; --g: 600; font-family: var(--display); font-variation-settings: "wdth" var(--w), "wght" var(--g); font-size: 16px; padding: 12px 16px; box-shadow: inset 0 0 0 1.5px var(--muted); }
+  .copy-btn:hover { box-shadow: inset 0 0 0 1.5px var(--ink); }
+  .copy-status { color: var(--signal); font-size: 15px; min-height: 1.4em; }
+  .clinks { grid-column: 1 / -1; }
+  .clinks li { display: grid; grid-template-columns: 96px 1fr; gap: 12px; padding: 10px 0; border-top: 1px solid var(--line); }
+  .clinks li:last-child { border-bottom: 1px solid var(--line); }
+  .clinks .k { color: var(--muted); font-size: 15px; padding-top: 2px; }
+  .todo { color: #FFB86B; font-size: 15px; }
+  .contact-cv { grid-column: 1 / -1; }
+  .phone-note { color: var(--muted); font-size: 14px; margin-top: 12px; }
+  @media (min-width: 768px) { .copy-box { grid-column: 1 / 4; } .clinks { grid-column: 4 / 9; } .contact-cv { grid-column: 1 / 4; } }
+  @media (min-width: 1024px) { .copy-box { grid-column: 1 / 4; } .clinks { grid-column: 4 / 9; } .contact-cv { grid-column: 10 / 13; grid-row: 1; } }
+
+  /* Footer */
+  .ftr { padding-block: 40px 48px; border-top: 1px solid var(--line); color: var(--muted); font-size: 15px; }
+  .ftr .grid { row-gap: 16px; }
+  .ftr .f1 { grid-column: 1 / -1; }
+  .ftr .f2 { grid-column: 1 / -1; }
+  .ftr .f3 { grid-column: 1 / -1; }
+  .grid-btn { color: var(--ink); text-decoration: underline; text-underline-offset: 4px; }
+  .grid-btn kbd { font: inherit; display: inline-block; min-width: 1.6em; text-align: center; box-shadow: inset 0 0 0 1px var(--muted); padding: 0 4px; margin-left: 6px; text-decoration: none; }
+  @media (min-width: 768px) { .ftr .f1 { grid-column: 1 / 5; } .ftr .f2 { grid-column: 5 / 7; } .ftr .f3 { grid-column: 7 / 9; } }
+  @media (min-width: 1024px) { .ftr .f1 { grid-column: 1 / 7; } .ftr .f2 { grid-column: 7 / 10; } .ftr .f3 { grid-column: 10 / 13; } }
+
+  /* ================= Grid overlay (easter egg) ================= */
+  .gridov { position: fixed; inset: 0; z-index: 90; pointer-events: none; display: none;
+    background-image: repeating-linear-gradient(180deg, rgba(237, 235, 230, 0.05) 0 1px, transparent 1px 8px); }
+  .show-grid .gridov { display: block; }
+  .gridov .wrap, .gridov .grid { height: 100%; }
+  .gridov i { background: rgba(47, 91, 255, 0.13); box-shadow: inset 1px 0 0 rgba(123, 155, 255, .5), inset -1px 0 0 rgba(123, 155, 255, .5); font: 600 12px/1 var(--text); font-style: normal; color: var(--signal); padding: calc(var(--hh) + 10px) 0 0 6px; }
+  @media (max-width: 1023px) { .gridov i:nth-child(n+9) { display: none; } }
+  @media (max-width: 767px) { .gridov i:nth-child(n+5) { display: none; } }
+  .gridov-chip { position: fixed; left: var(--pad); bottom: 16px; z-index: 91; background: var(--cobalt); color: #fff; padding: 10px 14px; font-size: 14px; display: none; }
+  .show-grid .gridov-chip { display: block; }
+
+  /* ================= Reduced motion ================= */
+  @media (prefers-reduced-motion: reduce) {
+    /* `none`, not a tiny duration: a 0.01ms transition on the registered --w axis would make
+       the fitting code read stale widths. */
+    *, *::before, *::after { animation: none !important; transition: none !important; }
+    .hdr { background: rgba(0, 0, 0, 0.92); box-shadow: 0 1px 0 var(--line); }
+    .lockup { opacity: 1; }
+  }
+</style>
+</head>
+<body>
+<a class="skip" href="#main" id="skip"></a>
+
+<div class="gridbg" aria-hidden="true">
+  <div class="wrap"><div class="grid base"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></div>
+  <div class="glow"><div class="wrap"><div class="grid"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></div></div>
+</div>
+
+<header class="hdr">
+  <div class="wrap hdr-in" id="hdrIn"></div>
+</header>
+<div class="menu" id="menu" role="dialog" aria-modal="true" hidden></div>
+
+<main id="main">
+  <section class="hero" id="top" aria-labelledby="hero-name"><span class="hero-rule" aria-hidden="true"></span><div class="wrap" id="heroInner"></div></section>
+  <section class="sec" id="about" aria-labelledby="about-t"><div class="wrap grid" id="aboutInner"></div></section>
+  <section class="sec" id="stack" aria-labelledby="stack-t"><div class="wrap grid" id="stackInner"></div></section>
+  <section class="sec" id="career" aria-labelledby="career-t"><div class="wrap grid" id="careerInner"></div></section>
+  <!-- NEW CONTENT: "Signals", the team quotes section (brief 5.6), placed after Career as proof of leadership -->
+  <section class="sec" id="team" aria-labelledby="team-t"><div class="wrap grid" id="teamInner"></div></section>
+  <section class="sec" id="projects" aria-labelledby="projects-t"><div class="wrap grid" id="projectsInner"></div></section>
+  <section class="sec" id="contact" aria-labelledby="contact-t"><div class="wrap grid" id="contactInner"></div></section>
+</main>
+
+<footer class="ftr"><div class="wrap grid" id="footerInner"></div></footer>
+
+<!-- NEW CONTENT: the design grid overlay (easter egg) -->
+<div class="gridov" aria-hidden="true"><div class="wrap"><div class="grid"><i>01</i><i>02</i><i>03</i><i>04</i><i>05</i><i>06</i><i>07</i><i>08</i><i>09</i><i>10</i><i>11</i><i>12</i></div></div></div>
+<p class="gridov-chip" id="gridChip" role="status"></p>
+
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/ScrollTrigger.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/SplitText.min.js"></script>
+<script>
+(function () {
+  'use strict';
+  document.documentElement.classList.add('js');
+
+  /* ================= CONTENT (would live in src/content/*.ts) ================= */
+  const CONTENT = {
+    profile: {
+      name: 'Rafał Ciećwierz',
+      nameLines: ['Rafał', 'Ciećwierz'],
+      role: 'Frontend Engineer',
+      tagline: 'React & TypeScript · 5+ years building production apps',
+      availability: 'Open to frontend roles (React / TypeScript), remote or hybrid.',
+      email: 'rafal.ciecwierz4@gmail.com',
+      github: 'https://github.com/rafalciecwierz',
+      githubLabel: 'github.com/rafalciecwierz',
+      linkedin: null, // TODO: Rafał to provide URL
+      calendly: null, // TODO: Rafał to provide URL
+      cvFile: '/Rafal_Ciecwierz_CV.pdf'
+    },
+    ui: {
+      skip: 'Skip to content',
+      homeLabel: 'Rafał Ciećwierz, back to the top',
+      navLabel: 'Sections',
+      menu: 'Menu', close: 'Close',
+      downloadCv: 'Download CV', cvShort: 'CV',
+      getInTouch: 'Get in touch',
+      promoted: 'Promoted', promotedTo: 'promoted to',
+      copy: 'Copy email', copied: 'Email copied.', copyFailed: 'Copying failed. Select the address above.',
+      todo: 'TODO: URL',
+      noLink: 'No public link',
+      gridShow: 'Show the grid', gridHide: 'Hide the grid', // NEW CONTENT
+      gridChip: '12 columns, 8 px baseline. Press G to hide.' // NEW CONTENT
+    },
+    nav: [
+      { id: 'about', label: 'About' }, { id: 'stack', label: 'Stack' }, { id: 'career', label: 'Career' },
+      { id: 'projects', label: 'Projects' }, { id: 'contact', label: 'Contact' }
+    ],
+    about: {
+      title: 'About',
+      lead: "I'm a frontend engineer with 5+ years of commercial experience in React and TypeScript. I started my career in QA automation, moved into frontend development after three months at my team's request, and later led a team of six developers.",
+      more: "I care about clean architecture, reusable UI and tests that actually protect the product. Lately I've been going deeper into the backend with NestJS and experimenting with motion and 3D in the browser.",
+      outsideTitle: 'Outside of code', // NEW CONTENT: label (the fact itself is from the brief)
+      outside: 'Parkour (for over 22 years) and climbing.'
+    },
+    stack: {
+      title: 'Stack',
+      intro: 'Set in three weights: the heavier the name, the more production hours behind it.', // NEW CONTENT
+      areaLabel: 'Area',
+      levels: [
+        { key: 'strong', label: 'Strong', text: 'strong production experience' },
+        { key: 'medium', label: 'Medium', text: 'medium production experience' },
+        { key: 'low', label: 'Low', text: 'low production experience' }
+      ],
+      groups: [
+        ['Frontend', [['React', 'strong'], ['TypeScript', 'strong'], ['JavaScript', 'strong'], ['HTML5', 'strong'], ['CSS / SCSS / Styled-components', 'strong'], ['Next.js', 'medium'], ['Gatsby', 'medium'], ['Module Federation', 'medium'], ['React Native', 'low']]],
+        ['Data & UI', [['TanStack Query', 'strong'], ['Redux', 'strong'], ['Zod', 'strong'], ['React Hook Form', 'strong'], ['Storybook', 'strong'], ['Ant Design', 'strong'], ['Material UI', 'strong'], ['Tailwind CSS', 'medium'], ['WebSockets', 'medium']]],
+        ['Testing', [['Jest / Vitest', 'strong'], ['React Testing Library', 'strong'], ['Cypress', 'strong']]],
+        ['Backend', [['Node.js', 'medium'], ['NestJS', 'medium'], ['PostgreSQL', 'medium'], ['Strapi', 'medium']]],
+        ['Tooling', [['Git', 'strong'], ['Figma', 'strong'], ['Postman', 'strong'], ['Vite', 'strong'], ['Webpack', 'strong'], ['Docker', 'medium'], ['Claude Code', 'medium']]]
+      ]
+    },
+    career: {
+      title: 'Career',
+      intro: 'Four companies and two promotions, newest first.', // NEW CONTENT
+      jobs: [
+        { company: 'MUG Software', roles: ['Front-end Software Engineer'], dates: '04.2025 – 08.2026', bullets: [
+          'Maintained and extended a white-label React platform: a core repository with client-specific forks, propagating global changes upstream-to-fork while keeping client customizations isolated.',
+          'Developed and maintained a shared Storybook component library (50+ components), improving UI consistency and speeding up feature development.',
+          'Introduced TanStack Query (replacing Redux for server state) and Zod (replacing Yup), adopting them incrementally across the app as part of ongoing feature work.'],
+          stack: ['React', 'TypeScript', 'Styled Components', 'Jest', 'Redux', 'Storybook', 'Webpack', 'TanStack Query', 'Zod'] },
+        { company: 'VML Enterprise Solutions', roles: ['Front-end Software Engineer'], dates: '09.2024 – 04.2025', bullets: [
+          'Owned a reference-data micro-frontend (countries, currencies and other company-wide dictionaries) integrated into a large enterprise advertising platform via Webpack Module Federation.',
+          'Maintained and developed the module’s codebase, increasing unit test coverage from 11% to over 80%.',
+          'Took part in the migration of a subdomain to a standalone microservice.'],
+          stack: ['React', 'TypeScript', 'SCSS', 'Jest', 'React Hook Form', 'Webpack', 'Vite', 'Module Federation'] },
+        { company: 'Mood up', roles: ['React Developer', 'Front-end Team Leader'], dates: '10.2022 – 08.2024', promoted: true, bullets: [
+          'Built the React/Redux interface for a smart intercom running on an embedded Raspberry Pi device.',
+          'Promoted to Front-end Team Leader; led a team of 6 developers delivering MVPs for international startup clients.',
+          'Delivered projects from requirements gathering and estimation with clients through development, testing (Jest) and deployment.',
+          'Led a headless CMS evaluation (Strapi, Sanity, Contentful, headless WordPress and others), narrowing the shortlist to Strapi and Payload CMS for the company’s stack.'],
+          stack: ['React', 'Gatsby', 'Next.js', 'React Native', 'TypeScript', 'SCSS', 'Strapi', 'Material UI', 'Ant Design', 'Webpack', 'Vite', 'Figma'] },
+        { company: 'mTab sp. z o.o.', roles: ['QA Automation Engineer', 'JavaScript Developer'], dates: '07.2021 – 09.2022', promoted: true, bullets: [
+          'Promoted from QA Automation Engineer (Cypress E2E) to front-end developer after 3 months at the product team’s request.',
+          'Developed views and features in React for a data visualization platform with dynamic, reactive charts and presentation-style reports.',
+          'Built Node.js scripts run nightly by Jenkins that aggregated test results into reports and posted them to Slack.',
+          'Maintained and extended a legacy Backbone.js codebase.'],
+          stack: ['React', 'JavaScript', 'TypeScript', 'Redux', 'SCSS', 'Jest', 'Cypress', 'Node.js', 'Backbone.js'] }
+      ],
+      educationLabel: 'Education',
+      education: { school: 'Adam Mickiewicz University', degree: "Engineer's degree in Computer Science", years: '2015 – 2021' }
+    },
+    // Quotes are word for word from brief 5.6 (the authors must agree before publishing).
+    team: {
+      title: 'Signals', // NEW CONTENT: section title
+      intro: 'From my team at Mood up, 2024.', // NEW CONTENT: intro line (source format from brief 5.6)
+      quotes: [
+        { name: 'Wiktoria W.', role: 'Marketing & Communication', text: ["Seriously, I've never met a leader as tuned in and supportive as him.", "Whoever snags him next is super lucky - yeah, I'm a bit envious. 😉"] },
+        { name: 'Rafał H.', role: 'Frontend Developer', text: ['His enthusiasm and optimism were contagious, making him a joy to work with.'] },
+        { name: 'Szymon K.', role: 'Frontend Developer', text: ['His technical skills and ability to simplify complex concepts, guiding others through challenges, have been invaluable in enhancing the overall quality and efficiency of our development processes.'] }
+      ],
+      source: 'Mood up, 2024'
+    },
+    projects: {
+      title: 'Projects',
+      intro: (n) => `${n} projects so far. The list keeps growing.`, // NEW CONTENT
+      statusLabels: { live: 'Live', 'in progress': 'In progress', archived: 'Archived' },
+      items: [
+        { name: 'Ashen Contracts', status: 'in progress',
+          description: 'Browser-based idle/RPG game built as a full-stack showcase: pnpm monorepo with a Next.js app, NestJS API, shared Storybook UI library and shared TypeScript types. Architecture decisions documented in an ADR-style log.',
+          tags: ['Next.js', 'NestJS', 'PostgreSQL', 'Prisma', 'Storybook', 'Docker', 'GitHub Actions'],
+          links: [{ label: 'Repository', href: 'https://github.com/rafalciecwierz/ashen-contracts' }] },
+        { name: 'Ultimate Frisbee Tournament Platform', status: 'archived', context: 'Engineering thesis (team of 4), built for the Polish Ultimate Players Association',
+          description: 'Owned the entire NestJS + PostgreSQL backend, built live match scoring with Socket.io (scorekeeper tablet view + real-time spectator view), designed the full UI in Figma, deployed to AWS and tested at a live tournament in Szczecin.',
+          tags: ['NestJS', 'PostgreSQL', 'Socket.io', 'Swagger', 'AWS', 'Nuxt', 'Figma'], links: [] },
+        { name: 'This website', status: 'live',
+          description: 'Personal site with a procedural 3D hero (React Three Fiber) and scroll-driven animations (GSAP, Lenis), built with a performance and accessibility budget.',
+          tags: ['React', 'TypeScript', 'Three.js', 'GSAP', 'Vite'],
+          links: [{ label: 'Repository', href: 'https://github.com/rafalciecwierz/rafalciecwierz.github.io' }] },
+        { name: 'Next.js page transitions', status: 'archived',
+          description: 'Comparison of three page-transition approaches in Next.js: custom implementation, Framer Motion and GSAP.',
+          tags: ['Next.js', 'Framer Motion', 'GSAP'],
+          links: [{ label: 'Repository', href: 'https://github.com/rafalciecwierz/Nextjs-page-transition' }] }
+      ]
+    },
+    contact: {
+      title: 'Contact',
+      labels: { email: 'Email', linkedin: 'LinkedIn', github: 'GitHub', calendly: 'Calendly' },
+      calendlyText: 'Book a 20-min call',
+      phoneNote: 'The phone number is in the CV.' // NEW CONTENT
+    },
+    footer: {
+      builtWith: 'Built with React, Three.js and GSAP.',
+      source: 'Source on GitHub',
+      repo: 'https://github.com/rafalciecwierz/rafalciecwierz.github.io'
+    },
+    // NEW CONTENT: console easter egg
+    console: "Hi, Ralph here. Everything on this page sits on a 12-column grid. Press G to see it."
+  };
+
+  /* ================= Helpers ================= */
+  const $ = (s, r = document) => r.querySelector(s);
+  const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
+  const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
+  const REDUCE = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const FINE = matchMedia('(hover: hover) and (pointer: fine)').matches;
+  const HAS_GSAP = !!(window.gsap && window.ScrollTrigger);
+  if (HAS_GSAP) gsap.registerPlugin(ScrollTrigger);
+  if (HAS_GSAP && window.SplitText) gsap.registerPlugin(SplitText);
+  const P = CONTENT.profile, UI = CONTENT.ui;
+
+  /* The name is drawn letter by letter. Ł and Ć become L and C plus a drawn mark,
+     so the stroke and the acute can be coloured and moved on their own. */
+  function nameLine(word) {
+    return Array.from(word.toUpperCase()).map((ch) => {
+      if (ch === 'Ł') return '<span class="ch ch-l">L<i class="mk mk-stroke"></i></span>';
+      if (ch === 'Ć') return '<span class="ch ch-c">C<i class="mk mk-acute"></i></span>';
+      return `<span class="ch">${esc(ch)}</span>`;
+    }).join('');
+  }
+  const btn = (cls, label, attrs) => `<a class="btn ax ${cls}" data-label="${esc(label)}" ${attrs}><span>${esc(label)}</span></a>`;
+  const tags = (list) => `<ul class="tags">${list.map((t) => `<li>${esc(t)}</li>`).join('')}</ul>`;
+
+  /* ================= Render ================= */
+  function renderHeader() {
+    $('#skip').textContent = UI.skip;
+    $('#hdrIn').innerHTML = `
+      <a class="lockup" href="#top" aria-label="${esc(UI.homeLabel)}">
+        <span class="nm" aria-hidden="true"><span class="line">${nameLine(P.nameLines[0])}</span><span class="line">${nameLine(P.nameLines[1])}</span></span>
+      </a>
+      <nav class="nav" aria-label="${esc(UI.navLabel)}">
+        <ul>${CONTENT.nav.map((n) => `<li><a class="ax" href="#${n.id}" data-id="${n.id}">${esc(n.label)}</a></li>`).join('')}</ul>
+        <span class="signal" aria-hidden="true"><i></i></span>
+      </nav>
+      <a class="hdr-cv ax" href="${esc(P.cvFile)}" download>${esc(UI.cvShort)}</a>
+      <button class="menu-btn ax" type="button" aria-expanded="false" aria-controls="menu">${esc(UI.menu)}</button>`;
+    const menu = $('#menu');
+    menu.setAttribute('aria-label', UI.menu);
+    menu.innerHTML = `
+      <div class="menu-top"><button class="menu-btn ax menu-close" type="button">${esc(UI.close)}</button></div>
+      <ul>${CONTENT.nav.map((n) => `<li><a class="ax" href="#${n.id}" data-id="${n.id}">${esc(n.label)}</a></li>`).join('')}</ul>
+      ${btn('btn-primary menu-cv', UI.downloadCv, `href="${esc(P.cvFile)}" download`)}`;
+  }
+
+  function renderHero() {
+    $('#heroInner').innerHTML = `
+      <h1 class="name" id="hero-name">
+        <span class="sr-only">${esc(P.name)}</span>
+        <span class="name-vis nm" aria-hidden="true">
+          <span class="line l1"><span class="line-in">${nameLine(P.nameLines[0])}</span></span>
+          <span class="line l2"><span class="line-in">${nameLine(P.nameLines[1])}</span></span>
+        </span>
+      </h1>
+      <div class="hero-meta grid">
+        <p class="hero-avail">${esc(P.availability)}</p>
+        <div class="hero-role">
+          <p class="role ax">${esc(P.role)}</p>
+          <p class="tagline">${esc(P.tagline)}</p>
+        </div>
+        <div class="hero-cta">
+          ${btn('btn-primary', UI.downloadCv, `href="${esc(P.cvFile)}" download`)}
+          ${btn('btn-ghost', UI.getInTouch, 'href="#contact"')}
+        </div>
+      </div>`;
+  }
+
+  function renderAbout() {
+    const a = CONTENT.about;
+    $('#aboutInner').innerHTML = `
+      <h2 class="h2" id="about-t">${esc(a.title)}</h2>
+      <div class="sec-body grid full">
+        <p class="lead" data-prox="400,800">${esc(a.lead)}</p>
+        <p class="about-side"><strong>${esc(a.outsideTitle)}</strong>${esc(a.outside)}</p>
+        <p class="about-more">${esc(a.more)}</p>
+      </div>`;
+  }
+
+  function renderStack() {
+    const s = CONTENT.stack;
+    const cell = (items, lv) => {
+      const list = items.filter((i) => i[1] === lv.key);
+      return `<td data-level="${esc(lv.label)}"${list.length ? '' : ' class="is-empty"'}>${list.length ? `<ul class="st-list">${list.map((i) => `<li class="st lv-${lv.key}">${esc(i[0])}</li>`).join('')}</ul>` : ''}</td>`;
+    };
+    $('#stackInner').innerHTML = `
+      <h2 class="h2" id="stack-t">${esc(s.title)}</h2>
+      <p class="intro">${esc(s.intro)}</p>
+      <div class="sec-body grid full">
+        <table class="stack-t">
+          <caption class="sr-only">${esc(s.title)}: technologies by experience level</caption>
+          <colgroup><col class="col-area"><col class="col-strong"><col class="col-medium"><col class="col-low"></colgroup>
+          <thead><tr><th scope="col">${esc(s.areaLabel)}</th>${s.levels.map((l) => `<th scope="col" class="lvl"><b class="ax lv-${l.key}">${esc(l.label)}</b>${esc(l.text)}</th>`).join('')}</tr></thead>
+          <tbody>${s.groups.map(([g, items]) => `<tr><th scope="row" class="ax">${esc(g)}</th>${s.levels.map((l) => cell(items, l)).join('')}</tr>`).join('')}</tbody>
+        </table>
+      </div>`;
+  }
+
+  function renderCareer() {
+    const c = CONTENT.career, n = c.jobs.length;
+    $('#careerInner').innerHTML = `
+      <h2 class="h2" id="career-t">${esc(c.title)}</h2>
+      <p class="intro">${esc(c.intro)}</p>
+      <div class="sec-body full">
+        <div class="steps">
+          <span class="tl" aria-hidden="true"><span class="tl-fill"></span></span>
+          <ol reversed>
+            ${c.jobs.map((j, i) => `
+              <li class="step grid${j.promoted ? ' is-promo' : ''}">
+                <span class="step-num" aria-hidden="true">${String(n - i).padStart(2, '0')}</span>
+                <div class="step-head">
+                  <h3 class="step-co">${esc(j.company)}</h3>
+                  <p class="step-dates">${esc(j.dates)}</p>
+                </div>
+                <div class="step-body">
+                  <p class="step-role">${j.roles.map(esc).join(` <span class="arr" aria-hidden="true">→</span><span class="sr-only">, ${esc(UI.promotedTo)} </span>`)}</p>
+                  ${j.promoted ? `<p class="promo"><i aria-hidden="true"></i>${esc(UI.promoted)}</p>` : ''}
+                  <ul class="bullets">${j.bullets.map((b) => `<li>${esc(b)}</li>`).join('')}</ul>
+                  ${tags(j.stack)}
+                </div>
+              </li>`).join('')}
+          </ol>
+        </div>
+        <div class="grid">
+          <div class="edu">
+            <p class="lbl">${esc(c.educationLabel)}</p>
+            <p>${esc(c.education.school)}</p>
+            <p>${esc(c.education.degree)}, ${esc(c.education.years)}</p>
+          </div>
+        </div>
+      </div>`;
+  }
+
+  function renderTeam() {
+    const t = CONTENT.team;
+    $('#teamInner').innerHTML = `
+      <h2 class="h2" id="team-t">${esc(t.title)}</h2>
+      <p class="intro">${esc(t.intro)}</p>
+      <ul class="quotes sec-body">
+        ${t.quotes.map((q) => `
+          <li class="quote"><figure class="grid">
+            <blockquote>${q.text.map((p) => `<p data-prox="420,820">${esc(p)}</p>`).join('')}</blockquote>
+            <figcaption><span class="q-mark" aria-hidden="true"><i></i><i></i></span><b>${esc(q.name)}</b>${esc(q.role)}, ${esc(t.source)}</figcaption>
+          </figure></li>`).join('')}
+      </ul>`;
+  }
+
+  function renderProjects() {
+    const p = CONTENT.projects;
+    const cls = { live: 's-live', 'in progress': 's-progress', archived: 's-archived' };
+    $('#projectsInner').innerHTML = `
+      <h2 class="h2" id="projects-t">${esc(p.title)}</h2>
+      <p class="intro">${esc(p.intro(p.items.length))}</p>
+      <ul class="proj sec-body">
+        ${p.items.map((it) => `
+          <li class="pr grid">
+            <div class="pr-head">
+              <h3 class="pr-name"><i aria-hidden="true"></i>${esc(it.name)}</h3>
+              <p class="pr-meta"><span class="status ${cls[it.status]}">${esc(p.statusLabels[it.status])}</span>${it.context ? `<span>${esc(it.context)}</span>` : ''}</p>
+            </div>
+            <div class="pr-body"><p>${esc(it.description)}</p>${tags(it.tags)}</div>
+            <ul class="pr-links">${it.links.length ? it.links.map((l) => `<li><a href="${esc(l.href)}" target="_blank" rel="noopener">${esc(l.label)}<span class="sr-only">: ${esc(it.name)} (opens in a new tab)</span></a></li>`).join('') : `<li class="none">${esc(UI.noLink)}</li>`}</ul>
+          </li>`).join('')}
+      </ul>`;
+  }
+
+  function renderContact() {
+    const c = CONTENT.contact;
+    const row = (k, v) => `<li><span class="k">${esc(k)}</span><span>${v}</span></li>`;
+    $('#contactInner').innerHTML = `
+      <h2 class="h2" id="contact-t">${esc(c.title)}</h2>
+      <p class="intro">${esc(P.availability)}</p>
+      <div class="magnet" aria-hidden="true"></div>
+      <p class="email-wrap"><a class="email-big" href="mailto:${esc(P.email)}">${esc(P.email)}</a></p>
+      <div class="contact-row grid">
+        <div class="copy-box">
+          <button class="copy-btn" type="button">${esc(UI.copy)}</button>
+          <span class="copy-status" role="status" aria-live="polite"></span>
+        </div>
+        <ul class="clinks">
+          ${row(c.labels.linkedin, P.linkedin ? `<a class="link" href="${esc(P.linkedin)}">${esc(c.labels.linkedin)}</a>` : `<span class="todo">${esc(UI.todo)}</span>`)}
+          ${row(c.labels.github, `<a class="link" href="${esc(P.github)}" target="_blank" rel="noopener">${esc(P.githubLabel)}</a>`)}
+          ${row(c.labels.calendly, P.calendly ? `<a class="link" href="${esc(P.calendly)}">${esc(c.calendlyText)}</a>` : `${esc(c.calendlyText)} <span class="todo">${esc(UI.todo)}</span>`)}
+        </ul>
+        <div class="contact-cv">
+          ${btn('btn-primary', UI.downloadCv, `href="${esc(P.cvFile)}" download`)}
+          <p class="phone-note">${esc(c.phoneNote)}</p>
+        </div>
+      </div>`;
+  }
+
+  function renderFooter() {
+    const f = CONTENT.footer;
+    $('#footerInner').innerHTML = `
+      <p class="f1">${esc(f.builtWith)} <a class="link" href="${esc(f.repo)}" target="_blank" rel="noopener">${esc(f.source)}</a></p>
+      <p class="f2">© ${new Date().getFullYear()} ${esc(P.name)}</p>
+      <p class="f3"><button class="grid-btn" type="button" aria-pressed="false">${esc(UI.gridShow)}<kbd>G</kbd></button></p>`;
+    $('#gridChip').textContent = '';
+  }
+
+  /* ================= Effects ================= */
+
+  /* KineticName — custom; TextPressure (React Bits) ported in.
+     1. fit(): both lines are fitted to the grid by changing the `wdth` axis (binary search),
+        so CIEĆWIERZ fills the full width and RAFAŁ sits wide at about four fifths of it.
+     2. Every frame, each letter gets a target width and weight from its distance to the pointer;
+        the line is then scaled back to its fitted width, so neighbours give way.
+     3. Dock: the scroll position drives a progress p (0 → 1). The letters compress to the
+        narrowest width, the block shrinks and travels into the header lockup. The maths only uses
+        transforms, so the page layout never changes while it runs. */
+  function KineticName() {
+    const hero = $('#top'), vis = $('.name-vis'), header = $('.hdr'), lockup = $('.lockup');
+    const lines = $$('.line-in', vis), chars = lines.map((l) => $$('.ch', l));
+    const stroke = $('.mk-stroke', vis), rule = $('.hero-rule'), meta = $('.hero-meta');
+    const S = { F: 100, base: [125, 75], fitW: [0, 0], centers: [], top0: 0, left0: 0, dockEnd: 1,
+      sT: 0.1, tx: 0, ty: 0, px: -1e4, py: -1e4, amp: 0, ampT: 0, tap: false, p: REDUCE ? 0 : 0, cur: [], visible: true, raf: 0, last: -1 };
+
+    const setLine = (k, w) => chars[k].forEach((c) => { c.style.setProperty('--w', w); c.style.setProperty('--g', 800); });
+    const widthAt = (k, w) => { setLine(k, w); return lines[k].offsetWidth; };
+    function search(k, target) {
+      let lo = 62, hi = 125;
+      if (widthAt(k, hi) <= target) return hi;
+      if (widthAt(k, lo) >= target) return lo;
+      for (let i = 0; i < 14; i++) { const mid = (lo + hi) / 2; if (widthAt(k, mid) > target) hi = mid; else lo = mid; }
+      return lo;
+    }
+
+    function fit() {
+      vis.style.transform = ''; vis.style.visibility = '';
+      lines.forEach((l) => { l.style.transform = ''; });
+      const W = meta.clientWidth;
+      vis.style.fontSize = '100px';
+      const per = widthAt(1, 82) / 100; // width of CIEĆWIERZ per 1px of font size at wdth 82
+      const pad = parseFloat(getComputedStyle(hero).paddingTop) + parseFloat(getComputedStyle(hero).paddingBottom);
+      const gap = parseFloat(getComputedStyle(vis.parentElement.parentElement).rowGap) || 40;
+      const avail = window.innerHeight - pad - meta.offsetHeight - gap - 12;
+      const Fw = W / per, Fh = avail / (2 * 0.98 + 0.1);
+      const F = Math.max(30, Math.min(Fw, Fh));
+      hero.classList.toggle('is-hug', Fw < Fh * 0.8);
+      vis.style.fontSize = F + 'px';
+      S.F = F;
+      S.base[1] = search(1, W);
+      S.base[0] = search(0, W * 0.8);
+      setLine(0, S.base[0]); setLine(1, S.base[1]);
+      S.fitW = lines.map((l) => l.offsetWidth);
+      const vr = vis.getBoundingClientRect();
+      S.left0 = vr.left; S.top0 = vr.top + window.scrollY;
+      S.centers = chars.map((cs) => cs.map((c) => { const r = c.getBoundingClientRect(); return { x: r.left + r.width / 2 - vr.left, y: r.top + r.height / 2 - vr.top }; }));
+      const lr = lockup.getBoundingClientRect();
+      S.tx = lr.left; S.ty = lr.top + 4; // +4: the lockup's own padding
+      S.sT = parseFloat(getComputedStyle($('.nm', lockup)).fontSize) / F;
+      S.dockEnd = Math.max(180, window.innerHeight * 0.55);
+      S.cur = chars.map((cs, k) => cs.map(() => ({ w: S.base[k], g: 800, lw: S.base[k], lg: 800 })));
+      placeRule();
+      rule.classList.add('is-ready');
+      S.last = -1;
+      if (REDUCE) header.classList.add('is-docked'); else frame();
+    }
+
+    // The stroke of the Ł runs out into a grid line to the right edge of the page.
+    function placeRule() {
+      const sr = stroke.getBoundingClientRect(), hr = hero.getBoundingClientRect();
+      const th = S.F * 0.095;
+      rule.style.left = (sr.right - hr.left - 2) + 'px';
+      rule.style.top = (sr.top - hr.top) + 'px';
+      rule.style.height = th + 'px';
+    }
+
+    const easeInOut = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
+
+    function frame() {
+      S.raf = 0;
+      const y = window.scrollY;
+      const pT = clamp(y / S.dockEnd);
+      S.p += (pT - S.p) * 0.2;
+      if (Math.abs(pT - S.p) < 0.0005) S.p = pT;
+      const p = S.p;
+      if (S.tap) S.ampT *= 0.965; // a tap on touch screens is a pulse that fades out
+      S.amp += (S.ampT - S.amp) * 0.09;
+      const amp = S.amp * clamp(1 - p * 2);
+      const R = Math.max(S.F * 2.4, 240);
+      const lx = S.px - S.left0, ly = S.py - (S.top0 - y);
+      let dirty = false, moving = Math.abs(pT - S.p) > 0 || Math.abs(S.ampT - S.amp) > 0.002;
+
+      chars.forEach((cs, k) => cs.forEach((c, i) => {
+        const ct = S.centers[k][i];
+        let f = clamp(1 - Math.hypot(ct.x - lx, (ct.y - ly) * 1.3) / R);
+        f = f * f * (3 - 2 * f);
+        const b = S.base[k];
+        let w = b + (f * (125 - b) - (1 - f) * Math.min(16, b - 62)) * amp;
+        let g = 800 + (f * 100 - (1 - f) * 380) * amp;
+        w += (62 - w) * p; g += (800 - g) * p;
+        const cu = S.cur[k][i];
+        cu.w += (w - cu.w) * 0.2; cu.g += (g - cu.g) * 0.2;
+        if (Math.abs(w - cu.w) > 0.05 || Math.abs(g - cu.g) > 0.5) moving = true;
+        if (Math.abs(cu.w - cu.lw) > 0.04 || Math.abs(cu.g - cu.lg) > 0.4) {
+          c.style.setProperty('--w', cu.w.toFixed(2)); c.style.setProperty('--g', cu.g.toFixed(1));
+          cu.lw = cu.w; cu.lg = cu.g; dirty = true;
+        }
+      }));
+
+      if (dirty || p !== S.last) {
+        lines.forEach((l, k) => {
+          const fitScale = S.fitW[k] / l.offsetWidth;
+          l.style.transform = `scaleX(${(fitScale + (1 - fitScale) * p).toFixed(4)})`;
+        });
+        const e = easeInOut(p), es = 1 - Math.pow(1 - p, 3);
+        const s = 1 + (S.sT - 1) * es;
+        const dx = (S.tx - S.left0) * e;
+        const dy = (S.top0 + (S.ty - S.top0) * e) - (S.top0 - y);
+        vis.style.transform = p > 0 ? `translate3d(${dx.toFixed(2)}px, ${dy.toFixed(2)}px, 0) scale(${s.toFixed(4)})` : '';
+        const docked = p > 0.995;
+        vis.style.visibility = docked ? 'hidden' : '';
+        header.classList.toggle('is-docked', docked);
+        rule.style.opacity = clamp(1 - p * 5);
+        if (p < 0.2) placeRule();
+        S.last = p;
+      }
+      if (S.visible && (moving || dirty)) S.raf = requestAnimationFrame(frame);
+    }
+    const kick = () => { if (!S.raf && !REDUCE) S.raf = requestAnimationFrame(frame); };
+
+    if (!REDUCE) {
+      if (FINE) {
+        hero.addEventListener('pointermove', (e) => { S.px = e.clientX; S.py = e.clientY; S.tap = false; S.ampT = 1; kick(); });
+        hero.addEventListener('pointerleave', () => { S.ampT = 0; kick(); });
+      } else {
+        hero.addEventListener('pointerdown', (e) => { S.px = e.clientX; S.py = e.clientY; S.tap = true; S.ampT = 1; kick(); });
+      }
+      window.addEventListener('scroll', kick, { passive: true });
+      // When the hero is gone (e.g. after a jump to a section), snap to the docked state.
+      new IntersectionObserver(([en]) => {
+        S.visible = en.isIntersecting;
+        if (S.visible) kick();
+        else { S.p = 1; S.last = -1; vis.style.visibility = 'hidden'; header.classList.add('is-docked'); }
+      }).observe(hero);
+    }
+    return { fit };
+  }
+
+  /* SignalAccent — custom. The acute of the Ć is the "signal": when you leave the hero it hops
+     out of the header lockup and then marks the active section in the navigation. */
+  function SignalAccent() {
+    const nav = $('.nav'), sig = $('.signal'), links = $$('.nav a'), menuLinks = $$('#menu li a');
+    const acute = $('.lockup .mk-acute');
+    let active = 'top';
+    const navOn = () => getComputedStyle(nav).display !== 'none';
+    function linkPos(id) {
+      const a = links.find((l) => l.dataset.id === id), nr = nav.getBoundingClientRect(), ar = a.getBoundingClientRect();
+      return { x: ar.left - nr.left + ar.width / 2, y: ar.top - nr.top + 7 };
+    }
+    function acutePos() {
+      const nr = nav.getBoundingClientRect(), ar = acute.getBoundingClientRect();
+      return { x: ar.left - nr.left + ar.width / 2 + 2, y: ar.top - nr.top + ar.height / 2 + 4 };
+    }
+    const place = (pt) => { sig.style.transform = `translate(${pt.x.toFixed(1)}px, ${pt.y.toFixed(1)}px)`; };
+    function hop() { sig.classList.remove('hop'); void sig.offsetWidth; sig.classList.add('hop'); }
+    function set(id) {
+      if (id === active) return;
+      const prev = active; active = id;
+      [...links, ...menuLinks].forEach((l) => { if (l.dataset.id === id) l.setAttribute('aria-current', 'true'); else l.removeAttribute('aria-current'); });
+      if (!navOn()) return;
+      if (id === 'top') { place(acutePos()); hop(); setTimeout(() => { if (active === 'top') sig.classList.remove('on'); }, 450); return; }
+      if (prev === 'top' && !REDUCE) {
+        sig.style.transition = 'none'; place(acutePos()); void sig.offsetWidth; sig.style.transition = '';
+      }
+      sig.classList.add('on'); place(linkPos(id)); if (!REDUCE) hop();
+    }
+    const map = { top: 'top', about: 'about', stack: 'stack', career: 'career', team: 'career', projects: 'projects', contact: 'contact' };
+    const io = new IntersectionObserver((ens) => {
+      ens.forEach((en) => { if (en.isIntersecting) set(map[en.target.id]); });
+    }, { rootMargin: '-45% 0px -50% 0px' });
+    Object.keys(map).forEach((id) => io.observe(document.getElementById(id)));
+    return { refresh() { if (active !== 'top' && navOn()) { sig.style.transition = 'none'; place(linkPos(active)); void sig.offsetWidth; sig.style.transition = ''; } } };
+  }
+
+  /* HeadingReveal — GSAP SplitText + ScrollTrigger. Each section title starts at the narrowest
+     width and expands letter by letter into the grid when it comes into view. The text is always
+     visible; only the width axis moves. */
+  function HeadingReveal() {
+    if (REDUCE || !HAS_GSAP || !window.SplitText) return;
+    $$('.h2').forEach((h) => {
+      const split = SplitText.create(h, { type: 'chars', charsClass: 'sc' });
+      gsap.set(split.chars, { '--w': 62 });
+      gsap.to(split.chars, { '--w': 100, duration: 1.1, ease: 'expo.out', stagger: 0.045,
+        scrollTrigger: { trigger: h, start: 'top 88%', once: true } });
+    });
+  }
+
+  /* StackReveal — GSAP ScrollTrigger. Each row of the stack table expands from compressed to
+     normal width when it enters; the weights stay, so the levels read the whole time. */
+  function StackReveal() {
+    if (REDUCE || !HAS_GSAP) return;
+    $$('.stack-t tbody tr').forEach((tr) => {
+      const items = $$('.st, th', tr);
+      gsap.set(items, { '--w': 62 });
+      gsap.to(items, { '--w': 100, duration: 0.9, ease: 'expo.out', stagger: 0.03,
+        scrollTrigger: { trigger: tr, start: 'top 90%', once: true } });
+    });
+  }
+
+  /* CareerLine — GSAP ScrollTrigger with scrub. One column line of the grid is the timeline:
+     it fills with cobalt as you scroll, and each step's number fills in when the line reaches it. */
+  function CareerLine() {
+    const steps = $$('.step');
+    if (REDUCE || !HAS_GSAP) { steps.forEach((s) => s.classList.add('is-on')); return; }
+    gsap.fromTo('.tl-fill', { scaleY: 0 }, { scaleY: 1, ease: 'none',
+      scrollTrigger: { trigger: '.steps', start: 'top 65%', end: 'bottom 65%', scrub: 0.4 } });
+    steps.forEach((s) => ScrollTrigger.create({ trigger: s, start: 'top 65%',
+      onEnter: () => s.classList.add('is-on'), onLeaveBack: () => s.classList.remove('is-on') }));
+  }
+
+  /* VariableProximity — React Bits component, ported. Letters near the cursor get heavier.
+     A heavier letter is also wider, which would re-wrap the paragraph, so each step of weight is
+     paid back on the width axis: measure() finds how narrow the heaviest weight must be to take
+     the same space as the base weight, and frame() moves both axes together. */
+  function VariableProximity() {
+    if (REDUCE || !FINE) return { measure() {} };
+    const blocks = $$('[data-prox]').map((el) => {
+      const [lo, hi] = el.dataset.prox.split(',').map(Number);
+      const text = el.textContent;
+      el.innerHTML = `<span class="sr-only">${esc(text)}</span><span class="vp" aria-hidden="true">${text.split(' ').map((w) => `<span class="vw">${Array.from(w).map((ch) => `<span class="vc">${esc(ch)}</span>`).join('')}</span>`).join(' ')}</span>`;
+      return { el, lo, hi, w0: 100, w1: 100, chars: $$('.vc', el).map((c) => ({ c, x: 0, y: 0, f: 0 })) };
+    });
+    let px = -1e4, py = -1e4, raf = 0;
+    function measure() {
+      blocks.forEach((b) => {
+        b.w0 = parseFloat(getComputedStyle(b.el).getPropertyValue('--w')) || 100;
+        // probe: the same word at base and at heaviest weight; search the width that matches
+        const probe = document.createElement('span');
+        probe.className = 'vc';
+        probe.style.cssText = 'position:absolute;visibility:hidden;white-space:nowrap';
+        probe.textContent = 'frontend engineer';
+        b.el.appendChild(probe);
+        const at = (w, g) => { probe.style.setProperty('--w', w); probe.style.setProperty('--g', g); return probe.getBoundingClientRect().width; };
+        const target = at(b.w0, b.lo);
+        let lo = 62, hi = b.w0;
+        for (let i = 0; i < 12; i++) { const m = (lo + hi) / 2; if (at(m, b.hi) > target) hi = m; else lo = m; }
+        b.w1 = lo;
+        probe.remove();
+        b.chars.forEach((o) => { o.f = 0; o.c.style.removeProperty('--w'); o.c.style.removeProperty('--g'); });
+        b.chars.forEach((o) => { const r = o.c.getBoundingClientRect(); o.x = r.left + r.width / 2 + window.scrollX; o.y = r.top + r.height / 2 + window.scrollY; });
+      });
+    }
+    const R = 160;
+    function frame() {
+      raf = 0;
+      let moving = false;
+      blocks.forEach((b) => b.chars.forEach((o) => {
+        const d = Math.hypot(o.x - px, o.y - py);
+        let f = clamp(1 - d / R); f = f * f;
+        const nf = o.f + (f - o.f) * 0.25;
+        if (Math.abs(nf - o.f) > 0.003) {
+          o.f = Math.abs(nf - f) < 0.003 ? f : nf;
+          if (o.f === 0) { o.c.style.removeProperty('--w'); o.c.style.removeProperty('--g'); }
+          else { o.c.style.setProperty('--g', (b.lo + (b.hi - b.lo) * o.f).toFixed(0)); o.c.style.setProperty('--w', (b.w0 + (b.w1 - b.w0) * o.f).toFixed(1)); }
+          moving = true;
+        }
+      }));
+      if (moving) raf = requestAnimationFrame(frame);
+    }
+    blocks.forEach((b) => {
+      b.el.addEventListener('pointermove', (e) => { px = e.clientX + window.scrollX; py = e.clientY + window.scrollY; if (!raf) raf = requestAnimationFrame(frame); });
+      b.el.addEventListener('pointerleave', () => { px = py = -1e4; if (!raf) raf = requestAnimationFrame(frame); });
+    });
+    return { measure };
+  }
+
+  /* MagnetLines — React Bits component, ported. A field of short lines, laid on the grid, that
+     all point at the cursor; when the cursor is away (or on touch), they point at the email. */
+  function MagnetLines() {
+    const box = $('.magnet'), section = $('#contact'), target = $('.email-big');
+    let spans = [], centers = [], raf = 0, aim = null;
+    function build() {
+      const cols = innerWidth >= 1024 ? 24 : innerWidth >= 768 ? 16 : 8;
+      box.style.setProperty('--mcols', cols);
+      box.innerHTML = '<span></span>'.repeat(cols * 3);
+      spans = $$('span', box);
+      measure();
+    }
+    function measure() {
+      centers = spans.map((s) => { const r = s.getBoundingClientRect(); return { x: r.left + r.width / 2 + scrollX, y: r.top + r.height / 2 + scrollY }; });
+      draw();
+    }
+    function draw() {
+      raf = 0;
+      let tx, ty;
+      if (aim) { tx = aim.x; ty = aim.y; } else { const r = target.getBoundingClientRect(); tx = r.left + r.width / 2 + scrollX; ty = r.top + r.height / 2 + scrollY; }
+      spans.forEach((s, i) => {
+        let a = Math.atan2(ty - centers[i].y, tx - centers[i].x) * 180 / Math.PI + 90;
+        a = ((a + 90) % 180 + 180) % 180 - 90; // a line looks the same turned by 180°, so keep the shortest turn
+        s.style.setProperty('--a', a.toFixed(1) + 'deg');
+      });
+    }
+    if (FINE && !REDUCE) {
+      section.addEventListener('pointermove', (e) => { aim = { x: e.clientX + window.scrollX, y: e.clientY + window.scrollY }; if (!raf) raf = requestAnimationFrame(draw); });
+      section.addEventListener('pointerleave', () => { aim = null; if (!raf) raf = requestAnimationFrame(draw); });
+    }
+    build();
+    return { build };
+  }
+
+  /* FitText — custom. The email is set as large as the grid allows: the font size is capped,
+     then the width axis stretches or squeezes it so it ends exactly on the right edge. */
+  function FitText() {
+    const el = $('.email-big');
+    function fit() {
+      const W = el.parentElement.clientWidth;
+      el.style.setProperty('--w', 100); el.style.fontSize = '100px';
+      const per = el.offsetWidth / 100;
+      const F = Math.min(W / per, 210);
+      el.style.fontSize = F + 'px';
+      let lo = 62, hi = 125;
+      const at = (w) => { el.style.setProperty('--w', w); return el.offsetWidth; };
+      if (at(hi) <= W) return;
+      if (at(lo) >= W) { el.style.fontSize = (F * W / el.offsetWidth) + 'px'; return; }
+      for (let i = 0; i < 14; i++) { const m = (lo + hi) / 2; if (at(m) > W) hi = m; else lo = m; }
+      at(lo);
+    }
+    return { fit };
+  }
+
+  /* GridGlow — custom. The column lines brighten in a soft circle around the cursor. */
+  function GridGlow() {
+    if (!FINE) return;
+    const bg = $('.gridbg'), glow = $('.gridbg .glow');
+    let raf = 0, x = 0, y = 0;
+    window.addEventListener('pointermove', (e) => {
+      x = e.clientX; y = e.clientY;
+      if (!raf) raf = requestAnimationFrame(() => { raf = 0; glow.style.setProperty('--mx', x + 'px'); glow.style.setProperty('--my', y + 'px'); bg.classList.add('lit'); });
+    }, { passive: true });
+    document.addEventListener('pointerleave', () => bg.classList.remove('lit'));
+  }
+
+  /* GridOverlay — custom easter egg: G (or the footer button) shows the design grid. */
+  function GridOverlay() {
+    const b = $('.grid-btn'), chip = $('#gridChip');
+    function toggle() {
+      const on = document.body.classList.toggle('show-grid');
+      b.setAttribute('aria-pressed', String(on));
+      b.firstChild.textContent = on ? UI.gridHide : UI.gridShow;
+      chip.textContent = on ? UI.gridChip : '';
+    }
+    b.addEventListener('click', toggle);
+    document.addEventListener('keydown', (e) => {
+      if (e.key.toLowerCase() !== 'g' || e.metaKey || e.ctrlKey || e.altKey) return;
+      if (/^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement.tagName)) return;
+      toggle();
+    });
+  }
+
+  /* MobileMenu — custom. A full-screen menu with a focus trap, Escape to close and focus return. */
+  function MobileMenu() {
+    const open = $('.hdr .menu-btn'), menu = $('#menu'), close = $('.menu-close', menu);
+    const focusables = () => $$('a, button', menu);
+    function show() { menu.hidden = false; open.setAttribute('aria-expanded', 'true'); document.body.style.overflow = 'hidden'; focusables()[1].focus(); }
+    function hide(back = true) { menu.hidden = true; open.setAttribute('aria-expanded', 'false'); document.body.style.overflow = ''; if (back) open.focus(); }
+    open.addEventListener('click', show);
+    close.addEventListener('click', () => hide());
+    menu.addEventListener('click', (e) => { if (e.target.closest('li a')) hide(false); });
+    menu.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') hide();
+      if (e.key !== 'Tab') return;
+      const f = focusables(), first = f[0], last = f[f.length - 1];
+      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+    });
+  }
+
+  function CopyEmail() {
+    const b = $('.copy-btn'), st = $('.copy-status');
+    b.addEventListener('click', async () => {
+      try { await navigator.clipboard.writeText(P.email); st.textContent = UI.copied; }
+      catch (e) { st.textContent = UI.copyFailed; }
+      setTimeout(() => { st.textContent = ''; }, 3000);
+    });
+  }
+
+  function ConsoleHello() {
+    console.log('%c' + CONTENT.console, 'font: 600 13px/1.5 sans-serif; color: #7B9BFF;');
+  }
+
+  /* ================= Boot ================= */
+  renderHeader(); renderHero(); renderAbout(); renderStack(); renderCareer(); renderTeam(); renderProjects(); renderContact(); renderFooter();
+  MobileMenu(); CopyEmail(); GridOverlay(); GridGlow(); ConsoleHello();
+
+  (document.fonts ? document.fonts.ready : Promise.resolve()).then(() => {
+    const name = KineticName();
+    const fitText = FitText();
+    name.fit(); fitText.fit();
+    const signal = SignalAccent();
+    const prox = VariableProximity();
+    prox.measure();
+    const magnet = MagnetLines();
+    HeadingReveal(); StackReveal(); CareerLine();
+    if (HAS_GSAP) ScrollTrigger.refresh();
+
+    let t = 0, lastW = innerWidth;
+    window.addEventListener('resize', () => {
+      clearTimeout(t);
+      t = setTimeout(() => {
+        const widthChanged = innerWidth !== lastW; lastW = innerWidth;
+        // Phones fire resize when the address bar hides; only refit when the width changes.
+        if (widthChanged) { name.fit(); fitText.fit(); magnet.build(); }
+        prox.measure(); signal.refresh();
+        if (HAS_GSAP) ScrollTrigger.refresh();
+      }, 150);
+    });
+  });
+})();
+</script>
+</body>
+</html>

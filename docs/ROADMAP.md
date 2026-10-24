@@ -37,7 +37,7 @@ Goal: a documented project and a professional, minimal AI setup that is ready fo
 - **Done when:** Rafał has approved the roadmap and the updated brief.
 
 ### 1.2 AI tooling setup
-- [ ] **Branch:** `chore/ai-tooling-setup`
+- [x] **Branch:** `chore/ai-tooling-setup`
 - **Scope:**
   - Research current Claude Code best practices, using [ashen-contracts](https://github.com/rafalciecwierz/ashen-contracts) as the minimum standard.
   - `CLAUDE.md`, kept short. Area rules go in `.claude/rules/` (to start with, `design-prototypes.md`).

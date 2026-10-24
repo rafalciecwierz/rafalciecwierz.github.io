@@ -55,7 +55,6 @@ Work is planned task by task in `docs/ROADMAP.md`, in three phases: documentatio
 
 ## Current status (keep this updated)
 
-- Phase: 1, documentation and AI tooling
-- Last completed: 1.1 project roadmap
-- In progress: 1.2 AI tooling setup
+- Phase: 2, design exploration
+- Last completed: 1.2 AI tooling setup
 - Next step: 2.1 design research

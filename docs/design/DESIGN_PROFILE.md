@@ -72,7 +72,7 @@ The "Ralph" nickname and the Polish letters (Ł, Ć) are available as playful or
 | | |
 | --- | --- |
 | **Directions** | 8: prototype 01 (exists), six new directions (02–07), and one extra direction built around Rafał's interests (parkour and climbing), built last. |
-| **Variants** | Every direction has a **dark** and a **light** variant. They are two separate takes on the same style, not a colour inversion: layout, mood and effects may differ completely. There is no theme toggle. |
+| **Variants** | Every direction has a **dark** and a **light** variant. They are two independent designs that share only the style: concept, hero, layout, typography, palette and effects are all designed from scratch, and nothing is carried over from the other variant. There is no theme toggle. |
 | **Pages** | 16 in total (01 dark exists, so 15 to build). More directions may be added later. |
 | **Ambition** | Go all the way in prototypes; it's easier to trim than to add. The two-weekend time box doesn't limit exploration. Feasibility and cost are judged when choosing (task 2.5). |
 | **Phone vs. desktop** | Desktop gets the full experience. Phone is simpler but still well designed. Nothing should overwhelm the visitor. |

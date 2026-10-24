@@ -19,7 +19,7 @@ This brief was used to generate a first HTML prototype: `design/prototypes/01-fl
      - six new directions, each completely different,
      - one extra direction built around Rafał's interests.
 
-     Every direction has a dark and a light variant, which are two separate takes on the style rather than a colour inversion. Directions may depart as far as needed from the visual direction in section 7.
+     Every direction has a dark and a light variant: two independent designs that share only the style, with nothing else carried over. Directions may depart as far as needed from the visual direction in section 7.
    - Choose the best one, possibly borrowing elements from others. Every implementation task is design-agnostic and builds *the chosen design*. Whether the final site ships the dark variant, the light one or both is decided at that point.
 3. **Implementation and deployment.**
    - Before any code, write `docs/ARCHITECTURE.md` with Rafał's requirements for architecture and code quality. Clean, well-structured components are a top priority.

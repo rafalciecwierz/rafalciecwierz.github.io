@@ -96,7 +96,7 @@ All prototypes use the content from the brief (section 5) and respect the techni
 ### 2.4 Design prototypes
 One task per direction. Each task builds both variants, `NN-<slug>-dark.html` and `NN-<slug>-light.html`. `<slug>` is the short name of the direction from task 2.3. Build them in this order:
 
-- [ ] **Branch:** `feat/design-prototype-01-light`: the light variant of prototype 01
+- [x] **Branch:** `feat/design-prototype-01-light`: the light variant of prototype 01
 - [ ] **Branch:** `feat/design-prototype-02-<slug>`
 - [ ] **Branch:** `feat/design-prototype-03-<slug>`
 - [ ] **Branch:** `feat/design-prototype-04-<slug>`

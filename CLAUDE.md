@@ -56,5 +56,5 @@ Work is planned task by task in `docs/ROADMAP.md`, in three phases: documentatio
 ## Current status (keep this updated)
 
 - Phase: 2, design exploration
-- Last completed: 2.3 design directions (`docs/design/DIRECTIONS.md`, all approved)
-- Next step: 2.4 prototypes, starting with `feat/design-prototype-01-light` (one direction per session)
+- Last completed: 2.4 prototype 01 light (`design/prototypes/01-fluid-glass-light.html`, "Underwater")
+- Next step: 2.4 prototype 02, `feat/design-prototype-02-swiss-signal` (one direction per session; variants share only the style)

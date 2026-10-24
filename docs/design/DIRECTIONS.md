@@ -1,6 +1,8 @@
 # Design directions
 
-Eight directions for Rafał's portfolio, written for roadmap task 2.3. Each one becomes two HTML prototypes in task 2.4, a **dark** and a **light** variant. The two are separate takes on the same idea, not a colour inversion.
+Eight directions for Rafał's portfolio, written for roadmap task 2.3. Each one becomes two HTML prototypes in task 2.4, a **dark** and a **light** variant.
+
+**The two variants share only the style.** Each is an independent design: concept, hero, layout, section structure, typography, palette and effects are designed from scratch, and nothing is carried over from the other variant. Someone who sees both should recognise the shared style and nothing else. The "dark take" and "light take" lines below are starting moods, not a shared layout.
 
 Read with:
 
@@ -9,6 +11,8 @@ Read with:
 - [PROJECT_BRIEF.md](../PROJECT_BRIEF.md): sections 4 (page structure), 5 (content) and 8 (the performance and accessibility budget).
 
 Each direction has a **Status**: `proposed` → `approved` (by Rafał) → `built`. Approved directions are a starting point: they are refined while building (task 2.4), and every change is written back here.
+
+Each built variant gets an **As built** block under its take: palette, type, layout, the hero moment, effects and what was left out. Read these before building a new prototype, so it does not repeat an earlier one. The HTML file is the reference for details; the block is the reasoning.
 
 ---
 
@@ -49,13 +53,15 @@ How the directions spread across the axes from the research. No two directions s
 
 ## 01 — Fluid Glass (`fluid-glass`)
 
-**Status:** dark built, light approved. **Files:** `design/prototypes/01-fluid-glass-dark.html`, `design/prototypes/01-fluid-glass-light.html` (to do).
+**Status:** built (both variants). **Files:** `design/prototypes/01-fluid-glass-dark.html`, `design/prototypes/01-fluid-glass-light.html`.
 
-**Concept:** A premium, calm page with one spectacular moment: a refracting glass lens with the "RC" monogram floats over the hero and bends the name behind it. Everything else is quiet and precise, so the lens is the memorable thing.
+**Shared by both variants:** only the style: glass, liquid and refracted light.
 
-**Styles:** dark premium, glassmorphism and Liquid Glass, WebGL, soft motion (React Bits heavy).
+**Concept (dark take):** A premium, calm page with one spectacular moment: a refracting glass lens with the "RC" monogram floats over the hero and bends the name behind it. Everything else is quiet and precise, so the lens is the memorable thing.
 
-**Feel test:**
+**Styles (dark take):** dark premium, glassmorphism and Liquid Glass, WebGL, soft motion (React Bits heavy).
+
+**Feel test (dark take):**
 - *professional:* a clear structure and a calm palette;
 - *creative and bold:* the glass lens;
 - *playful:* ClickSpark, magnetic buttons, rotating role text;
@@ -64,9 +70,21 @@ How the directions spread across the axes from the research. No two directions s
 
 **Dark take (exists):** near-black, acid green, Unbounded + Geist. Audit notes from task 1.2 are known issues to fix in React, not in the prototype.
 
-**Light take (to build):** "glass in daylight". A pearl-white, very pale ground with soft pastel caustics: light refracted through the lens throws coloured light patches onto the page. The lens refracts a light, colourful backdrop instead of a dark one. The accent moves from acid green to a deeper, readable colour suited to light backgrounds. The same lens idea, the opposite mood: airy, morning, optimistic.
+**Light take (built): "Underwater".** The page is a glass tank of water seen from the side, and scrolling is a dive. A completely separate design from the dark take: no lens, no monogram, no shared layout, type or effects.
 
-**Effects:** FluidGlass (custom WebGL in the prototype), ShinyText, RotatingText, StarBorder, Magnet, ScrollVelocity, MagicBento, SpotlightCard, ScrollReveal, DecryptedText, CountUp, VariableProximity, DotGrid, ClickSpark, PillNav.
+**Style drift (accepted by Rafał):** this take is about liquid rather than glass, so it reflects Fluid Glass only loosely. Rafał kept it as it is because it works on its own. Judge it in task 2.5 as a standalone design.
+
+**As built (light), task 2.4:**
+- **Palette:** sky `#F3FAFD` above the water; water `#D3F0F3` → `#BCE5EB` → `#A3D6E1`, deepening as you scroll; navy ink `#0F2340`, muted `#34506A`; rubber-duck yellow `#FFC531` for fills only (navy text on it).
+- **Type:** Fraunces (soft, wonky variable serif, italics for voice) + Figtree (body). No other direction uses either.
+- **Layout:** left-aligned single column with a fixed **depth gauge** as the navigation on wide screens (0 m at the surface, 30 m at Contact); a menu with depths and a depth chip below 1180 px. Sections: hero, About, Stack, Career ("dive log"), team quotes (new, after Career), Projects, Contact ("the bottom of the tank").
+- **Hero moment:** the water line cuts through the surname: the top of the letters is crisp, the bottom wobbles under water. The cursor and taps make waves (a 64-spring simulation), a rubber duck rides them, and scrolling raises the water over the name.
+- **Section forms:** stats as floating bubbles; skills as capsules sized by level that rise into place; career as a dive log with wavy dividers and a focus pull; quotes in slowly morphing liquid blobs; projects as specimen jars whose liquid level shows the status; a caustic floor behind Contact.
+- **Effects:** WaterSurface (custom raw WebGL), WaveSim, RubberDuck, BubbleTrail, DepthGauge, DepthTint, LightRays, RisingBubbles, FocusPull, LiquidBlobs, SpecimenJars, CausticFloor (SVG filter), a console message. All custom.
+- **Left out on purpose:** everything from the dark take (the RC lens, PillNav, StarBorder, Magnet, RotatingText, CountUp, bento cards, DotGrid, ClickSpark, VariableProximity), so the two variants share only the style.
+- **Dependencies:** none. The React build needs no 3D library for this variant: the shader runs on a plain WebGL context in a small hook. GSAP (ScrollTrigger) is optional.
+
+**Effects (dark take):** FluidGlass (custom WebGL in the prototype), ShinyText, RotatingText, StarBorder, Magnet, ScrollVelocity, MagicBento, SpotlightCard, ScrollReveal, DecryptedText, CountUp, VariableProximity, DotGrid, ClickSpark, PillNav.
 - **Dependencies:** three.js (lazy-loaded in React).
 
 ---

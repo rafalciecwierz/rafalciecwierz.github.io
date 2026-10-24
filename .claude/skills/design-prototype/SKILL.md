@@ -6,7 +6,7 @@ argument-hint: <direction number, e.g. 03>
 
 # Design prototype
 
-Each prototype shows one design direction for Rafał's portfolio as a single HTML file. The six prototypes are compared in task 2.5, and the winner is rebuilt in React in phase 3. So a prototype must be **clearly different from the others**, must **follow its direction**, and must be **easy to convert**. The rules for files in `design/` (`.claude/rules/design-prototypes.md`) apply throughout.
+Each direction for Rafał's portfolio is shown as two HTML files: a dark and a light variant, which are two separate takes on the same style. All prototypes are compared in task 2.5, and the winner is rebuilt in React in phase 3. So a prototype must be **clearly different from the others**, must **follow its direction**, and must be **easy to convert**. The rules for files in `design/` (`.claude/rules/design-prototypes.md`) apply throughout.
 
 ## Who decides what
 
@@ -19,13 +19,14 @@ The point of phase 2 is to **discover bold, interesting designs**. They don't ha
 ## 1. Read
 
 - The direction `$ARGUMENTS` in `docs/design/DIRECTIONS.md`. If it is missing or not yet approved, stop: task 2.3 comes first.
-- `docs/design/DESIGN_PROFILE.md` (who Rafał is and what to avoid), and `docs/design/RESEARCH.md` for any term the direction uses.
+- `docs/design/DESIGN_PROFILE.md`: who Rafał is, how the site must feel, and what to avoid. Every variant must pass its "how the site must feel" test.
+- `docs/design/RESEARCH.md`, for any term the direction uses.
 - Brief sections 4 (page structure), 5 (content) and 8 (performance and accessibility budget).
 - The existing prototypes in `design/prototypes/`, skimmed for their palette, type and layout, so this one does not repeat them.
 
 ## 2. Plan, then stop for approval
 
-Use the `frontend-design` skill for the plan pass, within the roles above.
+Use the `frontend-design` skill for the plan pass, within the roles above. Plan **both variants**, dark and light, as two separate takes. Cover each point below for each variant, and say how the two differ.
 
 - Tokens: 4–6 named hex colours, the typefaces and their roles, and the type scale.
 - Layout: an ASCII wireframe for mobile and for desktop.
@@ -38,15 +39,15 @@ Show the plan to Rafał and wait for approval before building.
 
 ## 3. Build
 
-Write the file the rules describe: `design/prototypes/NN-<slug>.html`. Build it mobile-first.
+Write the two files the rules describe: `design/prototypes/NN-<slug>-dark.html` and `NN-<slug>-light.html`. Build one variant fully before starting the other, and build each mobile-first.
 
 While you build, take screenshots with Chrome DevTools MCP at 360 and 1280 px, and fix what looks wrong before moving on.
 
 ## 4. Audit
 
-Have the `site-auditor` subagent audit the file against its direction. Fix every failure it reports, then audit again. After two rounds, stop and report what is still failing instead of looping.
+Have the `site-auditor` subagent audit both files against their direction, in one run. Fix every failure it reports, then audit again. After two rounds, stop and report what is still failing instead of looping.
 
 ## 5. Record and hand over
 
-- In the direction's entry in `docs/design/DIRECTIONS.md`, add the file path and the final list of effects and dependencies.
+- In the direction's entry in `docs/design/DIRECTIONS.md`, add the file paths and the final list of effects and dependencies.
 - Hand over as in the `roadmap-task` skill, step 8. Include the audit's measurements table and the screenshot paths.

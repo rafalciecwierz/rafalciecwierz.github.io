@@ -9,7 +9,8 @@ A prototype is a reference for the React build in phase 3, not production code. 
 
 ## File
 
-- Each prototype is one self-contained HTML file: `design/prototypes/NN-<slug>.html`. CSS and JS are inline.
+- Each direction has two self-contained HTML files: `design/prototypes/NN-<slug>-dark.html` and `design/prototypes/NN-<slug>-light.html`. CSS and JS are inline.
+- The two variants are **separate takes on the same style**, one dominantly dark and one dominantly light. They are not a colour inversion: layout, mood, palette and effects may differ completely. Neither file has a theme toggle.
 - The only external resources allowed are Google Fonts and libraries from cdnjs or jsDelivr pinned to an exact version (e.g. `three@0.160.0`, never `@latest`).
 - The file starts with a comment block that lists:
   - the direction's number and name (from `docs/design/DIRECTIONS.md`),
@@ -27,6 +28,9 @@ A prototype is a reference for the React build in phase 3, not production code. 
 - The content comes from brief section 5. Anything missing gets a visible `TODO`.
 - Content beyond the brief is welcome when it makes the prototype more interesting: a section intro, micro-copy, a new section idea, a playful interaction text. Mark every addition with a `<!-- NEW CONTENT -->` comment and list it in the task summary, so Rafał can keep or remove it.
 - Facts about Rafał (dates, numbers, companies, roles, skills and their levels) are never invented.
+- Testimonials, when a direction uses them, come only from brief section 5.6: word for word, shown as first name, surname initial and role.
+- Never wait for Rafał's photo. Use a character built in code (a clay-like 3D figure or a hand-drawn SVG, based on the reference traits in `docs/design/DESIGN_PROFILE.md`), or a stock face as a placeholder marked `TODO`.
+- No sound of any kind (`docs/design/DESIGN_PROFILE.md`, section 7).
 - Never show the phone number.
 - Make it obvious that the project list can grow: build it from the content array, never as hand-placed cards.
 

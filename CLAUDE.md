@@ -56,5 +56,5 @@ Work is planned task by task in `docs/ROADMAP.md`, in three phases: documentatio
 ## Current status (keep this updated)
 
 - Phase: 2, design exploration
-- Last completed: 1.2 AI tooling setup
-- Next step: 2.1 design research
+- Last completed: 2.1 design research (Rafał's style shortlist is in `docs/design/RESEARCH.md`, section 6)
+- Next step: 2.2 design discovery session

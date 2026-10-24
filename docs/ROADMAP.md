@@ -59,7 +59,7 @@ Goal: six distinct design directions as HTML prototypes (the existing one plus f
 All prototypes use the same content from the brief (section 5) and respect the technical constraints (performance, accessibility, static hosting). The visual direction can depart freely from brief section 7.
 
 ### 2.1 Design research
-- [ ] **Branch:** `docs/design-research`
+- [x] **Branch:** `docs/design-research`
 - **Scope:** research of current portfolio and web design trends. Output: `docs/design/RESEARCH.md` with:
   - a plain-language glossary of design styles and terms, each with a short description and reference links,
   - notable developer and studio portfolios worth learning from,

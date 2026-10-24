@@ -1,0 +1,385 @@
+# Design directions
+
+Eight directions for Rafał's portfolio, written for roadmap task 2.3. Each one becomes two HTML prototypes in task 2.4, a **dark** and a **light** variant. The two are separate takes on the same idea, not a colour inversion.
+
+Read with:
+
+- [DESIGN_PROFILE.md](DESIGN_PROFILE.md): who Rafał is, and the feel test every variant must pass (*professional, creative and bold, playful and positive, never boring*);
+- [RESEARCH.md](RESEARCH.md): the style vocabulary used below;
+- [PROJECT_BRIEF.md](../PROJECT_BRIEF.md): sections 4 (page structure), 5 (content) and 8 (the performance and accessibility budget).
+
+Each direction has a **Status**: `proposed` → `approved` (by Rafał) → `built`. Approved directions are a starting point: they are refined while building (task 2.4), and every change is written back here.
+
+---
+
+## The map
+
+How the directions spread across the axes from the research. No two directions sit in the same place.
+
+| # | Direction | Calm ↔ loud | Flat ↔ tactile ↔ immersive | Type-led ↔ image or 3D-led | Serious ↔ playful | Main styles |
+| --- | --- | --- | --- | --- | --- | --- |
+| 01 | Fluid Glass | medium | immersive (WebGL) | 3D | serious | dark premium, glass, WebGL |
+| 02 | Swiss Signal | calm, with loud type | flat | type | serious, witty | Swiss, kinetic type |
+| 03 | Clay Studio | medium | tactile 3D | 3D character | very playful | claymorphism, soft 3D |
+| 04 | Sticker Sheet | loud | flat, tactile | mixed | very playful | neubrutalism, hand-drawn, bento |
+| 05 | The Issue | calm | flat | type and image | serious | editorial, quiet luxury, scrollytelling |
+| 06 | RalphOS | medium | interactive | interface | playful | OS metaphor, liquid glass |
+| 07 | Field Notes | medium | immersive (generative) | code-drawn | creative | creative coding, kinetic, gradient light |
+| 08 | Ascent | loud | immersive | 3D and type | playful | scrollytelling, kinetic, interests |
+
+---
+
+## Rules for every direction
+
+- **The first screen:** name, role, tagline, **Download CV** and **Get in touch** are real HTML and visible immediately at 360 px and 1280 px, before any effect loads. The effect sits behind or around them, never in front.
+- **Content:** brief section 5, plus the testimonials (5.6) where the direction uses them. New copy is allowed, but marked and listed (rules file).
+- **Rafał's character:** built in code, or a stock placeholder. Never block on the real photo.
+- **Fonts:** every typeface named below was checked to include Polish glyphs (`latin-ext`) on Google Fonts in October 2026. They are candidates: the builder may swap one, as long as the replacement includes Polish glyphs and the reason is stated.
+- **Effects are enhancers, and the candidates below are suggestions.** Use what fits the style: many components, one, or none. Swap a candidate for something better from any source. Good sources:
+  - [React Bits](https://reactbits.dev): component names below refer to it;
+  - [GSAP plugins](https://gsap.com/docs/v3/Plugins/): all free since 2025, including SplitText, DrawSVG, MorphSVG, Physics2D, Inertia, Draggable and ScrollSmoother;
+  - [Codrops](https://tympanus.net/codrops/) demos;
+  - Three.js examples;
+  - small focused libraries such as [Rough.js](https://roughjs.com) (hand-drawn shapes) or [Matter.js](https://brm.io/matter-js/) (2D physics).
+
+  Check each effect's dependencies at build time. Prefer porting onto GSAP, Three.js or CSS over adding libraries (brief section 3), and list every dependency in the prototype header.
+- **Never:** sound, a blocking preloader, Matrix or `{ }` decoration, generic stock illustrations (design profile section 7).
+
+---
+
+## 01 — Fluid Glass (`fluid-glass`)
+
+**Status:** dark built, light approved. **Files:** `design/prototypes/01-fluid-glass-dark.html`, `design/prototypes/01-fluid-glass-light.html` (to do).
+
+**Concept:** A premium, calm page with one spectacular moment: a refracting glass lens with the "RC" monogram floats over the hero and bends the name behind it. Everything else is quiet and precise, so the lens is the memorable thing.
+
+**Styles:** dark premium, glassmorphism and Liquid Glass, WebGL, soft motion (React Bits heavy).
+
+**Feel test:**
+- *professional:* a clear structure and a calm palette;
+- *creative and bold:* the glass lens;
+- *playful:* ClickSpark, magnetic buttons, rotating role text;
+- *never boring:* the hero.
+- **Risk:** dark plus acid green is a known "AI look" trait (research, section 1). The lens is what makes it distinct.
+
+**Dark take (exists):** near-black, acid green, Unbounded + Geist. Audit notes from task 1.2 are known issues to fix in React, not in the prototype.
+
+**Light take (to build):** "glass in daylight". A pearl-white, very pale ground with soft pastel caustics: light refracted through the lens throws coloured light patches onto the page. The lens refracts a light, colourful backdrop instead of a dark one. The accent moves from acid green to a deeper, readable colour suited to light backgrounds. The same lens idea, the opposite mood: airy, morning, optimistic.
+
+**Effects:** FluidGlass (custom WebGL in the prototype), ShinyText, RotatingText, StarBorder, Magnet, ScrollVelocity, MagicBento, SpotlightCard, ScrollReveal, DecryptedText, CountUp, VariableProximity, DotGrid, ClickSpark, PillNav.
+- **Dependencies:** three.js (lazy-loaded in React).
+
+---
+
+## 02 — Swiss Signal (`swiss-signal`)
+
+**Status:** approved.
+
+**Concept:** Rafał's name *is* the hero. It is set enormous on a strict, visible grid, in the tradition of 1950s Swiss posters. The type is alive: it changes width and weight as you scroll and move the cursor, and it reflows into the grid section by section. Ł and Ć become graphic marks: the stroke of the Ł extends into a grid line, and the acute accent of the Ć becomes the site's "signal" accent, used for active states and links. Serious structure, with a wink in the details.
+
+**Styles:** Swiss / International Typographic Style, kinetic typography.
+
+**Feel test:**
+- *professional:* the grid discipline reads as "systems thinker", which fits his design-system work;
+- *creative and bold:* giant moving type;
+- *playful:* the letters react to the cursor, and the Ł and Ć marks have a life of their own;
+- *never boring:* the type never sits still.
+
+**Hero:** "RAFAŁ / CIEĆWIERZ" spans the viewport width, with the role and CTAs aligned to grid columns below. On scroll, the letters compress in width (the variable-font `wdth` axis) and slide into a smaller header lockup.
+
+**Sections:**
+- **Career:** numbered steps on the grid (the numbering is justified, because a career is a sequence), with promotions marked by the accent.
+- **Stack:** a typographic table, with levels shown as type weight (strong = bold, medium = regular, low = light) plus a text label.
+- **Projects:** a growing list of rows.
+- **Contact:** the email set huge.
+
+**Dark take:** black ground, off-white type, **cobalt blue** as the signal colour, and the grid lines glowing faintly. The night version is more cinematic: the type moves more, and the accent glows.
+
+**Light take:** a white page, black type, **signal red-orange** as the accent, and printed-poster calm. Stricter and quieter, with motion limited to the hero and hover states.
+
+**Typography:** Archivo (variable width and weight, used for the kinetic type), Hanken Grotesk for the body.
+
+**Effects:**
+- custom kinetic type (GSAP + variable font axes);
+- TextPressure (letters stretch towards the cursor);
+- VariableProximity;
+- ScrollFloat or SplitText-style reveals;
+- MagnetLines in the grid background.
+- **Dependencies:** none beyond GSAP. Very light, and the best performance of all directions.
+
+**Easter egg:** pressing `G` toggles a visible "design grid overlay" with column numbers, like a designer's debug view.
+
+**Mobile:** the name stacks on two lines at full width, and the grid collapses to 4 columns.
+
+**Risk:** hairline rules and broadsheet density are on the "AI look" list. Use the grid as space and alignment, not as a mass of thin lines.
+
+---
+
+## 03 — Clay Studio (`clay-studio`)
+
+**Status:** approved.
+
+**Concept:** A soft, toy-like 3D world. In the hero stands **a little clay figure of Rafał**, made in Three.js from simple rounded shapes: swept-up hair, a smile, a navy blazer over a white T-shirt, arms crossed. He follows the cursor with his head and waves when the visitor clicks him. Every UI element is "clay": puffy, rounded, and squishing when pressed. It's the friendliest direction, built to make people smile in the first second.
+
+**Styles:** claymorphism, soft 3D, playful interactions.
+
+**Feel test:**
+- *professional:* the content stays crisp and readable on calm surfaces;
+- *creative and bold:* a self-made 3D character is unusual and shows real WebGL skill;
+- *playful:* the figure, squishy buttons, and a ballpit of tech-logo balls;
+- *never boring:* the figure reacts.
+
+**Hero:** the clay figure on a soft pedestal, with the name in big rounded type next to it, and CTAs as chunky clay buttons that compress on press.
+
+**Sections:**
+- **Stack:** a ball pit of clay balls labelled with technologies. Strong items are bigger. The visitor can stir them with the cursor, and the full text list is always present.
+- **Career:** clay "level-up" badges for the promotions.
+- **Testimonials:** speech bubbles above smaller clay colleague figures.
+- **Contact:** the figure holds a clay envelope.
+
+**Dark take:** "toys at night": a deep plum and indigo room lit by warm lamps, with the clay glowing in saturated pastels like a night light. Cosy and magical.
+
+**Light take:** "studio in the morning": the warm pastels Rafał asked for (peach, butter yellow, mint, lilac) on a soft, warm-white set, with soft daylight shadows. Bright and happy.
+
+**Typography:** Fredoka (rounded display), Nunito (body).
+
+**Effects:**
+- a custom Three.js clay character and scene (rounded geometry with a soft physical material and matcap-style shading);
+- Ballpit (React Bits) for the stack;
+- BounceCards or Stack for the projects;
+- squishy CSS buttons;
+- ClickSpark with clay crumbs.
+- **Dependencies:** three.js, with physics kept simple (Ballpit's own, no physics engine).
+
+**Easter egg:** clicking the figure 10 times makes him do a parkour backflip.
+
+**Mobile:** a static pose of the figure (a pre-rendered fallback), with the ballpit reduced to a static cluster.
+
+**Risk:** "too cute". The copy and the content blocks must stay grown-up so the figure reads as craft, not as a children's site.
+
+---
+
+## 04 — Sticker Sheet (`sticker-sheet`)
+
+**Status:** approved.
+
+**Concept:** The portfolio as Rafał's sketchbook and sticker sheet. It has neubrutalist blocks (thick outlines, hard offset shadows, flat bright colour) arranged as a bento grid, covered in **hand-drawn notes from Ralph himself**: scribbled arrows, circled numbers, and margin comments such as "yes, really: 11% → 80% test coverage". Stickers can be peeled and dragged. It is loud, funny and human, the clearest "anti-AI" direction.
+
+**Styles:** neubrutalism, hand-drawn / scribble, soft maximalism, bento grid.
+
+**Feel test:**
+- *professional:* the facts are big, clear and easy to scan in the bento layout;
+- *creative and bold:* loud colour and a confident layout;
+- *playful:* stickers, doodles and Ralph's comments;
+- *never boring:* every block has a detail to discover.
+
+**Hero:** a big outlined name card, with a sticker reading "call me Ralph" stuck on it at an angle. CTAs are chunky buttons with hard shadows that press down on click. A hand-drawn arrow points at Download CV.
+
+**Sections:**
+- **Stack:** bento tiles grouped by area, with levels as filled sticker stamps plus a text label.
+- **Career:** a vertical strip of cards, with a hand-drawn line connecting them and scribbled "promoted!" stars.
+- **Testimonials:** quotes as sticky notes taped to the page.
+- **Projects:** polaroid-style cards.
+
+**Dark take:** "neon zine at night": a charcoal ground, white outlines, electric blocks (hot pink, electric yellow, cyan) and a risograph-like glow. A night-market energy.
+
+**Light take:** "fresh sketchbook": a bright paper-white page with lime, sunshine yellow, sky blue and bubblegum pink blocks, black outlines and pencil-grey doodles. A summer-sticker energy.
+
+**Typography:** Bricolage Grotesque (chunky, quirky), Caveat for Ralph's handwritten notes.
+
+**Effects:**
+- StickerPeel (draggable, peelable stickers);
+- custom SVG hand-drawn strokes that draw themselves on scroll (GSAP DrawSVG-style, using `stroke-dashoffset`);
+- MagicBento or a custom bento grid;
+- hard-shadow press states in CSS.
+- **Dependencies:** GSAP (+ Draggable). No WebGL. Light and fast.
+
+**Easter egg:** collecting all the hidden stickers unlocks a "sticker book" page showing the full set.
+
+**Mobile:** the bento grid becomes one column of cards, the stickers are fixed in place (no dragging), and the doodles are kept.
+
+**Risk:** neubrutalism is very common in 2026. The hand-drawn layer by "Ralph" is what makes it personal, so it must not be dropped.
+
+---
+
+## 05 — The Issue (`the-issue`)
+
+**Status:** approved.
+
+**Concept:** The portfolio as a magazine issue dedicated to one person. The hero is a **cover**: a masthead, a cover line ("The frontend engineer who started in QA") and an issue number. Scrolling opens a feature story told in chapters (QA → Developer → Team Leader → What's next), with pull quotes from the team, drop caps and generous margins. It's the calmest, most "grown-up" direction, and it shows craft through typography and pacing rather than effects.
+
+**Styles:** editorial / magazine, quiet luxury, scrollytelling.
+
+**Feel test:**
+- *professional:* very credible, like being profiled in a magazine;
+- *creative and bold:* the cover concept and the confident typography;
+- *playful:* witty cover lines, and the masthead name playing with Ł and Ć;
+- *never boring:* the chapters pull the reader along.
+
+**Hero:** the magazine cover. The name is the masthead, with cover lines as the role and tagline. CTAs: "Download CV (the full issue)" and "Get in touch". A cover image of Rafał's character (code-drawn, or a stock placeholder).
+
+**Sections:**
+- **Career:** chapters, each opening with a big number and a pull quote. The promotions are the plot twists.
+- **Stack:** an "index" page in the style of a magazine back index.
+- **Testimonials:** pull quotes set large across the full width.
+- **Projects:** "Also in this issue".
+- **Contact:** "Letters to the editor".
+
+**Dark take:** "the night edition": a black, film-magazine look with a warm serif in off-white, one deep accent (wine red or amber), and dramatic photography-style contrast. Cinematic.
+
+**Light take:** "the weekend edition": a cool paper grey (not cream, which is on the "AI look" list), ink-black type, one vivid accent (ultramarine), and lots of white space. Bright and gallery-like.
+
+**Typography:** Instrument Serif (display), Instrument Sans (body).
+
+**Effects:**
+- scroll-driven chapter transitions (GSAP ScrollTrigger: pinned chapter openers);
+- a page-turn reveal from the cover into the story;
+- SplitText reveals for headlines;
+- CircularText for an "issue" seal;
+- ScrollReveal for pull quotes.
+- **Dependencies:** GSAP only.
+
+**Easter egg:** a "subscribe" box that answers with a joke subscription confirmation and the CV download.
+
+**Mobile:** a natural fit, since magazines read well in one column. The cover fills the phone screen.
+
+**Risk:** calm can tip into boring. The cover lines and chapter pacing must carry the personality.
+
+---
+
+## 06 — RalphOS (`ralph-os`)
+
+**Status:** approved.
+
+**Concept:** The site is an operating system, **RalphOS**. The desktop opens with a "Welcome" window already showing the name, role and CTAs, so recruiters get everything at once. Sections are apps: About.app, Stack (a settings panel), Career (a timeline app), Projects (folders), Contact (a mail composer), and CV.pdf, a file icon that downloads the CV. Windows drag, stack, minimise and maximise. It shows real frontend engineering (window management, state, focus and keyboard handling) as the design itself.
+
+**Styles:** OS / desktop metaphor, Liquid Glass (material and light), playful interaction.
+
+**Feel test:**
+- *professional:* it demonstrates complex UI state and accessibility in practice;
+- *creative and bold:* the whole concept;
+- *playful:* the windows, the dock, and a terminal easter egg;
+- *never boring:* it invites exploring.
+
+**Hero:** the desktop, with the Welcome window centred (it is real HTML, rendered first). A dock at the bottom with app icons. The wallpaper is generative.
+
+**Sections:** each brief section 4 section is one app window, opened from the dock or desktop icons. Below the desktop, a plain scrollable "list view" with the same content is always reachable through a toggle, for accessibility and for scanners in a hurry.
+
+**Dark take:** "midnight glass": dark translucent windows with Liquid Glass edges over a slowly moving aurora wallpaper in deep teal and violet.
+
+**Light take:** "daylight glass": frosted white windows, soft pastel wallpaper and crisp shadows. A friendly, modern-OS feel.
+
+**Typography:** Manrope (UI), JetBrains Mono (terminal only).
+
+**Effects:**
+- Dock (magnifying dock);
+- GlassSurface or GlassIcons;
+- Folder (projects);
+- custom window manager (drag, focus, z-order, keyboard);
+- an Aurora or LiquidEther wallpaper;
+- a terminal easter egg.
+- **Dependencies:** check Dock's (it may use `motion`; port it to GSAP if so). The wallpaper is WebGL and lazy-loaded.
+
+**Easter egg:** a Terminal app with commands (`help`, `whoami`, `cv`, `sudo hire ralph`).
+
+**Mobile:** it becomes a **phone home screen**: app icons open full-screen sheets. It is redesigned for touch, not shrunk.
+
+**Risk:** OS portfolios are a known genre. The quality of the window feel (snappy, accessible, keyboard-friendly) is what lifts it. A desktop half-done is worse than no desktop.
+
+---
+
+## 07 — Field Notes (`field-notes`)
+
+**Status:** approved.
+
+**Concept:** A living, code-drawn page. A generative field of flowing lines (a flow field) fills the background and **reorganises itself per section**:
+- it spells out the name in the hero,
+- it bundles into clusters for the stack,
+- it draws a single path through time for the career,
+- it scatters when you move fast.
+
+The site feels like a scientist's or plotter artist's notebook where the drawings are alive. It shows creative coding as a skill, without 3D.
+
+**Styles:** creative coding / generative, kinetic type, material and light (gradient glow).
+
+**Feel test:**
+- *professional:* clean, annotated layouts, like technical notes;
+- *creative and bold:* a generative art system made by the developer himself;
+- *playful:* the lines react to the cursor and the visitor can "draw" in them;
+- *never boring:* it is never the same twice.
+
+**Hero:** the field converges into the letters of "Rafał Ciećwierz". Real HTML text sits on top, and the field is decoration (`aria-hidden`). CTAs in plain, clear buttons.
+
+**Sections:**
+- **Career:** the field forms a single line that bends at each job, with promotions as bright knots in it.
+- **Stack:** clusters sized by level, with a text list beside them.
+- **Projects:** "specimen cards" with small generative thumbnails.
+
+**Dark take:** "night sky": a deep blue-black ground with luminous lines in a shifting multi-hue gradient (no acid green), like long-exposure light painting.
+
+**Light take:** "plotter on paper": a white page, ink-blue and graphite lines like a pen plotter drawing, with hand-written annotations. Scientific and crafty.
+
+**Typography:** Syne (display), DM Sans (body).
+
+**Effects:**
+- a custom 2D canvas flow field (no WebGL needed; OffscreenCanvas where available);
+- Threads or Particles as a fallback reference;
+- TextPressure or ScrambledText for headings;
+- an ImageTrail-style cursor trail of lines.
+- **Dependencies:** none (vanilla canvas plus GSAP).
+
+**Easter egg:** a "seed" control in the footer: type your name and the field redraws with your own seed.
+
+**Mobile:** fewer lines, a lower frame rate, and the field pauses when off-screen. It stays static with reduced motion.
+
+**Risk:** generative backgrounds can feel decorative. The field must *mean* something in each section (the career line, the stack clusters).
+
+---
+
+## 08 — Ascent (`ascent`): extra, built last
+
+**Status:** approved.
+
+**Concept:** Built around Rafał's 22+ years of parkour and his climbing. **The career is a climbing route.** The page starts at the bottom of a wall, and scrolling *climbs* it, so the visitor moves up through grades:
+- QA Automation (the first moves),
+- JavaScript Developer (the first promotion, a harder move),
+- React Developer, then Front-end Team Leader (the crux),
+- the current role at the top.
+
+Movement between sections borrows from parkour: elements vault, roll and land with momentum. A metaphor, not a sports page.
+
+**Styles:** scrollytelling, kinetic type, an immersive hero, interests.
+
+**Feel test:**
+- *professional:* the career story is told clearly, with each "move" naming the role and the dates;
+- *creative and bold:* an inverted, climbing scroll;
+- *playful:* parkour-style motion, and chalk marks;
+- *never boring:* a story with momentum.
+
+**Hero:** at the top of the page (the summit) are the name, role and CTAs, so recruiters see them first. A "start the climb ↓" link drops the visitor to the bottom of the wall, from where the story is climbed back up. The normal reading order stays intact for assistive technology.
+
+**Sections:**
+- **Career:** holds on the wall, each a job.
+- **Stack:** the "gear rack".
+- **Projects:** routes the visitor can try, with grades as the status.
+- **Testimonials:** belay partners.
+- **Contact:** "climb with me".
+
+**Dark take:** "night session": urban concrete at night, with sodium-orange street light, rooftop silhouettes, chalk-white type and a parkour feel.
+
+**Light take:** "crag in the sun": limestone and sandstone tones, chalk dust, rope-coloured accents (teal and coral) and an outdoor-climbing feel.
+
+**Typography:** Big Shoulders Display (condensed, signage-like), Barlow (body).
+
+**Effects:**
+- a custom scroll-driven climb (GSAP ScrollTrigger);
+- chalk-dust particles on clicks (ClickSpark variant);
+- elements that enter with momentum curves (vault and land);
+- an optional low-poly 3D wall in the hero (lazy-loaded three.js).
+- **Dependencies:** GSAP; three.js only if the 3D wall stays.
+
+**Easter egg:** a hidden "boulder problem": a tiny drag-to-climb mini game in the footer.
+
+**Mobile:** a natural vertical story. Shorter climbs, and no 3D.
+
+**Risk:** the scroll order must not confuse anyone. The summit-first hero and a plain "skip the climb" path keep it usable.

@@ -14,14 +14,15 @@ A prototype is a reference for the React build in phase 3, not production code. 
 - The only external resources allowed are Google Fonts and libraries from cdnjs or jsDelivr pinned to an exact version (e.g. `three@0.160.0`, never `@latest`).
 - The file starts with a comment block that lists:
   - the direction's number and name (from `docs/design/DIRECTIONS.md`),
-  - each effect and the React Bits component it stands for, or "custom",
+  - each effect and where it comes from (a React Bits component, a GSAP plugin, another library or demo, or "custom"),
   - the libraries used, and the dependencies the React build would need.
 
 ## Structure
 
 - Keep one `<section id="…">` per section from brief section 4, in the brief's order, unless the direction changes the order on purpose and says so.
 - Keep all content in one object at the top of the script (as `src/content/` will hold it). Markup is rendered from that object, so no copy is scattered through the HTML.
-- Write each effect as its own named function with a comment naming the React Bits component it stands for, so it maps to a component later.
+- Write each effect as its own named function with a comment naming its source (React Bits component, GSAP plugin, library or "custom"), so it maps to a component later.
+- Effects serve the direction. Don't force in a library component that doesn't fit the style; one well-chosen effect beats many generic ones.
 
 ## Content
 

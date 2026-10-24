@@ -31,7 +31,7 @@ Use the `frontend-design` skill for the plan pass, within the roles above. Plan 
 - Tokens: 4–6 named hex colours, the typefaces and their roles, and the type scale.
 - Layout: an ASCII wireframe for mobile and for desktop.
 - The hero, and the one memorable moment.
-- Effects: each one mapped to a React Bits component or marked custom, with its dependency cost and its reduced-motion behaviour.
+- Effects: each one with its source (React Bits, a GSAP plugin, another library or demo, or custom), its dependency cost and its reduced-motion behaviour. The candidates in `DIRECTIONS.md` are suggestions. Swap them for anything that fits the style better, and use none where none fits.
 - How it differs from every existing prototype, in one line each.
 - Any content beyond the brief you plan to add (see the rules file).
 

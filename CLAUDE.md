@@ -10,7 +10,7 @@ Requirements: `docs/PROJECT_BRIEF.md`, kept up to date with everything agreed. R
 
 ## Where the project is
 
-Work is planned task by task in `docs/ROADMAP.md`, in three phases: documentation and AI tooling → six design prototypes and a choice → implementation and deployment. Until task 3.2 there is no `package.json`, so there are no build, lint or test commands yet.
+Work is planned task by task in `docs/ROADMAP.md`, in three phases: documentation and AI tooling → design prototypes (eight directions, each with a dark and a light variant) and a choice → implementation and deployment. Until task 3.2 there is no `package.json`, so there are no build, lint or test commands yet.
 
 ## Working agreement
 
@@ -56,5 +56,5 @@ Work is planned task by task in `docs/ROADMAP.md`, in three phases: documentatio
 ## Current status (keep this updated)
 
 - Phase: 2, design exploration
-- Last completed: 2.1 design research (Rafał's style shortlist is in `docs/design/RESEARCH.md`, section 6)
-- Next step: 2.2 design discovery session
+- Last completed: 2.2 design discovery (`docs/design/DESIGN_PROFILE.md`)
+- Next step: 2.3 design directions

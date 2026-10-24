@@ -8,14 +8,19 @@ Read this whole file before writing any code.
 
 ## 0. Project plan — read this first
 
-This brief was used to generate a first HTML prototype: `design/Rafał Ciećwierz Portfolio.html` (prototype 01). That prototype is one of six candidate designs, not the final one. The work is planned task by task in [ROADMAP.md](ROADMAP.md) and runs in three phases:
+This brief was used to generate a first HTML prototype: `design/Rafał Ciećwierz Portfolio.html` (prototype 01). That prototype is one of several candidate designs, not the final one. The work is planned task by task in [ROADMAP.md](ROADMAP.md) and runs in three phases:
 
 1. **Documentation and AI tooling.** Set up the project docs and a professional, minimal AI setup (see section 13).
 2. **Design exploration.**
    - Research current design trends, with a plain-language glossary of design styles and terms.
-   - Hold a discovery session about what fits Rafał.
-   - Create five new HTML prototypes, each in a completely different direction. They may depart as far as needed from the visual direction in section 7.
-   - Choose the best of the six. Every implementation task is design-agnostic and builds *the chosen design*.
+   - Hold a discovery session about what fits Rafał. The result is [design/DESIGN_PROFILE.md](design/DESIGN_PROFILE.md).
+   - Explore eight design directions as HTML prototypes:
+     - prototype 01,
+     - six new directions, each completely different,
+     - one extra direction built around Rafał's interests.
+
+     Every direction has a dark and a light variant, which are two separate takes on the style rather than a colour inversion. Directions may depart as far as needed from the visual direction in section 7.
+   - Choose the best one, possibly borrowing elements from others. Every implementation task is design-agnostic and builds *the chosen design*. Whether the final site ships the dark variant, the light one or both is decided at that point.
 3. **Implementation and deployment.**
    - Before any code, write `docs/ARCHITECTURE.md` with Rafał's requirements for architecture and code quality. Clean, well-structured components are a top priority.
    - Rebuild the chosen prototype as the React project described in this brief.
@@ -112,7 +117,7 @@ Short, human, first person. Draft (Rafał may edit):
 >
 > I care about clean architecture, reusable UI and tests that actually protect the product. Lately I've been going deeper into the backend with NestJS and experimenting with motion and 3D in the browser.
 >
-> Outside of code: parkour and bass guitar.
+> Outside of code: parkour (for over 22 years) and climbing.
 
 ### 4.4 Stack
 Grouped technologies with three experience levels (same legend as the CV):
@@ -241,6 +246,16 @@ Tooling:
 - Comparison of three page-transition approaches in Next.js: custom implementation, Framer Motion and GSAP.
 - Repo: https://github.com/rafalciecwierz/Nextjs-page-transition
 
+### 5.6 Testimonials
+
+From LinkedIn recommendations written by Rafał's team at Mood up (June 2024). Quote them word for word. Shorten them only with "…", and never reword them. Show each author as first name, surname initial and role, with "Mood up, 2024".
+
+**Status:** the authors must agree before the final site is published. This is an open item for Rafał.
+
+- **Wiktoria W.**, Marketing & Communication (another team): "Seriously, I've never met a leader as tuned in and supportive as him." / "Whoever snags him next is super lucky - yeah, I'm a bit envious. 😉"
+- **Rafał H.**, Frontend Developer (on Rafał's team): "His enthusiasm and optimism were contagious, making him a joy to work with."
+- **Szymon K.**, Frontend Developer (on Rafał's team): "His technical skills and ability to simplify complex concepts, guiding others through challenges, have been invaluable in enhancing the overall quality and efficiency of our development processes."
+
 ---
 
 ## 6. Architecture
@@ -296,13 +311,14 @@ Rules:
 
 ## 7. Design direction
 
-This is the direction prototype 01 was built from. The five new prototypes (phase 2) may depart from it completely. The technical requirements in sections 2, 3, 6, 8 and 9 still apply to every design.
+This is the direction prototype 01 was built from. The other directions (phase 2) may depart from it completely; what the site must feel like for every direction is in [design/DESIGN_PROFILE.md](design/DESIGN_PROFILE.md). The technical requirements in sections 2, 3, 6, 8 and 9 still apply to every design.
 
 - **Mood:** dark, premium, calm. Lots of space, sharp typography, one strong accent colour (a vivid green to echo the CV accent).
 - **Typography:** one display font for headings, one clean sans for body (Google Fonts, `font-display: swap`, preload the display font).
 - **Motion:** fewer, better animations. Ease-out reveals, nothing that blocks reading. No animation longer than ~1 s except the scroll-scrubbed timeline line and hero exit.
 - **Responsive:** mobile first. Test at 360 px, 768 px, 1280 px, 1920 px.
 - Use a photo of Rafał only in About (optional), not in the hero. Use some mocked face which can be swiped with Rafał's face later.
+  - In phase 2 prototypes, a character of Rafał built in code (a clay-like 3D figure or a hand-drawn SVG) may appear anywhere, including the hero. If the chosen design uses one, this rule is updated then.
 
 ---
 
@@ -380,3 +396,4 @@ These are provided near the end of the project. Until then, use `TODO` placehold
 - [ ] Final CV PDF exported as `Rafal_Ciecwierz_CV.pdf`
 - [ ] Final list of projects
 - [ ] Optional: photo, if the chosen design has a good place for it
+- [ ] Consent from the three testimonial authors (section 5.6), if the chosen design shows testimonials

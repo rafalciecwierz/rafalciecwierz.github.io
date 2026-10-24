@@ -5,7 +5,7 @@ Each task is done on its own branch and merged into `main` before the next one s
 
 - **Source of requirements:** [PROJECT_BRIEF.md](PROJECT_BRIEF.md). It is kept up to date with everything agreed so far.
 - **Decisions made during the work** are recorded in [DECISIONS.md](DECISIONS.md).
-- **Design-agnostic:** Phase 3 implements *the design chosen in Phase 2*. Wherever a task mentions "the chosen design", it refers to that prototype, whichever of the six it is.
+- **Design-agnostic:** Phase 3 implements *the design chosen in Phase 2*. Wherever a task mentions "the chosen design", it refers to that prototype, whichever one it is.
 
 ## How we work
 
@@ -54,9 +54,17 @@ Goal: a documented project and a professional, minimal AI setup that is ready fo
 
 ## Phase 2 — Design exploration
 
-Goal: six distinct design directions as HTML prototypes (the existing one plus five new ones), and one of them chosen for implementation.
+Goal: eight design directions as HTML prototypes, each in a dark and a light variant, and one design chosen for implementation. The directions are:
 
-All prototypes use the same content from the brief (section 5) and respect the technical constraints (performance, accessibility, static hosting). The visual direction can depart freely from brief section 7.
+- prototype 01, which already exists in its dark variant,
+- six new directions, 02–07,
+- one extra direction built around Rafał's interests, 08.
+
+What every direction must feel like is in [design/DESIGN_PROFILE.md](design/DESIGN_PROFILE.md).
+
+All prototypes use the content from the brief (section 5) and respect the technical constraints (performance, accessibility, static hosting). The visual direction can depart freely from brief section 7.
+
+**One direction per Claude Code session.** Start a fresh session (or `/clear`) before each prototype task. The docs carry the context, and the sessions stay within usage limits.
 
 ### 2.1 Design research
 - [x] **Branch:** `docs/design-research`
@@ -67,37 +75,50 @@ All prototypes use the same content from the brief (section 5) and respect the t
 - **Done when:** Rafał can name the styles that interest him using the glossary.
 
 ### 2.2 Design discovery session
-- [ ] **Branch:** `docs/design-discovery`
+- [x] **Branch:** `docs/design-discovery`
 - **Scope:** a Q&A session about Rafał's personality, interests, taste and goals. Output: `docs/design/DESIGN_PROFILE.md`, a summary of what fits him and what to avoid.
 - **Done when:** Rafał agrees the profile describes him.
 
 ### 2.3 Design directions
 - [ ] **Branch:** `docs/design-directions`
 - **Scope:**
-  - Five written direction briefs in `docs/design/DIRECTIONS.md`. Each one covers the concept, mood, typography, colour, layout, motion, hero idea, candidate React Bits components and expected dependencies.
-  - Move the existing prototype to `design/prototypes/01-<slug>.html` as direction 01.
-- **Done when:** Rafał has approved all five directions, and each is clearly different from the others and from 01.
+  - Written direction briefs in `docs/design/DIRECTIONS.md`: one for 01 (describing what exists), six for the new directions 02–07, and one for the interests direction 08.
+  - Each brief covers:
+    - the concept,
+    - the dark and the light variant as two separate takes,
+    - typography, colour, layout and motion,
+    - the hero idea,
+    - candidate React Bits components and expected dependencies,
+    - how it scores against the "how the site must feel" test in the design profile.
+  - Move the existing prototype to `design/prototypes/01-<slug>-dark.html`.
+- **Done when:** Rafał has approved every direction, and each is clearly different from the others.
 
-### 2.4 Design prototypes 02–06
-One task per prototype, so each can be reviewed on its own.
+### 2.4 Design prototypes
+One task per direction. Each task builds both variants, `NN-<slug>-dark.html` and `NN-<slug>-light.html`. `<slug>` is the short name of the direction from task 2.3. Build them in this order:
 
+- [ ] **Branch:** `feat/design-prototype-01-light`: the light variant of prototype 01
 - [ ] **Branch:** `feat/design-prototype-02-<slug>`
 - [ ] **Branch:** `feat/design-prototype-03-<slug>`
 - [ ] **Branch:** `feat/design-prototype-04-<slug>`
 - [ ] **Branch:** `feat/design-prototype-05-<slug>`
 - [ ] **Branch:** `feat/design-prototype-06-<slug>`
+- [ ] **Branch:** `feat/design-prototype-07-<slug>`
+- [ ] **Branch:** `feat/design-prototype-08-<slug>`: the interests direction, built last
 
-`<slug>` is the short name of the direction from task 2.3.
+More directions may be added later as new items in this list.
 
-- **Scope:** a single, self-contained HTML file in `design/prototypes/`, built like prototype 01 so it can be converted into the React project. It is responsive (360 px to 1920 px) and supports reduced motion.
-- **Done when:** the prototype matches its direction brief and works on mobile and desktop.
+- **Scope:** self-contained HTML files in `design/prototypes/`, built with the `design-prototype` skill so they can be converted into the React project. Each is responsive (360 px to 1920 px) and supports reduced motion. In prototypes, go all the way; trimming happens at selection.
+- **Done when:** both variants match the direction brief, work on mobile and desktop, and have been audited by `site-auditor`.
 
 ### 2.5 Design selection
 - [ ] **Branch:** `docs/design-selection`
 - **Scope:**
-  - `design/index.html`: a page that links and compares all six prototypes.
-  - A comparison against the brief's success criteria (5-second clarity, mobile above the fold, performance risk, accessibility, effort within the time box).
-  - The choice is recorded in [DECISIONS.md](DECISIONS.md).
+  - `design/index.html`: a page that links and compares all prototypes.
+  - A comparison of the prototypes covering:
+    - the brief's success criteria (5-second clarity, mobile above the fold, performance risk, accessibility),
+    - the design profile's "how the site must feel" test,
+    - the implementation effort and cost of each prototype's effects.
+  - The choice is recorded in [DECISIONS.md](DECISIONS.md). It says which variant ships (dark, light or both), and what the brief and roadmap need to change as a result.
 - **Done when:** one design is chosen. Elements borrowed from other prototypes are listed explicitly.
 
 ---
@@ -235,6 +256,16 @@ The first part (3.1–3.10) produces a usable, deployed site without motion or 3
 
 ---
 
+## Side quests (optional)
+
+These are not needed for the site. Pick them up any time, or never.
+
+- [ ] **Rafał's character from a real photo.** Turn Rafał's photo into a stylised 3D figure or an illustration, to replace the character built in code (see [design/DESIGN_PROFILE.md](design/DESIGN_PROFILE.md), section 6). Options found in October 2026 (check each licence before use; terms change often):
+  - **Image to 3D:** [Tripo AI](https://www.tripo3d.ai) (its free tier is non-commercial and public), [Meshy](https://www.meshy.ai) (its free tier is CC BY 4.0, so it needs attribution), [Rodin](https://hyper3d.ai) (the most realistic, but heavy). The best workflow: stylise the photo into a "figurine" image first, then convert it to 3D, then decimate it in Blender and compress it with Draco to under 300 KB.
+  - **Photo to illustration:** an AI tool such as [OpenArt](https://openart.ai/features/photo-to-avatar/) (fast, but at risk of the generic AI look), or a human illustrator found on Behance, Instagram or Fiverr (paid, and the most authentic).
+
+---
+
 ## Open items for Rafał
 
 These are needed by task 3.17 and can arrive at any time before it.
@@ -244,3 +275,4 @@ These are needed by task 3.17 and can arrive at any time before it.
 - [ ] Final CV PDF, named `Rafal_Ciecwierz_CV.pdf`
 - [ ] Optional: a photo, if the chosen design uses one
 - [ ] Final list of projects
+- [ ] Consent from the testimonial authors (brief section 5.6), if the chosen design shows testimonials

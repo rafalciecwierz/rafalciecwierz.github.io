@@ -144,7 +144,7 @@ The groups go roughly from calm to loud, and from flat to immersive.
 - **What it is:** Interfaces that imitate real objects: knobs, switches, screens and materials. A softer, modern version is trending again.
 - **Recognise it by:** buttons that look physically pressable, and product-like UI.
 - **Examples:** [teenage.engineering](https://teenage.engineering) (hardware-inspired), and [NN/g on skeuomorphism](https://www.nngroup.com/articles/skeuomorphism/)
-- **Fit:** A strong link to Rafał's bass guitar: a site that behaves like an amp, a pedalboard or a mixing desk. Memorable, but it takes a lot of custom work.
+- **Fit:** A site that behaves like a physical device (an amp, a control panel) is memorable, but it takes a lot of custom work.
 
 **Claymorphism**
 
@@ -325,11 +325,11 @@ The brief names three audiences. They want different things, and a direction has
 
 ---
 
-## 5. What this means for the five new directions
+## 5. What this means for the new directions
 
 Inputs for tasks 2.2 and 2.3. Nothing here is decided yet.
 
-- **Spread them across the map.** Prototype 01 is *dark · immersive WebGL · motion-heavy*. The five new ones should each take a clearly different position on these axes:
+- **Spread them across the map.** Prototype 01 is *dark · immersive WebGL · motion-heavy*. The new ones should each take a clearly different position on these axes:
   - calm ↔ loud
   - flat ↔ tactile ↔ immersive
   - light ↔ dark
@@ -341,7 +341,9 @@ Inputs for tasks 2.2 and 2.3. Nothing here is decided yet.
   - micro-frontends,
   - real-time scoring,
   - parkour (movement, momentum, urban space),
-  - bass guitar (rhythm, sound, hardware).
+  - climbing (routes, holds, the ascent).
+
+  Bass guitar was dropped in the discovery session (see `DESIGN_PROFILE.md`).
 - **Keep the brief's floor in every direction.** The name, role, Download CV and Get in touch visible immediately; the performance budget; reduced motion.
 - **Decide "AI look" traits on purpose:** avoid them, or use them knowingly.
 

@@ -6,7 +6,7 @@ argument-hint: <direction number, e.g. 03>
 
 # Design prototype
 
-Each direction for Rafał's portfolio is shown as two HTML files: a dark and a light variant, which are two separate takes on the same style. All prototypes are compared in task 2.5, and the winner is rebuilt in React in phase 3. So a prototype must be **clearly different from the others**, must **follow its direction**, and must be **easy to convert**. The rules for files in `design/` (`.claude/rules/design-prototypes.md`) apply throughout.
+Each direction for Rafał's portfolio is shown as two HTML files: a dark and a light variant: two independent designs that share only the style. Nothing else is carried over from one variant to the other, not the hero, layout, type, palette or effects. All prototypes are compared in task 2.5, and the winner is rebuilt in React in phase 3. So a prototype must be **clearly different from the others**, must **follow its direction**, and must be **easy to convert**. The rules for files in `design/` (`.claude/rules/design-prototypes.md`) apply throughout.
 
 ## Who decides what
 
@@ -22,11 +22,11 @@ The point of phase 2 is to **discover bold, interesting designs**. They don't ha
 - `docs/design/DESIGN_PROFILE.md`: who Rafał is, how the site must feel, and what to avoid. Every variant must pass its "how the site must feel" test.
 - `docs/design/RESEARCH.md`, for any term the direction uses.
 - Brief sections 4 (page structure), 5 (content) and 8 (performance and accessibility budget).
-- The existing prototypes in `design/prototypes/`, skimmed for their palette, type and layout, so this one does not repeat them.
+- The **As built** blocks in `docs/design/DIRECTIONS.md` for the existing prototypes, so this one does not repeat them. Open the HTML files only when a block is missing or unclear.
 
 ## 2. Plan, then stop for approval
 
-Use the `frontend-design` skill for the plan pass, within the roles above. Plan **both variants**, dark and light, as two separate takes. Cover each point below for each variant, and say how the two differ.
+Use the `frontend-design` skill for the plan pass, within the roles above. Plan **both variants**, dark and light, as two independent designs. Cover each point below for each variant, and check that the two share nothing but the style. When one variant already exists, design the other from scratch; do not start from its file.
 
 - Tokens: 4–6 named hex colours, the typefaces and their roles, and the type scale.
 - Layout: an ASCII wireframe for mobile and for desktop.
@@ -49,5 +49,5 @@ Have the `site-auditor` subagent audit both files against their direction, in on
 
 ## 5. Record and hand over
 
-- In the direction's entry in `docs/design/DIRECTIONS.md`, add the file paths and the final list of effects and dependencies.
+- In the direction's entry in `docs/design/DIRECTIONS.md`, set the status and file paths, and add an **As built** block for each variant: palette, type, layout, the hero moment, effects, what was left out and dependencies. Keep it short; it is what the next prototype is checked against, so it must not repeat an earlier one.
 - Hand over as in the `roadmap-task` skill, step 8. Include the audit's measurements table and the screenshot paths.

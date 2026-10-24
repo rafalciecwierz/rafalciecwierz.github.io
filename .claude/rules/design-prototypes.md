@@ -10,12 +10,13 @@ A prototype is a reference for the React build in phase 3, not production code. 
 ## File
 
 - Each direction has two self-contained HTML files: `design/prototypes/NN-<slug>-dark.html` and `design/prototypes/NN-<slug>-light.html`. CSS and JS are inline.
-- The two variants are **separate takes on the same style**, one dominantly dark and one dominantly light. They are not a colour inversion: layout, mood, palette and effects may differ completely. Neither file has a theme toggle.
+- The two variants are **independent designs that share only the style**, one dominantly dark and one dominantly light. Design each from scratch: concept, hero, layout, section structure, typography, palette and effects must all differ, and nothing is carried over from the other variant (not even the hero object). Someone who sees both should recognise the shared style and nothing else. Neither file has a theme toggle.
 - The only external resources allowed are Google Fonts and libraries from cdnjs or jsDelivr pinned to an exact version (e.g. `three@0.160.0`, never `@latest`).
 - The file starts with a comment block that lists:
   - the direction's number and name (from `docs/design/DIRECTIONS.md`),
   - each effect and where it comes from (a React Bits component, a GSAP plugin, another library or demo, or "custom"),
   - the libraries used, and the dependencies the React build would need.
+- After building, the direction's entry in `docs/design/DIRECTIONS.md` gets an **As built** block for the variant (palette, type, layout, hero moment, effects, what was left out, dependencies). It records the reasoning the HTML cannot.
 
 ## Structure
 

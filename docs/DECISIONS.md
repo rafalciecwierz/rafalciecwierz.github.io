@@ -1,24 +1,27 @@
 # Decision log
 
-Significant technical decisions made while building the site, oldest first. Each entry is short and gives enough context to explain the decision in an interview.
+Technical decisions made while building the site, oldest first. Each entry records why it was made and what was rejected, so the decision can be explained in an interview.
 
-Project-level assumptions live in [PROJECT_BRIEF.md](PROJECT_BRIEF.md). This log records the decisions made during implementation, for example adding a dependency or choosing between two approaches.
+Project-level requirements live in [PROJECT_BRIEF.md](PROJECT_BRIEF.md). This log is for decisions made during the work, such as adding a dependency or choosing between two approaches. The `adr` skill (`.claude/skills/adr/`) says when an entry is worth writing.
 
-An entry is never edited after it is accepted. A changed decision gets a new entry that supersedes the old one, and the old entry's status is updated to point to it.
+An entry is never rewritten or deleted. When a decision changes, a new entry supersedes it, and the old entry gets a `Status: **Superseded by #NNN.**` line under its date.
 
-## Template
+## Format
 
 ```md
-## NNNN. Title
+## 001. <Decision, phrased as what was chosen>
 
-- **Date:** YYYY-MM-DD
-- **Status:** Accepted | Superseded by NNNN
+Date: DD.MM.YYYY
 
-**Context:** what problem or question led to this decision.
+Context: the problem and the forces at play, with concrete facts.
 
-**Decision:** what was decided.
+Decision: what was chosen, specifically enough to check the code against it.
 
-**Alternatives considered:** the other options and why they were not chosen.
+Alternatives considered:
+
+- <Option>. Rejected: <specific reason>.
+
+Consequences: what this means in practice, including the costs, and how it was verified.
 ```
 
 ---

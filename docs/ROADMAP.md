@@ -32,19 +32,23 @@ Tasks may be added, split or reordered between phases when needed. Any such chan
 Goal: a documented project and a professional, minimal AI setup that is ready for the design and implementation work.
 
 ### 1.1 Project roadmap
-- [ ] **Branch:** `docs/project-roadmap`
+- [x] **Branch:** `docs/project-roadmap`
 - **Scope:** this roadmap, an empty decision log ([DECISIONS.md](DECISIONS.md)) with its template, and an updated brief reflecting everything agreed so far.
 - **Done when:** Rafał has approved the roadmap and the updated brief.
 
 ### 1.2 AI tooling setup
-- [ ] **Branch:** `chore/ai-tooling-setup`
+- [x] **Branch:** `chore/ai-tooling-setup`
 - **Scope:**
-  - Research current Claude Code best practices before writing anything.
-  - `CLAUDE.md`: project context, conventions, working agreement and links to the docs. It stays short and points to docs instead of duplicating them.
-  - `.claude/settings.json`: shared permissions for the project. Personal settings stay in the git-ignored `settings.local.json`.
-  - Project skills in `.claude/skills/`, only where a workflow repeats. Candidates: building a design prototype, porting a React Bits component, writing a decision record, preparing a task summary with commit message(s).
-  - `docs/AI_USAGE.md`: an open statement of how AI is used in this project, what Rafał owns and how the output is verified.
-- **Done when:** every AI file has a clear purpose described in `docs/AI_USAGE.md`, and the tooling has been tried on a real task.
+  - Research current Claude Code best practices, using [ashen-contracts](https://github.com/rafalciecwierz/ashen-contracts) as the minimum standard.
+  - `CLAUDE.md`, kept short. Area rules go in `.claude/rules/` (to start with, `design-prototypes.md`).
+  - `.claude/settings.json`: read-only git commands allowed, and commands that change git history or branches denied.
+  - `.mcp.json`: Chrome DevTools MCP, pinned to a version.
+  - Subagent `.claude/agents/site-auditor.md`.
+  - Skills:
+    - own: `roadmap-task`, `design-prototype`, `adr`,
+    - pinned third-party: `grilling` and `grill-me` (mattpocock), `frontend-design` (Anthropic).
+  - `docs/AI_USAGE.md`, `.gitignore`, and the decision log in the same format as ashen-contracts.
+- **Done when:** every AI file has a clear purpose described in `docs/AI_USAGE.md`, and `site-auditor` has produced a real report on prototype 01.
 
 ---
 
@@ -119,12 +123,18 @@ The first part (3.1–3.10) produces a usable, deployed site without motion or 3
   - ESLint and Prettier as one config for the whole project, following [ashen-contracts](https://github.com/rafalciecwierz/ashen-contracts).
   - Vitest and React Testing Library.
   - Folder structure from `docs/ARCHITECTURE.md`.
-  - Package scripts: `dev`, `build`, `preview`, `lint`, `typecheck`, `test`, `format`.
-- **Done when:** a placeholder app runs locally and all scripts pass.
+  - Package scripts: `dev`, `build`, `preview`, `lint`, `typecheck`, `test`, `format`, `format:check`.
+  - commitlint with a local `commit-msg` hook, as in ashen-contracts.
+  - AI tooling for code:
+    - a `PostToolUse` hook that runs Prettier and `eslint --fix` on every file the agent edits,
+    - the package scripts added to the allowed commands in `.claude/settings.json`,
+    - `.claude/rules/` for `src/**` (component, content and style conventions from `docs/ARCHITECTURE.md`),
+    - the `tdd` skill (mattpocock, pinned), and the commands in `CLAUDE.md`.
+- **Done when:** a placeholder app runs locally, all scripts pass, and an agent edit is formatted automatically.
 
 ### 3.3 Continuous integration
 - [ ] **Branch:** `ci/quality-checks`
-- **Scope:** a GitHub Actions workflow that runs lint, typecheck, test and build on every push and pull request.
+- **Scope:** a GitHub Actions workflow that runs lint, format check, typecheck, test, build and commitlint on every push and pull request.
 - **Done when:** the workflow passes on GitHub.
 
 ### 3.4 Content layer
@@ -174,7 +184,11 @@ The first part (3.1–3.10) produces a usable, deployed site without motion or 3
 
 ### 3.11 Motion foundation
 - [ ] **Branch:** `feat/motion-foundation`
-- **Scope:** `animation/gsap.ts` (registers plugins once), a `useReducedMotion` hook as the single source of truth, and Lenis synced with ScrollTrigger and disabled for reduced motion.
+- **Scope:**
+  - `animation/gsap.ts`, which registers plugins once.
+  - A `useReducedMotion` hook as the single source of truth.
+  - Lenis synced with ScrollTrigger and disabled for reduced motion.
+  - AI tooling: the official GSAP skills `gsap-react`, `gsap-scrolltrigger` and `gsap-performance` ([greensock/gsap-skills](https://github.com/greensock/gsap-skills), MIT), pinned with a `NOTICE.md` and limited with `paths` to files that use GSAP.
 - **Done when:** smooth scroll works, and is off with reduced motion, as covered by a test.
 
 ### 3.12 Interactive effects

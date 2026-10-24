@@ -108,7 +108,7 @@ One task per direction. Each task builds both variants, `NN-<slug>-dark.html` an
 More directions may be added later as new items in this list.
 
 - **Scope:** self-contained HTML files in `design/prototypes/`, built with the `design-prototype` skill so they can be converted into the React project. Each is responsive (360 px to 1920 px) and supports reduced motion. In prototypes, go all the way; trimming happens at selection.
-- **Done when:** both variants match the direction brief, work on mobile and desktop, and have been audited by `site-auditor`.
+- **Done when:** both variants match the direction brief and work on mobile and desktop (checked with screenshots at 360 and 1280 px). No `site-auditor` audit at this stage: prototypes are explorations, and only the chosen design is audited, from phase 3.
 
 ### 2.5 Design selection
 - [ ] **Branch:** `docs/design-selection`

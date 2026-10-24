@@ -40,7 +40,7 @@ These are the success criteria from the brief, measured rather than assumed. Usa
 | Skill | Source | What it does |
 | --- | --- | --- |
 | `roadmap-task` | own | One roadmap task, end to end. It refuses to start on the wrong branch, verifies the result and proposes commit messages. |
-| `design-prototype` | own | One HTML design prototype: a plan I approve, the build, then an audit. |
+| `design-prototype` | own | One HTML design prototype: a plan I approve, then the build. Prototypes are not audited; only the chosen design is. |
 | `adr` | own (criteria adapted from mattpocock/skills) | A decision entry in [`DECISIONS.md`](DECISIONS.md), written only when the decision is worth one. |
 | `grilling`, `grill-me` | [mattpocock/skills](https://github.com/mattpocock/skills), MIT | The agent questions my plan until every open decision is settled. |
 | `frontend-design` | [anthropics/skills](https://github.com/anthropics/skills), Apache 2.0 | Guidance against generic, templated "AI look" design. |

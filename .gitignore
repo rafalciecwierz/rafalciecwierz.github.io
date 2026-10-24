@@ -1,0 +1,20 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+
+# Logs
+*.log
+
+# Editor/OS
+.DS_Store
+.vscode/
+.idea/
+
+# Agent tooling: personal Claude Code settings (shared ones are in .claude/settings.json)
+.claude/settings.local.json
+CLAUDE.local.md
+
+# Agent tooling: reports and screenshots written while auditing pages
+.audit/

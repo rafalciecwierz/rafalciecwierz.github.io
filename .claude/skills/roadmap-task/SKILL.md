@@ -51,7 +51,7 @@ Skip this step when nothing is open.
 
 Check every point of the task's "Done when" and of the roadmap's definition of done. Use the strongest check that fits:
 
-- **UI:** Chrome DevTools MCP for screenshots, then an independent audit by the `site-auditor` subagent.
+- **UI:** Chrome DevTools MCP for screenshots, then an independent audit by the `site-auditor` subagent. Design prototypes (task 2.4) skip the audit; see the `design-prototype` skill.
 - **Code (from task 3.2):** `lint`, `typecheck`, `test` and `build`.
 - **Docs:** check every link and file path you mention.
 

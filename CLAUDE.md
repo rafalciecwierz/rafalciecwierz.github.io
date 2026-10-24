@@ -35,7 +35,7 @@ Work is planned task by task in `docs/ROADMAP.md`, in three phases: documentatio
 ## Verifying work
 
 - Check UI with the Chrome DevTools MCP server (`.mcp.json`). Use these viewports: 360, 768, 1280 and 1920 px. Also check with `prefersReducedMotion: reduce`. For mobile performance, use a 4× CPU slowdown and Slow 4G.
-- Before calling UI work done, have the `site-auditor` subagent audit it in a fresh context. Report its evidence (scores, screenshots, console output), not a claim that it works.
+- Before calling UI work done, have the `site-auditor` subagent audit it in a fresh context. Report its evidence (scores, screenshots, console output), not a claim that it works. Exception: design prototypes (task 2.4) are not audited; only the chosen design is, from phase 3.
 - Serve pages over HTTP for audits (`python3 -m http.server`), not `file://`.
 
 ## Where to find more context
@@ -56,5 +56,5 @@ Work is planned task by task in `docs/ROADMAP.md`, in three phases: documentatio
 ## Current status (keep this updated)
 
 - Phase: 2, design exploration
-- Last completed: 2.4 prototype 01 light (`design/prototypes/01-fluid-glass-light.html`, "Underwater")
-- Next step: 2.4 prototype 02, `feat/design-prototype-02-swiss-signal` (one direction per session; variants share only the style)
+- Last completed: 2.4 prototype 02 dark (`design/prototypes/02-swiss-signal-dark.html`, "Night Grid")
+- Next step: 2.4 prototype 02 light, same branch `feat/design-prototype-02-swiss-signal` (variants share only the style)

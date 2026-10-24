@@ -80,7 +80,7 @@ All prototypes use the content from the brief (section 5) and respect the techni
 - **Done when:** Rafał agrees the profile describes him.
 
 ### 2.3 Design directions
-- [ ] **Branch:** `docs/design-directions`
+- [x] **Branch:** `docs/design-directions`
 - **Scope:**
   - Written direction briefs in `docs/design/DIRECTIONS.md`: one for 01 (describing what exists), six for the new directions 02–07, and one for the interests direction 08.
   - Each brief covers:
@@ -88,7 +88,7 @@ All prototypes use the content from the brief (section 5) and respect the techni
     - the dark and the light variant as two separate takes,
     - typography, colour, layout and motion,
     - the hero idea,
-    - candidate React Bits components and expected dependencies,
+    - candidate effects (React Bits or other sources) and expected dependencies,
     - how it scores against the "how the site must feel" test in the design profile.
   - Move the existing prototype to `design/prototypes/01-<slug>-dark.html`.
 - **Done when:** Rafał has approved every direction, and each is clearly different from the others.
@@ -214,7 +214,7 @@ The first part (3.1–3.10) produces a usable, deployed site without motion or 3
 
 ### 3.12 Interactive effects
 - [ ] **Branch:** `feat/interactive-effects`
-- **Scope:** the React Bits (or equivalent) effects used by the chosen design, either installed or ported as decided in `docs/ARCHITECTURE.md`. Each effect respects reduced motion and adds no unplanned dependencies.
+- **Scope:** the effects used by the chosen design (React Bits, GSAP plugins or other sources), either installed or ported as decided in `docs/ARCHITECTURE.md`. Each effect respects reduced motion and adds no unplanned dependencies.
 - **Done when:** all planned effects work, and each has a decision entry when it adds a dependency.
 
 ### 3.13 Scroll animations

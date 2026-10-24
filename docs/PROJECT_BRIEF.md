@@ -8,7 +8,7 @@ Read this whole file before writing any code.
 
 ## 0. Project plan — read this first
 
-This brief was used to generate a first HTML prototype: `design/Rafał Ciećwierz Portfolio.html` (prototype 01). That prototype is one of several candidate designs, not the final one. The work is planned task by task in [ROADMAP.md](ROADMAP.md) and runs in three phases:
+This brief was used to generate a first HTML prototype: `design/prototypes/01-fluid-glass-dark.html` (prototype 01). That prototype is one of several candidate designs, not the final one. The work is planned task by task in [ROADMAP.md](ROADMAP.md) and runs in three phases:
 
 1. **Documentation and AI tooling.** Set up the project docs and a professional, minimal AI setup (see section 13).
 2. **Design exploration.**
@@ -77,12 +77,14 @@ The site will be linked from a LinkedIn post asking people to recommend Rafał a
 | 3D | three, @react-three/fiber, @react-three/drei | Hero scene only, lazy-loaded |
 | Animation | gsap + ScrollTrigger, @gsap/react (`useGSAP`) | Scroll-driven reveals, timeline |
 | Smooth scroll | lenis | Synced with ScrollTrigger; disabled for reduced motion |
-| UI effects | [React Bits](https://reactbits.dev) | Installed or ported onto the stack above (see below) |
+| UI effects | Optional: [React Bits](https://reactbits.dev), GSAP plugins, other sources | Enhancers chosen per design, installed or ported onto the stack above (see below) |
 | Lint/format | ESLint + Prettier | One config for the whole project, following [ashen-contracts](https://github.com/rafalciecwierz/ashen-contracts) |
 | Tests | Vitest + React Testing Library | Light: content rendering, reduced-motion behavior |
 | Deploy | GitHub Actions → GitHub Pages | `actions/deploy-pages` |
 
-**Keep dependencies minimal**, because the site must stay fast and responsive. Some React Bits components depend on extra libraries (for example `motion`, or GSAP's InertiaPlugin) that overlap with the stack above. For each such component, weigh adding the library against porting the effect onto GSAP, Three.js / React Three Fiber or CSS. Add a library only when porting would cost far more than it is worth. Ask Rafał before adding any new dependency.
+**Effects are enhancers, not the foundation.** React Bits is one good source, but it is optional. A design may use many of its components, just one, or none, and may take effects from elsewhere when they fit the style better. Since 2025 all GSAP plugins (SplitText, DrawSVG, MorphSVG, Physics2D, Inertia, ScrollSmoother and others) are free, so many effects need no extra dependency.
+
+**Keep dependencies minimal**, because the site must stay fast and responsive. Some effect components depend on extra libraries (for example `motion`, or GSAP's InertiaPlugin) that overlap with the stack above. For each such component, weigh adding the library against porting the effect onto GSAP, Three.js / React Three Fiber or CSS. Add a library only when porting would cost far more than it is worth. Ask Rafał before adding any new dependency.
 
 ---
 
@@ -300,7 +302,7 @@ src/
 ```
 
 Rules:
-- Use components from https://reactbits.dev/get-started/index to build the site
+- Effects come from the chosen design: [React Bits](https://reactbits.dev/get-started/index) components, GSAP plugins or other sources, used only where they fit (section 3).
 - Content files export typed data only; components never hard-code copy.
 - Every user-facing string goes through the content layer so a `pl` variant can be added later (e.g. `{ en: string; pl?: string }` or a locale map).
 - All GSAP code uses `useGSAP` with a scope ref so animations clean up on unmount.

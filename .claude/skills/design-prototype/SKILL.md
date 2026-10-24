@@ -1,6 +1,6 @@
 ---
 name: design-prototype
-description: Build or revise one HTML design prototype in design/prototypes/ from an approved direction in docs/design/DIRECTIONS.md, then have it audited. Use for roadmap task 2.4, or when the user asks to build, change or redo a design prototype.
+description: Build or revise one HTML design prototype in design/prototypes/ from an approved direction in docs/design/DIRECTIONS.md. Use for roadmap task 2.4, or when the user asks to build, change or redo a design prototype.
 argument-hint: <direction number, e.g. 03>
 ---
 
@@ -45,9 +45,9 @@ While you build, take screenshots with Chrome DevTools MCP at 360 and 1280 px, a
 
 ## 4. Audit
 
-Have the `site-auditor` subagent audit both files against their direction, in one run. Fix every failure it reports, then audit again. After two rounds, stop and report what is still failing instead of looping.
+No `site-auditor` audit for prototypes: they are explorations, and only the design chosen in task 2.5 is audited (from phase 3). Run one only when Rafał asks for it. Your own screenshots at 360 and 1280 px, and a reduced-motion check, are enough to hand over.
 
 ## 5. Record and hand over
 
 - In the direction's entry in `docs/design/DIRECTIONS.md`, set the status and file paths, and add an **As built** block for each variant: palette, type, layout, the hero moment, effects, what was left out and dependencies. Keep it short; it is what the next prototype is checked against, so it must not repeat an earlier one.
-- Hand over as in the `roadmap-task` skill, step 8. Include the audit's measurements table and the screenshot paths.
+- Hand over as in the `roadmap-task` skill, step 8, with what you checked in screenshots.

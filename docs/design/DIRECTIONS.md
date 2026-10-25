@@ -358,7 +358,9 @@ How the directions spread across the axes from the research. No two directions s
 
 ## 06 — RalphOS (`ralph-os`)
 
-**Status:** approved.
+**Status:** built (both variants). **Files:** `design/prototypes/06-ralph-os-dark.html`, `design/prototypes/06-ralph-os-light.html`.
+
+**Shared by both variants:** only the style: an operating system as the interface, glass, and playful interaction. The concept, hero, sections and effects below describe the dark variant; the light variant replaces them with a search-first OS.
 
 **Concept:** The site is an operating system, **RalphOS**. The desktop opens with a "Welcome" window already showing the name, role and CTAs, so recruiters get everything at once. Sections are apps: About.app, Stack (a settings panel), Career (a timeline app), Projects (folders), Contact (a mail composer), and CV.pdf, a file icon that downloads the CV. Windows drag, stack, minimise and maximise. It shows real frontend engineering (window management, state, focus and keyboard handling) as the design itself.
 
@@ -376,7 +378,28 @@ How the directions spread across the axes from the research. No two directions s
 
 **Dark take:** "midnight glass": dark translucent windows with Liquid Glass edges over a slowly moving aurora wallpaper in deep teal and violet.
 
+**As built (dark), task 2.4: "Midnight".** A real desktop OS at night. The concept, hero and sections above belong to this variant.
+- **Palette:** midnight `#060912`; window glass `rgba(15, 20, 37, .78)` (focused `.86`); text `#EEF2FA`, muted `#A9B2C6`; lilac `#B69CFF` for primary fills (ink `#0A0718` on it); teal `#3EE6C8` for status, focus and strong levels; amber `#FFC45C` for TODOs and "in progress"; standard close, minimise and maximise colours.
+- **Type:** Manrope (UI, 400–800; the name 800 with a white-to-lilac-to-teal gradient on the surname) + JetBrains Mono (Terminal only), as the direction names.
+- **Layout:** three views from one markup. **Desktop** (≥ 900 px): a menu bar (logo, focused app, "Open to work", Desktop/List switch, clock), desktop icons (CV.pdf, Projects, Terminal), a centred Welcome window, a dock, the footer as a wallpaper note. **Phone** (< 900 px): a home screen (the Welcome card, then an app grid) whose apps open as full-screen sheets with "Done" and swipe-down to close. **List:** a plain scrolling page with anchor navigation, kept in `localStorage`. Apps in brief order: Welcome (hero), About, Stack, Career, Team (quotes, new, not in the nav), Projects, Contact, then Terminal and Trash (easter eggs, desktop and phone only).
+- **Hero moment:** the OS itself. Windows grow out of their dock icon, drag with inertia, snap to the top edge to maximise, resize, and minimise into the dock with a genie squeeze; the focused window's glass rim turns towards the cursor; a team quote arrives as a notification after a few seconds.
+- **Section forms:** About as "About this Ralph" (an account picture drawn in SVG, a spec sheet restating brief facts, the About text); Stack as a settings panel (vertical ARIA tabs per group, a three-segment level meter plus the level word); Career as a timeline whose line fills as the window scrolls, promotions with "→" and a "Promoted" badge; Team as a messages thread that types the quotes in; Projects as a file browser with React Bits-style folders and an info pane; Contact as a mail composer that builds a `mailto:` link, with LinkedIn, GitHub, Calendly and CV beside it.
+- **Effects:** AuroraWallpaper (custom raw WebGL, half resolution, 30 fps, lazy), WindowManager, OpenFromIcon and Genie (WAAPI), DockMagnify (React Bits Dock ported off `motion`), GlassRim (inspired by GlassSurface), SettingsTabs, TimelineDraw, MessagesTyping, FinderFolders (React Bits Folder in CSS), MailComposer, Terminal (`help`, `whoami`, `ls`, `open`, `stack`, `career`, `contact`, `cv`, `sudo hire ralph`), Trash ("Yup" and "Redux for server state", both replaced at MUG Software), NotificationToast, MenuClock, PhoneSheets, console message. All custom or ported, no libraries.
+- **Left out on purpose:** three.js (a plain WebGL context is enough for one shader), the SVG displacement form of Liquid Glass (Chromium-only and costly under large windows), GSAP, smooth scroll, and anything from 01–05.
+- **Cost to note for 2.5:** many `backdrop-filter` windows over an animated canvas is the heaviest part; the wallpaper is capped at half resolution and 30 fps, and stops in list view, in hidden tabs and with reduced motion.
+- **Dependencies:** none. The React build needs nothing beyond React (the window manager is a reducer plus a pointer hook).
+
 **Light take:** "daylight glass": frosted white windows, soft pastel wallpaper and crisp shadows. A friendly, modern-OS feel.
+
+**As built (light), task 2.4: "Daylight".** RalphOS in daylight is search-first: a Spotlight panel over a pastel wallpaper, and the whole CV as live search results. Nothing from "Midnight" is reused: no windows, dock, terminal, aurora, account picture or Manrope.
+- **Palette:** paper `#F6F1EC`; pastel wallpaper in peach `#FFC6A6`, lilac `#CDBFFF`, sky `#B5DCFF`, mint `#BDEFD5` and butter `#FFE59A`; white glass `rgba(255, 255, 255, .62)`; ink `#15172A`, muted `#50566C`; tangerine `#FF7A3D` for fills only (ink text on it), tangerine-ink `#B23F0B` for links and small accents; highlight `#FFE0CC` for search marks.
+- **Type:** Outfit (display: the name, headings) + Plus Jakarta Sans (UI and text). No other prototype uses either. The Ł stroke and the Ć are printed in tangerine-ink.
+- **Layout:** a floating glass header (nav and a Search button; a focus-trapped Menu below 820 px), then the Spotlight panel as the hero, then one result group per section in brief order: About, Stack, Career, "From the team" (quotes, new, not in the nav), Projects, Contact, footer.
+- **Hero moment:** the search is real. Typing filters every section, highlights the words, counts results per group and empties groups without matches; some words run actions ("cv" downloads the CV, "hire" writes an email, "vcard" saves the contact, "update" opens the easter egg, "ralph" answers "Did you mean Rafał?"). The placeholder types suggestions, a light spot on the panel follows the cursor, and `/` or Ctrl/⌘ + K focuses the field from anywhere.
+- **Section forms:** About as a knowledge card with four fact cards; Stack as Spotlight rows in masonry columns, the level as signal-strength bars plus the word; Career as a calendar agenda (year, dates, colour-coded event cards, promotions as tangerine "all-day" events) with a "now" line that travels back in time as you scroll; quotes as a notification stack that fans out in view; Projects as files with generated thumbnails and a Quick Look `<dialog>`; Contact as a contact card with quick actions and a `.vcf` download (no phone number).
+- **Effects:** PastelWallpaper (CSS blobs with cursor parallax), SpecularGlass, TypedPlaceholder, LiveSearch, ResultsArrive, NowLine, NotificationStack, QuickLook, ContactCard (vCard), SoftwareUpdate (the easter egg: "RalphOS 7: Full Stack", installing stops at 63%), NavMenu, NavCurrent, console message. All custom.
+- **Left out on purpose:** windows and a dock (the dark variant's metaphor), WebGL, GSAP, a portrait (the contact card uses an "RC" monogram, marked TODO: photo), and everything from 01–05.
+- **Dependencies:** none. The React build needs nothing beyond React.
 
 **Typography:** Manrope (UI), JetBrains Mono (terminal only).
 

@@ -1,0 +1,828 @@
+<!doctype html>
+<!--
+  Prototype 03 — Clay Studio (`clay-studio`), LIGHT variant: "Morning Claymation".
+  Direction brief: docs/design/DIRECTIONS.md, section 03.
+
+  Concept: a stop-motion animator's table on a sunny morning. Everything is made of
+  plasticine: the name is modelled from clay letters, the sections are clay boards laid on the
+  table, and the skills are rolled clay pieces on trays. Motion runs the way claymation does:
+  at 12 frames per second, with a slight "boil" (outlines that shift a little every frame, as
+  hand-made frames never line up perfectly). The content itself stays crisp and businesslike;
+  the craft is in the material and the timing.
+  It shares only the style (claymorphism, soft 3D) with the dark variant, "After Hours".
+  No 3D figure in the hero (that is the dark variant's hero object).
+
+  Effects (each is a named function in the script below):
+  - StopMotion ......... custom: one 12 fps frame clock for the page; it cycles three SVG
+                         turbulence filters on `.boil` elements (the claymation boil)
+  - ClayLetters ........ custom: name letters squash towards the cursor or finger and spring
+                         back; their positions are only redrawn on stop-motion frames, so the
+                         spring looks animated by hand
+  - LooseMarks ......... custom: the stroke of the Ł and the accent of the Ć are separate clay
+                         pieces that pop off when poked and fall back into place
+  - ClayPortrait ....... custom SVG: a flat clay portrait of Rafał that blinks (frame swap)
+  - PlaceOnTray ........ custom: when a tray scrolls into view its pieces are placed one per
+                         frame, like an animator setting up a shot
+  - Thumbprint ......... custom SVG pattern: fingerprints pressed into the clay boards
+  - ClayEnvelope ....... custom CSS: the contact envelope opens on hover or focus and the
+                         letter (the email) slides out
+  - PressButton ........ custom CSS: clay slab buttons that flatten when pressed
+  - MobileMenu, ConsoleHello: custom
+
+  Libraries in this file: none.
+  Fonts: Baloo 2 (display, 500–800) and Onest (body, 400–700), Google Fonts, latin-ext.
+  React build would need: nothing beyond React. No WebGL, no GSAP.
+
+  Reduced motion: no boil, no squash, no placing animation, no envelope motion (it is drawn
+  open), native anchor jumps. There is no WebGL, so no WebGL fallback is needed.
+
+  Content: all copy lives in the CONTENT object at the top of the script. Additions beyond
+  brief section 5 are marked `NEW CONTENT` there.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rafał Ciećwierz, Frontend Engineer</title>
+<meta name="description" content="Rafał Ciećwierz, Frontend Engineer. React & TypeScript, 5+ years building production apps.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500..800&family=Onest:wght@400..700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --table: #FFF9F2;       /* the animator's table */
+    --peach: #FFC9AE;
+    --butter: #FFE59C;
+    --mint: #B7EBD7;
+    --lilac: #D9CCF8;
+    --ink: #2B2140;         /* 15:1 on table */
+    --muted: #5C5270;       /* 7.4:1 on table, ≥ 5.6:1 on every board */
+    /* deep clay, for the name letters (each ≥ 3:1 on table, large text) */
+    --navy: #2F3C8F; --navy-side: #1C2560; /* the name: navy clay, like the blazer */
+    --c-pink: #E04A74; --c-blue: #3E62DE; --c-green: #1B8F68; --c-violet: #7650DC; --c-orange: #C96A00;
+    --gut: 16px;
+    --step: steps(4, end);
+  }
+  @media (min-width: 768px) { :root { --gut: 32px; } }
+  @media (min-width: 1280px) { :root { --gut: 64px; } }
+
+  *, *::before, *::after { box-sizing: border-box; }
+  html { scroll-behavior: smooth; scroll-padding-top: 84px; }
+  body {
+    margin: 0; color: var(--ink); background: var(--table);
+    font: 400 1.0625rem/1.65 Onest, system-ui, sans-serif; -webkit-font-smoothing: antialiased; overflow-x: hidden;
+  }
+  h1, h2, h3 { font-family: 'Baloo 2', Onest, sans-serif; margin: 0; line-height: 1; }
+  p { margin: 0; }
+  a { color: inherit; }
+  svg { display: block; }
+  :focus-visible { outline: 3px solid var(--c-blue); outline-offset: 3px; border-radius: 10px; }
+  .skip { position: fixed; left: 12px; top: -80px; z-index: 100; padding: 12px 18px; border-radius: 14px; background: var(--ink); color: var(--table); font-weight: 700; text-decoration: none; }
+  .skip:focus { top: 12px; }
+  .wrap { width: 100%; max-width: 1400px; margin: 0 auto; padding: 0 var(--gut); }
+  .vh { position: absolute !important; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+  /* ---------- Clay board (a flattened sheet of plasticine) ---------- */
+  .board {
+    --b: var(--peach);
+    position: relative; background-color: var(--b); border-radius: 26px 30px 24px 32px / 30px 24px 32px 26px;
+    box-shadow:
+      inset 0 3px 0 rgba(255, 255, 255, .55),
+      inset 0 -5px 0 rgba(43, 33, 64, .08),
+      0 2px 0 color-mix(in srgb, var(--b) 70%, #000 12%),
+      0 6px 0 color-mix(in srgb, var(--b) 62%, #000 18%),
+      0 18px 30px -10px rgba(120, 80, 40, .28);
+  }
+  /* Thumbprint: fingerprints pressed into the board (SVG pattern, set from JS) */
+  .board::before { content: ""; position: absolute; inset: 0; border-radius: inherit; background-image: var(--prints); opacity: .5; pointer-events: none; mix-blend-mode: multiply; }
+  .board > * { position: relative; }
+
+  /* PressButton */
+  .btn {
+    --b: var(--butter);
+    display: inline-flex; align-items: center; gap: 10px; min-height: 56px; padding: 0 26px 4px;
+    border: 0; border-radius: 18px 20px 17px 21px; cursor: pointer; text-decoration: none;
+    font: 700 1.1875rem/1 'Baloo 2', sans-serif; color: var(--ink); background: var(--b);
+    box-shadow: inset 0 3px 0 rgba(255, 255, 255, .6), 0 6px 0 color-mix(in srgb, var(--b) 60%, #000 22%), 0 14px 22px -8px rgba(120, 80, 40, .35);
+    transform: translateY(0); transition: transform .12s var(--step), box-shadow .12s var(--step);
+  }
+  .btn:hover { transform: translateY(-2px) rotate(-1deg); }
+  .btn:active { transform: translateY(5px) scaleY(.94); box-shadow: inset 0 3px 0 rgba(255, 255, 255, .6), 0 1px 0 color-mix(in srgb, var(--b) 60%, #000 22%), 0 4px 8px -4px rgba(120, 80, 40, .3); }
+  .btn--mint { --b: var(--mint); }
+  .btn svg { width: 22px; height: 22px; flex: none; }
+
+  /* ---------- Header ---------- */
+  .header { position: fixed; inset: 0 0 auto; z-index: 40; padding: 12px 0; transition: background .2s var(--step), box-shadow .2s; }
+  .header.is-scrolled { background: rgba(255, 249, 242, .92); box-shadow: 0 1px 0 rgba(43, 33, 64, .08); backdrop-filter: blur(8px); }
+  .header .wrap { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .logo { display: flex; align-items: center; gap: 10px; text-decoration: none; font: 700 1.25rem/1 'Baloo 2', sans-serif; }
+  .pellets { display: flex; gap: 3px; }
+  .pellets i { width: 12px; height: 12px; border-radius: 50%; box-shadow: inset -2px -2px 0 rgba(0, 0, 0, .14), inset 1px 1px 0 rgba(255, 255, 255, .6); }
+  .nav ul { display: none; list-style: none; margin: 0; padding: 0; gap: 8px; }
+  .nav a {
+    display: block; padding: 8px 16px 10px; border-radius: 999px; text-decoration: none; font: 600 1.0625rem/1 'Baloo 2', sans-serif;
+    background: var(--table); box-shadow: inset 0 0 0 2px rgba(43, 33, 64, .1);
+    transition: transform .15s var(--step), background .15s var(--step);
+  }
+  .nav a:hover { transform: rotate(-3deg); }
+  .nav a.is-active { background: var(--b, var(--butter)); box-shadow: inset 0 2px 0 rgba(255, 255, 255, .6), 0 3px 0 rgba(43, 33, 64, .18); }
+  .menu-btn { min-height: 46px; padding: 0 18px 3px; font-size: 1.0625rem; }
+  .menu { position: fixed; inset: 72px 12px auto; z-index: 39; list-style: none; margin: 0; padding: 12px; --b: var(--lilac); }
+  .menu a { display: block; padding: 14px 16px; text-decoration: none; font: 700 1.6rem/1 'Baloo 2', sans-serif; border-radius: 14px; }
+  @media (min-width: 900px) { .nav ul { display: flex; } .menu-btn, .menu { display: none !important; } }
+
+  /* ---------- Hero ---------- */
+  .hero { position: relative; padding: 128px 0 64px; display: flex; align-items: center; overflow: hidden; }
+  @media (min-width: 900px) { .hero { min-height: 100svh; padding: 100px 0 56px; } }
+  /* morning light through a window, falling across the table */
+  .hero::before {
+    content: ""; position: absolute; inset: -20% -10%; pointer-events: none; filter: blur(36px); opacity: .9;
+    background: linear-gradient(118deg, transparent 8%, rgba(255, 224, 160, .55) 8% 22%, transparent 22% 27%, rgba(255, 224, 160, .45) 27% 41%, transparent 41%);
+  }
+  .hero .wrap { position: relative; }
+  .name {
+    font-weight: 800; font-size: clamp(3.4rem, 19.5vw, 15.5rem); line-height: .84; letter-spacing: -.01em;
+    margin-left: -.04em; user-select: none; -webkit-user-select: none; touch-action: manipulation;
+  }
+  .name .line { display: block; white-space: nowrap; }
+  .lt {
+    --c: var(--navy); --d: var(--navy-side);
+    position: relative; display: inline-block; color: var(--c); transform-origin: 50% 90%; rotate: var(--r, 0deg);
+    text-shadow: 0 .02em 0 var(--d), 0 .035em 0 var(--d), 0 .05em 0 var(--d), 0 .08em .06em rgba(120, 80, 40, .22);
+  }
+  .lt.is-poked { cursor: grab; }
+  /* LooseMarks: the Ł stroke and the Ć accent as separate clay pieces */
+  .mark {
+    --c: var(--c-pink); --d: #A8304F;
+    position: absolute; display: block; background: var(--c); border-radius: 999px; pointer-events: none;
+    box-shadow: 0 .02em 0 var(--d), 0 .04em 0 var(--d), 0 .07em .05em rgba(120, 80, 40, .2);
+  }
+  .mark--stroke { left: -.04em; top: .44em; width: .4em; height: .085em; transform: rotate(-28deg); }
+  .mark--acute { left: .2em; top: .02em; width: .26em; height: .095em; transform: rotate(-32deg); }
+  .hero-foot { display: grid; gap: 22px; margin-top: 34px; }
+  .role { font: 700 clamp(1.6rem, 5.4vw, 2.4rem)/1.05 'Baloo 2', sans-serif; }
+  .tagline { margin-top: 6px; color: var(--muted); font-size: 1.125rem; }
+  .ctas { display: flex; flex-wrap: wrap; gap: 14px; }
+  @media (min-width: 900px) {
+    .hero-foot { grid-template-columns: 1fr auto; align-items: end; margin-top: 48px; }
+  }
+
+  /* StopMotion boil: three filters cycled on .boil elements */
+  .boil { filter: var(--boil, none); }
+
+  /* ---------- Sections ---------- */
+  .sec { padding: 88px 0; }
+  @media (min-width: 1000px) { .sec { padding: 128px 0; } }
+  .sec-head { display: grid; gap: 10px; margin-bottom: 40px; max-width: 760px; }
+  .h2 { font-weight: 800; font-size: clamp(2.8rem, 9vw, 5.6rem); line-height: .9; }
+  .intro { color: var(--muted); font-size: 1.1875rem; max-width: 54ch; }
+
+  /* About */
+  .about { display: grid; gap: 40px; align-items: center; }
+  .about-text { display: grid; gap: 18px; font-size: 1.1875rem; max-width: 60ch; }
+  .portrait { --b: var(--mint); padding: 18px; max-width: 420px; transform: rotate(2deg); }
+  .portrait svg { width: 100%; height: auto; }
+  .portrait figcaption { margin-top: 10px; font-size: .9375rem; color: var(--muted); text-align: center; }
+  @media (min-width: 1000px) { .about { grid-template-columns: 1.3fr 1fr; gap: 80px; } .portrait { justify-self: end; } }
+
+  /* Stack: trays of rolled clay pieces */
+  .trays { display: grid; gap: 26px; align-items: start; grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr)); }
+  .tray { padding: 22px 22px 26px; }
+  .tray:nth-child(5n+1) { --b: var(--peach); }
+  .tray:nth-child(5n+2) { --b: var(--lilac); }
+  .tray:nth-child(5n+3) { --b: var(--mint); }
+  .tray:nth-child(5n+4) { --b: var(--butter); }
+  .tray:nth-child(5n+5) { --b: #FFD3DE; }
+  .tray h3 { font-size: 1.75rem; font-weight: 800; margin-bottom: 14px; }
+  .lvl { margin-top: 14px; }
+  .lvl dt { font-size: .875rem; font-weight: 700; color: var(--muted); margin-bottom: 6px; }
+  .lvl dd { margin: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+  .piece {
+    display: inline-block; background: var(--table); color: var(--ink); border-radius: 999px; font-family: 'Baloo 2', sans-serif; font-weight: 700;
+    box-shadow: inset 0 2px 0 #fff, 0 3px 0 rgba(43, 33, 64, .16), 0 6px 10px -4px rgba(43, 33, 64, .2);
+  }
+  .piece--strong { font-size: 1.1875rem; padding: 6px 16px 5px; box-shadow: inset 0 2px 0 #fff, 0 4px 0 rgba(43, 33, 64, .2), 0 8px 12px -4px rgba(43, 33, 64, .22); }
+  .piece--medium { font-size: 1rem; padding: 5px 13px 4px; }
+  .piece--low { font-size: .875rem; padding: 3px 10px 2px; background: rgba(255, 249, 242, .6); box-shadow: inset 0 0 0 1.5px rgba(43, 33, 64, .18); }
+  .piece.is-waiting { opacity: 0; transform: translateY(-14px) rotate(-6deg); }
+  .piece.is-placed { opacity: 1; transform: none; }
+
+  /* Career: a staircase of clay blocks, newest (highest) first */
+  .stairs { display: grid; gap: 22px; list-style: none; margin: 0; padding: 0; }
+  .step { padding: 24px 22px 26px; }
+  .stairs > li:nth-child(4n+1) > .step { --b: var(--butter); }
+  .stairs > li:nth-child(4n+2) > .step { --b: var(--lilac); }
+  .stairs > li:nth-child(4n+3) > .step { --b: var(--peach); }
+  .stairs > li:nth-child(4n+4) > .step { --b: var(--mint); }
+  .step-top { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 4px 16px; }
+  .step h3 { font-size: clamp(1.7rem, 4vw, 2.3rem); font-weight: 800; }
+  .dates { font-weight: 600; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .roles { margin-top: 6px; font: 600 1.25rem/1.3 'Baloo 2', sans-serif; }
+  .promo {
+    display: inline-flex; align-items: center; gap: 8px; margin-top: 12px; padding: 4px 14px 4px 6px; border-radius: 999px;
+    background: var(--ink); color: var(--table); font: 700 .9375rem/1.6 'Baloo 2', sans-serif;
+  }
+  .promo svg { width: 26px; height: 26px; }
+  .step .points { margin: 14px 0 0; padding-left: 20px; display: grid; gap: 6px; max-width: 72ch; }
+  .tags { display: flex; flex-wrap: wrap; gap: 6px; margin: 16px 0 0; padding: 0; list-style: none; }
+  .tag { font-size: .8125rem; font-weight: 600; padding: 2px 10px; border-radius: 999px; background: rgba(255, 249, 242, .7); box-shadow: inset 0 0 0 1.5px rgba(43, 33, 64, .14); }
+  .edu { margin-top: 22px; padding: 18px 22px; --b: #EFE7DC; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px 16px; }
+  .edu b { font: 700 1.25rem/1.2 'Baloo 2', sans-serif; }
+  @media (min-width: 1000px) {
+    /* each older job sits one step lower and further left */
+    .stairs > li { margin-left: calc((var(--n) - 1 - var(--i)) * 7%); margin-right: calc(var(--i) * 7%); }
+    .step { padding: 30px 36px 32px; }
+  }
+
+  /* Team: plasticine notes pressed on with a thumb */
+  .notes { display: grid; gap: 34px; list-style: none; margin: 0; padding: 0; }
+  .note { padding: 34px 26px 24px; margin: 0; }
+  .notes > li:nth-child(3n+1) > .note { --b: var(--lilac); transform: rotate(-1.5deg); }
+  .notes > li:nth-child(3n+2) > .note { --b: var(--butter); transform: rotate(1.2deg); }
+  .notes > li:nth-child(3n+3) > .note { --b: var(--mint); transform: rotate(-.8deg); }
+  .thumb { position: absolute; top: -16px; left: 50%; width: 46px; height: 34px; margin-left: -23px; border-radius: 50%; background: #F7A9BE; box-shadow: inset 0 -3px 0 rgba(0, 0, 0, .1), 0 3px 0 #D9849C; }
+  .thumb svg { width: 100%; height: 100%; }
+  .note blockquote { margin: 0; font: 500 1.25rem/1.45 'Baloo 2', sans-serif; }
+  .note blockquote p + p { margin-top: 8px; }
+  .note figcaption { margin-top: 16px; font-size: .9375rem; color: var(--muted); }
+  .note figcaption b { color: var(--ink); font-weight: 700; }
+  @media (min-width: 1000px) { .notes { grid-template-columns: repeat(3, 1fr); } }
+
+  /* Projects: modelling tiles with a pressed initial */
+  .tiles { display: grid; gap: 26px; list-style: none; margin: 0; padding: 0; grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); }
+  .tile { display: flex; flex-direction: column; height: 100%; padding: 22px; --b: #FFFFFF; }
+  .tiles > li:nth-child(4n+1) .press { --c: var(--c-pink); --d: #A8304F; }
+  .tiles > li:nth-child(4n+2) .press { --c: var(--c-blue); --d: #2A45A8; }
+  .tiles > li:nth-child(4n+3) .press { --c: var(--c-green); --d: #116347; }
+  .tiles > li:nth-child(4n+4) .press { --c: var(--c-violet); --d: #5434A8; }
+  .tile-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+  .press { font: 800 5rem/.8 'Baloo 2', sans-serif; color: var(--c); text-shadow: 0 2px 0 var(--d), 0 4px 0 var(--d), 0 7px 8px rgba(120, 80, 40, .2); }
+  .status { padding: 3px 12px; border-radius: 999px; font-weight: 700; font-size: .8125rem; white-space: nowrap; }
+  .status--live { background: var(--mint); }
+  .status--in-progress { background: var(--butter); }
+  .status--archived { background: #ECE6F7; }
+  .tile h3 { margin-top: 18px; font-size: 1.6rem; font-weight: 800; line-height: 1.05; }
+  .tile .note-line { margin-top: 6px; color: var(--muted); font-size: .9375rem; }
+  .tile .desc { margin-top: 10px; color: var(--muted); font-size: 1rem; }
+  .tile .links { margin-top: auto; padding-top: 16px; }
+  .tile .links a { font-weight: 700; text-underline-offset: 4px; text-decoration-thickness: 2px; text-decoration-color: var(--c-blue); }
+
+  /* Contact: ClayEnvelope */
+  .contact-grid { display: grid; gap: 48px; align-items: center; }
+  .avail { font: 600 clamp(1.5rem, 3.4vw, 2.2rem)/1.25 'Baloo 2', sans-serif; max-width: 24ch; }
+  .email { display: inline-block; margin-top: 22px; font: 700 clamp(1.25rem, 4.6vw, 2.2rem)/1.2 'Baloo 2', sans-serif; overflow-wrap: anywhere; text-underline-offset: 6px; text-decoration-thickness: 3px; text-decoration-color: var(--c-pink); }
+  .links-row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 24px; list-style: none; padding: 0; }
+  .links-row a, .links-row span { display: inline-flex; align-items: center; min-height: 44px; padding: 0 16px 2px; border-radius: 999px; font-weight: 700; text-decoration: none; background: #fff; box-shadow: inset 0 0 0 2px rgba(43, 33, 64, .12); }
+  .links-row span { color: var(--muted); font-weight: 600; }
+  .contact .ctas { margin-top: 26px; }
+  /* the top margin leaves room for the open flap (64% of the height, height = width / 1.45) */
+  .envelope { position: relative; width: min(100%, 520px); aspect-ratio: 1.45; margin: min(48%, 250px) auto 0; perspective: 900px; }
+  .env-back, .env-front, .env-flap { position: absolute; inset: 0; border-radius: 26px; }
+  .env-back { background: #F5B596; box-shadow: 0 6px 0 #D99274, 0 24px 36px -14px rgba(120, 80, 40, .4); }
+  .env-letter {
+    position: absolute; left: 7%; right: 7%; top: 46%; height: 52%; padding: 18px 22px; border-radius: 16px; background: #FFFDF9;
+    box-shadow: 0 2px 0 rgba(43, 33, 64, .08); display: grid; align-content: start; gap: 8px; transition: transform .5s steps(6, end);
+  }
+  .env-letter small { color: var(--muted); font-size: .9375rem; }
+  .env-letter a { font: 700 clamp(1rem, 3.6vw, 1.6rem)/1.15 'Baloo 2', sans-serif; overflow-wrap: anywhere; text-underline-offset: 5px; text-decoration-thickness: 3px; text-decoration-color: var(--c-pink); }
+  .env-front { clip-path: polygon(0 34%, 50% 70%, 100% 34%, 100% 100%, 0 100%); background: var(--peach); box-shadow: inset 0 -5px 0 rgba(0, 0, 0, .06); pointer-events: none; }
+  .env-flap {
+    height: 64%; clip-path: polygon(0 0, 100% 0, 50% 100%); background: #FFB894; transform-origin: 50% 0; pointer-events: none;
+    transition: transform .4s steps(5, end); z-index: 2;
+  }
+  .env-seal { position: absolute; left: 50%; top: 56%; width: 54px; height: 54px; margin: -27px 0 0 -27px; border-radius: 50%; background: var(--c-pink); box-shadow: inset 0 -4px 0 rgba(0, 0, 0, .15), 0 3px 0 #A8304F; z-index: 3; transition: opacity .2s steps(2, end); pointer-events: none; }
+  .envelope.is-open .env-flap { transform: rotateX(180deg); z-index: 0; }
+  .envelope.is-open .env-letter { transform: translateY(-86%); }
+  .envelope.is-open .env-seal { opacity: 0; }
+  @media (min-width: 1000px) { .contact-grid { grid-template-columns: 1fr 1fr; } .envelope { margin-top: 200px; } }
+
+  .footer { padding: 36px 0 44px; color: var(--muted); font-size: .9375rem; }
+  .footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 10px; }
+
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    *, *::before, *::after { transition: none !important; animation: none !important; }
+    .boil { filter: none !important; }
+  }
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<!-- StopMotion boil filters: same displacement, three seeds -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <filter id="boil0"><feTurbulence type="fractalNoise" baseFrequency=".022" numOctaves="2" seed="2"/><feDisplacementMap in="SourceGraphic" scale="4"/></filter>
+  <filter id="boil1"><feTurbulence type="fractalNoise" baseFrequency=".022" numOctaves="2" seed="7"/><feDisplacementMap in="SourceGraphic" scale="4"/></filter>
+  <filter id="boil2"><feTurbulence type="fractalNoise" baseFrequency=".022" numOctaves="2" seed="13"/><feDisplacementMap in="SourceGraphic" scale="4"/></filter>
+</svg>
+
+<header class="header" id="header">
+  <div class="wrap">
+    <a class="logo" href="#top"><span class="pellets" aria-hidden="true"><i style="background:var(--c-pink)"></i><i style="background:var(--butter)"></i><i style="background:var(--c-green)"></i></span><span id="logoName"></span></a>
+    <nav class="nav" aria-label="Main">
+      <ul id="navList"></ul>
+      <button class="btn menu-btn" id="menuBtn" aria-expanded="false" aria-controls="menu">Menu</button>
+    </nav>
+  </div>
+</header>
+<ul class="menu board" id="menu" hidden></ul>
+
+<main id="main">
+  <section class="hero" id="top" aria-labelledby="heroName"><div class="wrap" id="heroWrap"></div></section>
+  <section class="sec" id="about" aria-labelledby="about-h"><div class="wrap" id="aboutWrap"></div></section>
+  <section class="sec" id="stack" aria-labelledby="stack-h"><div class="wrap" id="stackWrap"></div></section>
+  <section class="sec" id="career" aria-labelledby="career-h"><div class="wrap" id="careerWrap"></div></section>
+  <section class="sec" id="team" aria-labelledby="team-h"><div class="wrap" id="teamWrap"></div></section>
+  <section class="sec" id="projects" aria-labelledby="projects-h"><div class="wrap" id="projectsWrap"></div></section>
+  <section class="sec contact" id="contact" aria-labelledby="contact-h"><div class="wrap" id="contactWrap"></div></section>
+</main>
+<footer class="footer"><div class="wrap" id="footerWrap"></div></footer>
+
+<script>
+  /* =====================================================================
+     Content (becomes src/content/ in the React build)
+     ===================================================================== */
+  const CONTENT = {
+    profile: {
+      name: 'Rafał Ciećwierz',
+      nameLines: ['Rafał', 'Ciećwierz'],
+      role: 'Frontend Engineer',
+      tagline: 'React & TypeScript · 5+ years building production apps',
+      availability: 'Open to frontend roles (React / TypeScript), remote or hybrid.',
+      email: 'rafal.ciecwierz4@gmail.com',
+      github: 'https://github.com/rafalciecwierz',
+      linkedin: null, // TODO: Rafał to provide URL
+      calendly: null, // TODO: Rafał to provide URL
+      cvFile: '/Rafal_Ciecwierz_CV.pdf'
+    },
+    nav: [
+      { id: 'about', label: 'About' },
+      { id: 'stack', label: 'Stack' },
+      { id: 'career', label: 'Career' },
+      { id: 'projects', label: 'Projects' },
+      { id: 'contact', label: 'Contact' }
+    ],
+    hero: { cv: 'Download CV', contact: 'Get in touch' },
+    about: {
+      title: 'About',
+      paragraphs: [
+        "I'm a frontend engineer with 5+ years of commercial experience in React and TypeScript. I started my career in QA automation, moved into frontend development after three months at my team's request, and later led a team of six developers.",
+        "I care about clean architecture, reusable UI and tests that actually protect the product. Lately I've been going deeper into the backend with NestJS and experimenting with motion and 3D in the browser.",
+        'Outside of code: parkour (for over 22 years) and climbing.'
+      ],
+      // NEW CONTENT: portrait alt text and caption
+      portraitAlt: 'A flat clay portrait of Rafał: swept-up light-brown hair, light stubble, a wide smile, a navy blazer over a white T-shirt.',
+      portraitCaption: 'Modelled in SVG while the real photo is on its way.' // TODO: replace with Rafał's photo or keep the clay version
+    },
+    stack: {
+      title: 'Stack',
+      intro: 'Laid out on trays. The chunkier the piece, the more production time behind it.', // NEW CONTENT
+      groups: [
+        { name: 'Frontend', items: [['React', 'strong'], ['TypeScript', 'strong'], ['JavaScript', 'strong'], ['HTML5', 'strong'], ['CSS / SCSS / Styled-components', 'strong'], ['Next.js', 'medium'], ['Gatsby', 'medium'], ['Module Federation', 'medium'], ['React Native', 'low']] },
+        { name: 'Data & UI', items: [['TanStack Query', 'strong'], ['Redux', 'strong'], ['Zod', 'strong'], ['React Hook Form', 'strong'], ['Storybook', 'strong'], ['Ant Design', 'strong'], ['Material UI', 'strong'], ['Tailwind CSS', 'medium'], ['WebSockets', 'medium']] },
+        { name: 'Testing', items: [['Jest / Vitest', 'strong'], ['React Testing Library', 'strong'], ['Cypress', 'strong']] },
+        { name: 'Backend', items: [['Node.js', 'medium'], ['NestJS', 'medium'], ['PostgreSQL', 'medium'], ['Strapi', 'medium']] },
+        { name: 'Tooling', items: [['Git', 'strong'], ['Figma', 'strong'], ['Postman', 'strong'], ['Vite', 'strong'], ['Webpack', 'strong'], ['Docker', 'medium'], ['Claude Code', 'medium']] }
+      ]
+    },
+    career: {
+      title: 'Career',
+      intro: 'Newest at the top. Each block sits a step above the last one.', // NEW CONTENT
+      promoted: 'Promoted', // NEW CONTENT
+      jobs: [
+        {
+          company: 'MUG Software', roles: ['Front-end Software Engineer'], dates: '04.2025 – 08.2026',
+          points: [
+            'Maintained and extended a white-label React platform: a core repository with client-specific forks, propagating global changes upstream-to-fork while keeping client customizations isolated.',
+            'Developed and maintained a shared Storybook component library (50+ components), improving UI consistency and speeding up feature development.',
+            'Introduced TanStack Query (replacing Redux for server state) and Zod (replacing Yup), adopting them incrementally across the app as part of ongoing feature work.'
+          ],
+          stack: ['React', 'TypeScript', 'Styled Components', 'Jest', 'Redux', 'Storybook', 'Webpack', 'TanStack Query', 'Zod']
+        },
+        {
+          company: 'VML Enterprise Solutions', roles: ['Front-end Software Engineer'], dates: '09.2024 – 04.2025',
+          points: [
+            'Owned a reference-data micro-frontend (countries, currencies and other company-wide dictionaries) integrated into a large enterprise advertising platform via Webpack Module Federation.',
+            "Maintained and developed the module's codebase, increasing unit test coverage from 11% to over 80%.",
+            'Took part in the migration of a subdomain to a standalone microservice.'
+          ],
+          stack: ['React', 'TypeScript', 'SCSS', 'Jest', 'React Hook Form', 'Webpack', 'Vite', 'Module Federation']
+        },
+        {
+          company: 'Mood up', roles: ['React Developer', 'Front-end Team Leader'], dates: '10.2022 – 08.2024',
+          points: [
+            'Built the React/Redux interface for a smart intercom running on an embedded Raspberry Pi device.',
+            'Promoted to Front-end Team Leader; led a team of 6 developers delivering MVPs for international startup clients.',
+            'Delivered projects from requirements gathering and estimation with clients through development, testing (Jest) and deployment.',
+            "Led a headless CMS evaluation (Strapi, Sanity, Contentful, headless WordPress and others), narrowing the shortlist to Strapi and Payload CMS for the company's stack."
+          ],
+          stack: ['React', 'Gatsby', 'Next.js', 'React Native', 'TypeScript', 'SCSS', 'Strapi', 'Material UI', 'Ant Design', 'Webpack', 'Vite', 'Figma']
+        },
+        {
+          company: 'mTab sp. z o.o.', roles: ['QA Automation Engineer', 'JavaScript Developer'], dates: '07.2021 – 09.2022',
+          points: [
+            "Promoted from QA Automation Engineer (Cypress E2E) to front-end developer after 3 months at the product team's request.",
+            'Developed views and features in React for a data visualization platform with dynamic, reactive charts and presentation-style reports.',
+            'Built Node.js scripts run nightly by Jenkins that aggregated test results into reports and posted them to Slack.',
+            'Maintained and extended a legacy Backbone.js codebase.'
+          ],
+          stack: ['React', 'JavaScript', 'TypeScript', 'Redux', 'SCSS', 'Jest', 'Cypress', 'Node.js', 'Backbone.js']
+        }
+      ],
+      education: { school: 'Adam Mickiewicz University', degree: "Engineer's degree in Computer Science", dates: '2015 – 2021' }
+    },
+    team: {
+      title: 'Notes from the team',                                        // NEW CONTENT
+      intro: 'LinkedIn recommendations from my team at Mood up, June 2024.', // NEW CONTENT
+      quotes: [
+        { name: 'Wiktoria W.', role: 'Marketing & Communication', text: ["Seriously, I've never met a leader as tuned in and supportive as him.", "Whoever snags him next is super lucky - yeah, I'm a bit envious. 😉"] },
+        { name: 'Rafał H.', role: 'Frontend Developer', text: ['His enthusiasm and optimism were contagious, making him a joy to work with.'] },
+        { name: 'Szymon K.', role: 'Frontend Developer', text: ['His technical skills and ability to simplify complex concepts, guiding others through challenges, have been invaluable in enhancing the overall quality and efficiency of our development processes.'] }
+      ],
+      source: 'Mood up, 2024'
+    },
+    projects: {
+      title: 'Projects',
+      intro: 'Each one gets a tile. There is plenty of table left.', // NEW CONTENT
+      repoLabel: 'Repository',
+      items: [
+        { name: 'Ashen Contracts', status: 'in progress', description: 'Browser-based idle/RPG game built as a full-stack showcase: pnpm monorepo with a Next.js app, NestJS API, shared Storybook UI library and shared TypeScript types. Architecture decisions documented in an ADR-style log.', tags: ['Next.js', 'NestJS', 'PostgreSQL', 'Prisma', 'Storybook', 'Docker', 'GitHub Actions'], repo: 'https://github.com/rafalciecwierz/ashen-contracts' },
+        { name: 'Ultimate Frisbee Tournament Platform', status: 'archived', note: 'Engineering thesis (team of 4), built for the Polish Ultimate Players Association', description: 'Owned the entire NestJS + PostgreSQL backend, built live match scoring with Socket.io (scorekeeper tablet view + real-time spectator view), designed the full UI in Figma, deployed to AWS and tested at a live tournament in Szczecin.', tags: ['NestJS', 'PostgreSQL', 'Socket.io', 'Swagger', 'AWS', 'Nuxt', 'Figma'] },
+        { name: 'This website', status: 'live', description: 'Personal site with a procedural 3D hero (React Three Fiber) and scroll-driven animations (GSAP, Lenis), built with a performance and accessibility budget.', tags: ['React', 'TypeScript', 'Three.js', 'GSAP', 'Vite'], repo: 'https://github.com/rafalciecwierz/rafalciecwierz.github.io' },
+        { name: 'Next.js page transitions', status: 'archived', description: 'Comparison of three page-transition approaches in Next.js: custom implementation, Framer Motion and GSAP.', tags: ['Next.js', 'Framer Motion', 'GSAP'], repo: 'https://github.com/rafalciecwierz/Nextjs-page-transition' }
+      ]
+    },
+    contact: {
+      title: 'Contact',
+      calendlyLabel: 'Book a 20-min call',
+      // NEW CONTENT: the letter inside the envelope (a mailto with a ready subject)
+      letterLead: 'Hi Rafał,',
+      letterText: "let's talk about a frontend role.",
+      letterSubject: 'Frontend role'
+    },
+    footer: {
+      builtWith: 'Built with React, Three.js and GSAP',
+      repo: 'https://github.com/rafalciecwierz/rafalciecwierz.github.io'
+    },
+    // NEW CONTENT: console greeting
+    console: 'Everything here moves at 12 frames per second, like proper claymation. Poke the letters of the name.'
+  };
+
+  /* =====================================================================
+     Helpers
+     ===================================================================== */
+  const $ = (s, r = document) => r.querySelector(s);
+  const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const P = CONTENT.profile;
+  const head = (id, title, intro) => `
+    <div class="sec-head">
+      <h2 class="h2" id="${id}">${esc(title)}</h2>
+      ${intro ? `<p class="intro">${esc(intro)}</p>` : ''}
+    </div>`;
+  const ICON = {
+    download: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11m0 0-4.5-4.5M12 15l4.5-4.5M5 20h14"/></svg>',
+    hand: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12h12m0 0-5-5m5 5-5 5"/><path d="M20 5v14"/></svg>'
+  };
+  // Hand-placed tilt per letter (degrees), so the name looks set by hand rather than typeset
+  const TILT = [-2, 1.5, -1, 2, -1.5, 1, -2.5, .5, 2];
+
+  /* =====================================================================
+     Rendering (one function per section = one component later)
+     ===================================================================== */
+  function renderHeader() {
+    $('#logoName').textContent = P.name;
+    const items = CONTENT.nav.map((n) => `<li><a href="#${n.id}" data-nav="${n.id}">${esc(n.label)}</a></li>`).join('');
+    $('#navList').innerHTML = items;
+    $('#menu').innerHTML = items;
+  }
+
+  // Splits the name into clay letters. Ł/ł and Ć/ć become the base letter plus a loose mark.
+  function clayLetter(ch, i) {
+    const marks = { 'ł': ['l', 'stroke'], 'Ł': ['L', 'stroke'], 'ć': ['c', 'acute'], 'Ć': ['C', 'acute'] };
+    const [base, mark] = marks[ch] || [ch, null];
+    return `<span class="lt" style="--r:${TILT[i % TILT.length]}deg">${esc(base)}${mark ? `<i class="mark mark--${mark}"></i>` : ''}</span>`;
+  }
+
+  function renderHero() {
+    let i = 0;
+    const lines = P.nameLines.map((l) => `<span class="line" aria-hidden="true">${[...l].map((ch) => clayLetter(ch, i++)).join('')}</span>`).join('');
+    $('#heroWrap').innerHTML = `
+      <h1 class="name boil" id="heroName"><span class="vh">${esc(P.name)}</span>${lines}</h1>
+      <div class="hero-foot">
+        <div>
+          <p class="role">${esc(P.role)}</p>
+          <p class="tagline">${esc(P.tagline)}</p>
+        </div>
+        <div class="ctas">
+          <a class="btn" href="${P.cvFile}" download>${ICON.download}${esc(CONTENT.hero.cv)}</a>
+          <a class="btn btn--mint" href="#contact">${esc(CONTENT.hero.contact)}</a>
+        </div>
+      </div>`;
+  }
+
+  // ClayPortrait (custom SVG): flat clay shapes, eyes swap to a blink frame
+  function portraitSVG() {
+    return `<svg viewBox="0 0 400 440" role="img" aria-label="${esc(CONTENT.about.portraitAlt)}" class="boil">
+      <ellipse cx="200" cy="420" rx="150" ry="16" fill="#8FCDB5"/>
+      <path d="M58 440c0-92 62-140 142-140s142 48 142 140z" fill="#25366A"/>
+      <path d="M58 440c0-92 62-140 142-140s142 48 142 140" fill="none" stroke="#1A2750" stroke-width="8"/>
+      <path d="M166 304l34 96 34-96z" fill="#FFFDF9"/>
+      <path d="M150 306l50 120-22-118zM250 306l-50 120 22-118z" fill="#1A2750"/>
+      <rect x="176" y="250" width="48" height="62" rx="20" fill="#E6B08B"/>
+      <ellipse cx="200" cy="184" rx="104" ry="112" fill="#F3C6A2"/>
+      <ellipse cx="96" cy="194" rx="16" ry="24" fill="#EDB893"/><ellipse cx="304" cy="194" rx="16" ry="24" fill="#EDB893"/>
+      <path d="M112 226c18 56 52 82 88 82s70-26 88-82c-26 22-56 30-88 30s-62-8-88-30z" fill="#DDA987" opacity=".35"/>
+      <path d="M94 160c-8-74 44-118 110-116 60 2 110 40 104 108-10-30-34-50-62-58 8 18 6 30-4 40-14-30-46-48-84-46-30 2-56 18-64 72z" fill="#94693F"/>
+      <path d="M150 74c22-30 70-44 112-24M168 60c26-20 66-22 92-6" stroke="#B48552" stroke-width="12" stroke-linecap="round" fill="none"/>
+      <path d="M138 160q20-12 40 0M222 160q20-12 40 0" stroke="#7A5532" stroke-width="9" stroke-linecap="round" fill="none"/>
+      <g id="eyesOpen"><ellipse cx="158" cy="186" rx="11" ry="13" fill="#2B2140"/><ellipse cx="242" cy="186" rx="11" ry="13" fill="#2B2140"/><circle cx="162" cy="181" r="3.5" fill="#fff"/><circle cx="246" cy="181" r="3.5" fill="#fff"/></g>
+      <g id="eyesShut" style="display:none"><path d="M146 188q12 8 24 0M230 188q12 8 24 0" stroke="#2B2140" stroke-width="7" stroke-linecap="round" fill="none"/></g>
+      <ellipse cx="200" cy="214" rx="14" ry="11" fill="#E8A784"/>
+      <path d="M146 236q54 52 108 0q-54 18-108 0z" fill="#FFFDF9" stroke="#8A3442" stroke-width="8" stroke-linejoin="round"/>
+      <ellipse cx="128" cy="226" rx="16" ry="10" fill="#F4A0A0" opacity=".7"/><ellipse cx="272" cy="226" rx="16" ry="10" fill="#F4A0A0" opacity=".7"/>
+    </svg>`;
+  }
+
+  function renderAbout() {
+    const A = CONTENT.about;
+    $('#aboutWrap').innerHTML = `
+      ${head('about-h', A.title)}
+      <div class="about">
+        <div class="about-text">${A.paragraphs.map((p) => `<p>${esc(p)}</p>`).join('')}</div>
+        <figure class="portrait board" style="margin:0">${portraitSVG()}<figcaption>${esc(A.portraitCaption)}</figcaption></figure>
+      </div>`;
+  }
+
+  function renderStack() {
+    const S = CONTENT.stack;
+    $('#stackWrap').innerHTML = `
+      ${head('stack-h', S.title, S.intro)}
+      <div class="trays">
+        ${S.groups.map((g) => `
+          <div class="tray board">
+            <h3>${esc(g.name)}</h3>
+            <dl>${['strong', 'medium', 'low'].map((lvl) => {
+              const items = g.items.filter((it) => it[1] === lvl);
+              return items.length ? `<div class="lvl"><dt>${lvl}</dt><dd>${items.map((it) => `<span class="piece piece--${lvl}">${esc(it[0])}</span>`).join('')}</dd></div>` : '';
+            }).join('')}</dl>
+          </div>`).join('')}
+      </div>`;
+  }
+
+  function stepUpSVG() {
+    return '<svg viewBox="0 0 26 26" aria-hidden="true"><path d="M4 21h6v-6h6V9h6" stroke="#FFE59C" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  }
+
+  function renderCareer() {
+    const C = CONTENT.career, n = C.jobs.length;
+    $('#careerWrap').innerHTML = `
+      ${head('career-h', C.title, C.intro)}
+      <ol class="stairs">
+        ${C.jobs.map((j, i) => `
+          <li style="--i:${i};--n:${n}">
+            <article class="step board">
+              <div class="step-top"><h3>${esc(j.company)}</h3><span class="dates">${esc(j.dates)}</span></div>
+              <p class="roles">${j.roles.map(esc).join(' → ')}</p>
+              ${j.roles.length > 1 ? `<p class="promo">${stepUpSVG()}${esc(C.promoted)}: ${esc(j.roles[j.roles.length - 1])}</p>` : ''}
+              <ul class="points">${j.points.map((p) => `<li>${esc(p)}</li>`).join('')}</ul>
+              <ul class="tags" aria-label="Stack">${j.stack.map((t) => `<li class="tag">${esc(t)}</li>`).join('')}</ul>
+            </article>
+          </li>`).join('')}
+      </ol>
+      <div class="edu board"><div><b>${esc(C.education.school)}</b><br>${esc(C.education.degree)}</div><span class="dates">${esc(C.education.dates)}</span></div>`;
+  }
+
+  function renderTeam() {
+    const T = CONTENT.team;
+    const print = '<svg viewBox="0 0 46 34" aria-hidden="true"><g fill="none" stroke="#C9708A" stroke-width="1.4" opacity=".7"><ellipse cx="23" cy="17" rx="5" ry="3.5"/><ellipse cx="23" cy="17" rx="10" ry="7"/><ellipse cx="23" cy="17" rx="15" ry="10.5"/></g></svg>';
+    $('#teamWrap').innerHTML = `
+      ${head('team-h', T.title, T.intro)}
+      <ul class="notes">
+        ${T.quotes.map((q) => `
+          <li><figure class="note board">
+            <span class="thumb">${print}</span>
+            <blockquote>${q.text.map((t) => `<p>“${esc(t)}”</p>`).join('')}</blockquote>
+            <figcaption><b>${esc(q.name)}</b>, ${esc(q.role)}, ${esc(T.source)}</figcaption>
+          </figure></li>`).join('')}
+      </ul>`;
+  }
+
+  function renderProjects() {
+    const Pr = CONTENT.projects;
+    $('#projectsWrap').innerHTML = `
+      ${head('projects-h', Pr.title, Pr.intro)}
+      <ul class="tiles">
+        ${Pr.items.map((p) => `
+          <li><article class="tile board">
+            <div class="tile-top"><span class="press" aria-hidden="true">${esc(p.name[0])}</span><span class="status status--${p.status.replace(/\s/g, '-')}">${esc(p.status)}</span></div>
+            <h3>${esc(p.name)}</h3>
+            ${p.note ? `<p class="note-line">${esc(p.note)}</p>` : ''}
+            <p class="desc">${esc(p.description)}</p>
+            <ul class="tags" aria-label="Tags">${p.tags.map((t) => `<li class="tag">${esc(t)}</li>`).join('')}</ul>
+            ${p.repo ? `<p class="links"><a href="${p.repo}">${esc(Pr.repoLabel)}<span class="vh">: ${esc(p.name)}</span></a></p>` : ''}
+          </article></li>`).join('')}
+      </ul>`;
+  }
+
+  function renderContact() {
+    const C = CONTENT.contact;
+    const link = (label, url) => url ? `<li><a href="${url}">${esc(label)}</a></li>` : `<li><span>${esc(label)}: TODO</span></li>`;
+    $('#contactWrap').innerHTML = `
+      <div class="contact-grid">
+        <div>
+          ${head('contact-h', C.title)}
+          <p class="avail">${esc(P.availability)}</p>
+          <a class="email" href="mailto:${P.email}">${esc(P.email)}</a>
+          <ul class="links-row">${link('LinkedIn', P.linkedin)}${link('GitHub', P.github)}${link(C.calendlyLabel, P.calendly)}</ul>
+          <div class="ctas"><a class="btn" href="${P.cvFile}" download>${ICON.download}${esc(CONTENT.hero.cv)}</a></div>
+        </div>
+        <div class="envelope${reduceMotion ? ' is-open' : ''}" id="envelope">
+          <div class="env-back"></div>
+          <div class="env-letter"><small>${esc(C.letterLead)}</small><a href="mailto:${P.email}?subject=${encodeURIComponent(C.letterSubject)}">${esc(C.letterText)}</a></div>
+          <div class="env-front"></div>
+          <div class="env-flap"></div>
+          <div class="env-seal" aria-hidden="true"></div>
+        </div>
+      </div>`;
+  }
+
+  function renderFooter() {
+    const F = CONTENT.footer;
+    $('#footerWrap').innerHTML = `<p>${esc(F.builtWith)}. <a href="${F.repo}">Source on GitHub</a></p><p>© ${new Date().getFullYear()} ${esc(P.name)}</p>`;
+  }
+
+  /* =====================================================================
+     Thumbprint (custom): an SVG fingerprint pattern for the clay boards
+     ===================================================================== */
+  function Thumbprint() {
+    let arcs = '';
+    const prints = [[60, 50, .3], [210, 150, -.6], [120, 230, 1.1]];
+    for (const [x, y, r] of prints) for (let k = 4; k < 30; k += 4.2) arcs += `<ellipse cx="${x}" cy="${y}" rx="${k}" ry="${k * .72}" transform="rotate(${r * 57} ${x} ${y})" stroke-dasharray="${k * 2.4} 6"/>`;
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="280" height="280"><g fill="none" stroke="rgba(43,33,64,.09)" stroke-width="1.3">${arcs}</g></svg>`;
+    document.documentElement.style.setProperty('--prints', `url("data:image/svg+xml,${encodeURIComponent(svg)}")`);
+  }
+
+  /* =====================================================================
+     StopMotion (custom): a 12 fps frame clock shared by all clay motion
+     ===================================================================== */
+  const StopMotion = (() => {
+    const subs = new Set();
+    let frame = 0, last = 0, raf = 0;
+    const FPS = 12;
+    function loop(now) {
+      raf = requestAnimationFrame(loop);
+      if (now - last < 1000 / FPS) return;
+      last = now; frame++;
+      document.documentElement.style.setProperty('--boil', `url(#boil${frame % 3})`);
+      subs.forEach((fn) => fn(frame));
+    }
+    return {
+      start() { if (!reduceMotion && !raf) raf = requestAnimationFrame(loop); },
+      stop() { cancelAnimationFrame(raf); raf = 0; },
+      on(fn) { subs.add(fn); return () => subs.delete(fn); }
+    };
+  })();
+
+  /* =====================================================================
+     ClayLetters + LooseMarks (custom): poke the name
+     ===================================================================== */
+  function ClayLetters() {
+    if (reduceMotion) return;
+    const letters = $$('.lt').map((el) => ({ el, mark: $('.mark', el), s: 0, v: 0, t: 0, pop: 0, pv: 0, cx: 0, cy: 0, w: 1 }));
+    const measure = () => letters.forEach((L) => { const r = L.el.getBoundingClientRect(); L.cx = r.left + r.width / 2; L.cy = r.top + r.height / 2 + scrollY; L.w = r.width; });
+    measure(); addEventListener('resize', measure); document.fonts.ready.then(measure);
+    let px = -9999, py = -9999;
+    const name = $('#heroName');
+    name.addEventListener('pointermove', (e) => { px = e.clientX; py = e.clientY + scrollY; });
+    name.addEventListener('pointerleave', () => { px = py = -9999; });
+    name.addEventListener('pointerdown', (e) => {
+      // a poke: the nearest letter squashes hard; a loose mark pops off
+      let best = null, bd = Infinity;
+      for (const L of letters) { const d = Math.hypot(L.cx - e.clientX, L.cy - (e.clientY + scrollY)); if (d < bd) { bd = d; best = L; } }
+      if (best) { best.v -= .55; if (best.mark) best.pv = -1.4; }
+    });
+    // Physics runs every frame of the clock; the transforms are only written on clock frames,
+    // so the motion has the slightly jerky timing of hand-animated clay.
+    StopMotion.on(() => {
+      for (const L of letters) {
+        const reach = L.w * 1.6, d = Math.hypot(L.cx - px, L.cy - py);
+        L.t = d < reach ? (1 - d / reach) * .32 : 0;
+        L.v += (L.t - L.s) * .55; L.v *= .5; L.s += L.v;            // spring towards the squash target
+        L.pv += .45; L.pop += L.pv; if (L.pop > 0) { L.pop = 0; L.pv *= -.35; }  // mark falls back and bounces
+        const sq = Math.max(-.2, Math.min(.45, L.s));
+        L.el.style.transform = sq ? `scale(${1 + sq * .55}, ${1 - sq})` : '';
+        if (L.mark) L.mark.style.translate = L.pop ? `0 ${L.pop * .12}em` : '';
+      }
+    });
+  }
+
+  /* ClayPortrait blink (custom): swap to the shut-eyes frame for two clock frames */
+  function ClayPortrait() {
+    if (reduceMotion) return;
+    const open = $('#eyesOpen'), shut = $('#eyesShut');
+    let next = 30, until = 0;
+    StopMotion.on((f) => {
+      if (f >= next) { until = f + 2; next = f + 30 + Math.floor(Math.random() * 40); }
+      const closed = f < until;
+      open.style.display = closed ? 'none' : ''; shut.style.display = closed ? '' : 'none';
+    });
+  }
+
+  /* PlaceOnTray (custom): pieces are placed one per frame when a tray comes into view */
+  function PlaceOnTray() {
+    if (reduceMotion) return;
+    const queue = [];
+    $$('.tray').forEach((tray) => $$('.piece', tray).forEach((p) => p.classList.add('is-waiting')));
+    const io = new IntersectionObserver((entries) => {
+      for (const e of entries) if (e.isIntersecting) { queue.push(...$$('.piece.is-waiting', e.target)); io.unobserve(e.target); }
+    }, { threshold: .25 });
+    $$('.tray').forEach((t) => io.observe(t));
+    StopMotion.on(() => {
+      for (let k = 0; k < 2 && queue.length; k++) { const p = queue.shift(); p.classList.remove('is-waiting'); p.classList.add('is-placed'); }
+    });
+  }
+
+  /* ClayEnvelope (custom): opens on hover or when anything inside gets focus */
+  function ClayEnvelope() {
+    const env = $('#envelope');
+    if (reduceMotion) return;
+    const set = (v) => env.classList.toggle('is-open', v);
+    env.addEventListener('pointerenter', () => set(true));
+    env.addEventListener('pointerleave', () => { if (!env.contains(document.activeElement)) set(false); });
+    env.addEventListener('focusin', () => set(true));
+    env.addEventListener('focusout', () => set(false));
+    // on touch screens open it once it is well in view
+    new IntersectionObserver(([e]) => { if (matchMedia('(hover: none)').matches) set(e.intersectionRatio > .7); }, { threshold: [0, .7, 1] }).observe(env);
+  }
+
+  /* =====================================================================
+     NavState, MobileMenu, ConsoleHello (custom)
+     ===================================================================== */
+  function NavState() {
+    const links = $$('[data-nav]');
+    const colors = ['var(--peach)', 'var(--lilac)', 'var(--mint)', 'var(--butter)', '#FFD3DE'];
+    links.forEach((a) => a.style.setProperty('--b', colors[CONTENT.nav.findIndex((n) => n.id === a.dataset.nav) % colors.length]));
+    const io = new IntersectionObserver((entries) => {
+      for (const e of entries) if (e.isIntersecting) links.forEach((a) => a.classList.toggle('is-active', a.dataset.nav === e.target.id));
+    }, { rootMargin: '-45% 0px -50% 0px' });
+    ['top', ...CONTENT.nav.map((n) => n.id)].forEach((id) => io.observe(document.getElementById(id)));
+    const header = $('#header');
+    const onScroll = () => header.classList.toggle('is-scrolled', scrollY > 30);
+    addEventListener('scroll', onScroll, { passive: true }); onScroll();
+  }
+
+  function MobileMenu() {
+    const btn = $('#menuBtn'), menu = $('#menu');
+    const focusables = () => [btn, ...$$('a', menu)];
+    function set(open) {
+      menu.hidden = !open;
+      btn.setAttribute('aria-expanded', String(open));
+      btn.textContent = open ? 'Close' : 'Menu';
+      document.documentElement.style.overflow = open ? 'hidden' : '';
+      if (open) $('a', menu).focus();
+    }
+    btn.addEventListener('click', () => set(menu.hidden));
+    menu.addEventListener('click', (e) => { if (e.target.closest('a')) set(false); });
+    document.addEventListener('keydown', (e) => {
+      if (menu.hidden) return;
+      if (e.key === 'Escape') { set(false); btn.focus(); }
+      if (e.key === 'Tab') {
+        const f = focusables(), i = f.indexOf(document.activeElement);
+        if (e.shiftKey && i <= 0) { e.preventDefault(); f[f.length - 1].focus(); }
+        else if (!e.shiftKey && i === f.length - 1) { e.preventDefault(); f[0].focus(); }
+      }
+    });
+    matchMedia('(min-width: 900px)').addEventListener('change', () => set(false));
+  }
+
+  function ConsoleHello() {
+    console.log('%c●●● %c' + CONTENT.console, 'color:#E04A74;font-size:18px', 'font:600 13px sans-serif');
+  }
+
+  /* =====================================================================
+     Boot
+     ===================================================================== */
+  renderHeader();
+  renderHero();
+  renderAbout();
+  renderStack();
+  renderCareer();
+  renderTeam();
+  renderProjects();
+  renderContact();
+  renderFooter();
+  Thumbprint();
+  NavState();
+  MobileMenu();
+  ClayLetters();
+  ClayPortrait();
+  PlaceOnTray();
+  ClayEnvelope();
+  ConsoleHello();
+  StopMotion.start();
+  document.addEventListener('visibilitychange', () => (document.hidden ? StopMotion.stop() : StopMotion.start()));
+</script>
+</body>
+</html>

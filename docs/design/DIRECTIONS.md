@@ -422,7 +422,9 @@ How the directions spread across the axes from the research. No two directions s
 
 ## 07 — Field Notes (`field-notes`)
 
-**Status:** approved.
+**Status:** built (both variants). **Files:** `design/prototypes/07-field-notes-dark.html`, `design/prototypes/07-field-notes-light.html`.
+
+**Shared by both variants:** only the style: code-drawn generative line work that means something in every section. The concept, hero and sections below describe the dark variant; the light variant replaces them with a pen-plotter sheet.
 
 **Concept:** A living, code-drawn page. A generative field of flowing lines (a flow field) fills the background and **reorganises itself per section**:
 - it spells out the name in the hero,
@@ -449,7 +451,29 @@ The site feels like a scientist's or plotter artist's notebook where the drawing
 
 **Dark take:** "night sky": a deep blue-black ground with luminous lines in a shifting multi-hue gradient (no acid green), like long-exposure light painting.
 
+**As built (dark), task 2.4: "Long Exposure".** A night sky on a long exposure: one field of light lines behind the whole page, steered by the page itself. The concept, hero and sections above belong to this variant.
+- **Palette:** night `#04050D` (the ground; the canvas fills with it), panel `rgba(8, 10, 28, .86)`; text `#F2F0EA`, muted `#A9AEC8`; light-painting hues gold `#FFC65C`, magenta `#FF4FB4`, electric blue `#4D7CFF` and ice `#9BE7FF` (links, focus, "live"). Primary buttons are warm white with night text, so no hue is tied to the CTA. No acid green, lilac or teal (01 and 06).
+- **Type:** Syne (display 600–800; the name is fitted to the column by script because Syne 800 is very wide) + DM Sans (text), as the direction names.
+- **Layout:** a fixed full-viewport canvas behind a plain single column. Every section opens with an observation line ("02 Clusters · one orbit per tool…") and a huge Syne title. Sections in brief order: hero, About (text and a "field log" of four facts), Stack, Career, "From the team" (quotes, new, after Career, not in the nav), Projects, Contact, footer.
+- **Hero moment:** the light traces the real HTML name. The name, the stack orbits, the career path and the contact heading are drawn into a mask of the whole document; a chamfer distance transform turns it into a field whose gradient pulls lines in and whose 90° turn sends them along the outlines. Lines ride with the scroll (the canvas image shifts with the page), fast scrolling or a flicked cursor scatters them, and holding the pointer down paints extra light.
+- **Section forms:** Stack as orbits (a ring per tool sized by level, with the level word under the name; the field circles each ring); Career as one path that bends at each job, drawn on scroll, with promotions as bright knots; quotes as three staggered columns under gradient rules; Projects as "specimen" cards, each with a small field grown from the project name (a ring, vortex or drift) that runs while hovered or focused; Contact as a traced heading ("Let’s talk / frontend.") and a channel list.
+- **Effects:** LightField (custom canvas 2D flow field plus distance field, additive blending), LightBrush, Scatter, ScrambledHeading (React Bits ScrambledText port, Polish glyphs), CareerPath (SVG, GSAP ScrollTrigger in React), SpecimenThumb, SeedControl (the footer easter egg: a name reseeds the whole field; also `window.reseed()`), Readout (line count, seed and fps in the hero corner), FitName, NavMenu, console message. All custom, no libraries.
+- **Left out on purpose:** WebGL and three.js (canvas 2D is enough and keeps the budget), OffscreenCanvas in a worker (the field costs a few ms a frame), TextPressure on the name (it would change the glyphs the field traces), a portrait, smooth scroll.
+- **Cost to note for 2.5:** the field runs every frame while the tab is visible (about 2 400 lines at 1280 × 800, 600 on phones at 30 fps); the guide mask is rebuilt on resize and layout changes. With reduced motion it is computed once into a still image behind the hero.
+- **Dependencies:** none. The React build needs nothing beyond React (GSAP ScrollTrigger for the career path is already planned).
+
 **Light take:** "plotter on paper": a white page, ink-blue and graphite lines like a pen plotter drawing, with hand-written annotations. Scientific and crafty.
+
+**As built (light), task 2.4: "Plotter Sheet".** The CV as one long sheet from a pen plotter: a technical drawing on warm paper, drawn line by line. Nothing from "Long Exposure" is reused: no canvas field, no light or glow, no orbits, no seed control, no Syne.
+- **Palette:** paper `#FAF8F2`, paper-2 `#F2EFE6`; graphite ink `#1A1C22` (text), graphite `#4A4D55` (secondary text, handwriting), pencil `#6B6E76` (labels); one pen colour, ink blue `#1B3D94` (the surname, every plotted line, buttons, links); TODO in rust `#9A3412`.
+- **Type:** Space Grotesk (display and text) + IBM Plex Mono (drawing labels, buttons, tags) + Kalam (Ralph's handwritten notes). None is used by any other prototype. Swapped from the brief's Syne and DM Sans, which the dark variant uses, so the variants share no typeface.
+- **Layout:** a fixed drawing frame around the viewport with zone numbers (1–8) and letters (A–F) and centre marks (desktop; a plain border on phones). Each section is a figure: "Fig. N", a large title, a dimension line with a label (`|<— 07.2021 – 08.2026 —>|`) and a caption. A title block in the footer. Sections in brief order: hero, About, Stack, Career, "Peer review" (quotes, new, after Career, not in the nav), Projects, Contact, footer.
+- **Hero moment:** a contour map whose terrain is the name. The name's glyphs are blurred twice into a height field with a little seeded noise, marching squares turn it into contour lines, and the lines are chained into polylines and plotted innermost first while a pen nib travels with them. Afterwards the pointer raises hills as it moves: new contour rings grow along its path and settle over a few seconds.
+- **Section forms:** About with handwritten margin notes (each restates a brief fact) written in left to right; Stack as hatching, where the pattern names the level as materials do on a drawing (cross-hatch strong, single hatch medium, stipple low, plus the word), in group tables; Career as a time plot drawn in one stroke over 2021–2026, stepping up at each job, promotions circled with handwritten notes, then numbered notes newest first; quotes as reviewer notes R1–R3; Projects as plates with a harmonograph drawn from the project name and a rubber-stamp status; Contact as an address list with dotted leaders.
+- **Effects:** ContourPlot and TerrainPress (custom canvas 2D marching squares), PlotReveal (SVG line drawing with a nib; GSAP DrawSVG in React), HatchSwatch, TimePlot, Harmonograph, Handwriting (clip-path steps), Replot (the easter egg: typing "plot" replots the whole sheet), FitName, NavMenu, console message. All custom, no libraries.
+- **Open item:** the date of the Mood up promotion is not in the brief, so its circle sits mid-job with a visible "promotion date: TODO". The mTab circle sits at 10.2021, three months after the start, as the brief states.
+- **Left out on purpose:** colour beyond one pen, glow, a moving background, WebGL, GSAP, a portrait, smooth scroll, and anything from 01–06 (no dot-grid sticker paper, no Swiss poster grid).
+- **Dependencies:** none. The React build needs nothing beyond React.
 
 **Typography:** Syne (display), DM Sans (body).
 

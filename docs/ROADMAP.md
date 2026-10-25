@@ -102,7 +102,7 @@ One task per direction. Each task builds both variants, `NN-<slug>-dark.html` an
 - [x] **Branch:** `feat/design-prototype-04-sticker-sheet` (both variants)
 - [x] **Branch:** `feat/design-prototype-05-the-issue` (both variants)
 - [x] **Branch:** `feat/design-prototype-06-ralph-os` (both variants)
-- [ ] **Branch:** `feat/design-prototype-07-<slug>`
+- [x] **Branch:** `feat/design-prototype-07-field-notes` (both variants)
 - [ ] **Branch:** `feat/design-prototype-08-<slug>`: the interests direction, built last
 
 More directions may be added later as new items in this list.

@@ -98,7 +98,7 @@ One task per direction. Each task builds both variants, `NN-<slug>-dark.html` an
 
 - [x] **Branch:** `feat/design-prototype-01-light`: the light variant of prototype 01
 - [x] **Branch:** `feat/design-prototype-02-swiss-signal` (dark variant) and `feat/design-prototype-02-swiss-signal-light` (light variant)
-- [ ] **Branch:** `feat/design-prototype-03-<slug>`
+- [x] **Branch:** `feat/design-prototype-03-clay-studio` (both variants)
 - [ ] **Branch:** `feat/design-prototype-04-<slug>`
 - [ ] **Branch:** `feat/design-prototype-05-<slug>`
 - [ ] **Branch:** `feat/design-prototype-06-<slug>`

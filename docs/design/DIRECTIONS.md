@@ -155,7 +155,9 @@ How the directions spread across the axes from the research. No two directions s
 
 ## 03 — Clay Studio (`clay-studio`)
 
-**Status:** approved.
+**Status:** built (both variants). **Files:** `design/prototypes/03-clay-studio-dark.html`, `design/prototypes/03-clay-studio-light.html`.
+
+**Shared by both variants:** only the style: claymorphism and soft, hand-made clay.
 
 **Concept:** A soft, toy-like 3D world. In the hero stands **a little clay figure of Rafał**, made in Three.js from simple rounded shapes: swept-up hair, a smile, a navy blazer over a white T-shirt, arms crossed. He follows the cursor with his head and waves when the visitor clicks him. Every UI element is "clay": puffy, rounded, and squishing when pressed. It's the friendliest direction, built to make people smile in the first second.
 
@@ -177,7 +179,31 @@ How the directions spread across the axes from the research. No two directions s
 
 **Dark take:** "toys at night": a deep plum and indigo room lit by warm lamps, with the clay glowing in saturated pastels like a night light. Cosy and magical.
 
+**Changed while building (agreed with Rafał, task 2.4):** Rafał questioned whether a toy shelf shows a professional frontend engineer. Both variants are therefore *professional first*: humour stays in small details, and the copy and content blocks stay businesslike. The dark take became a photo studio after hours instead of a toy room.
+
+**As built (dark), task 2.4: "After Hours".** Rafał is shown as a handmade designer collectible: a clay figure on a turntable pedestal against a seamless plum backdrop, lit by one warm key light. The concept, hero and sections above belong to this variant.
+- **Palette:** plum backdrop `#1C1030`, clay panels `#2A1D47` / `#3A2A60`, warm light `#FFC98A` (buttons, role, links), pastels for clay only: pink `#FF9EC0`, mint `#8CE8CB`, lilac `#B9A4FF`, sky `#93CBFF`; text `#F7F0FF`, muted `#CBBDE6`, ink on pastel `#2A1640`.
+- **Type:** Fredoka (display; the name has a stacked lilac "clay" extrusion) + Nunito (body).
+- **Layout:** two-column hero (name and CTAs left, figure right; on phones the figure sits under the CTAs). Puffy clay panels with inner light and shadow. Sections: hero, About (text and three tilted fact tokens), Stack (ballpit with the grouped list beside it), Career (timeline groove that fills with light), "What the team said" (quotes, new, after Career, not in the nav), Projects, Contact (the figure holds an envelope).
+- **Hero moment:** a procedural clay Ralph (38 meshes: spheres, capsules, a lathe pedestal, an extruded V-neck; a generated fingerprint bump map) turns his head to the cursor, blinks, breathes and sways on the turntable while the warm key light follows the cursor. Clicking him (or "Say hi") makes him wave with a speech bubble; 10 quick clicks give a parkour backflip. The caption counts his shapes at runtime ("no model files").
+- **Section forms:** stack as a 2D ballpit (ball size = level, colour = group, stirred by the cursor) next to the full list grouped by level; career as clay panels on a groove that fills on scroll, with mint "Level up" badges for both promotions; quotes in cream speech bubbles above small SVG clay colleagues; projects as tilted clay cards with a generated clay composition per project (straighten with a spring on hover); contact with a second, non-interactive figure holding a clay envelope.
+- **Effects:** ClayFigure with KeyLight and SpeechBubble (custom, three.js), Ballpit (inspired by React Bits, rewritten in 2D canvas), CareerTrack, ClayCards (inspired by BounceCards), SquishButton, ClayCrumbs (inspired by ClickSpark), NavPill, MobileMenu, console message.
+- **Phones and reduced motion:** on small or touch screens the figure renders on demand (a still pose that animates only when tapped) at DPR ≤ 1.5 without shadows, and the ballpit is a pre-settled static cluster. Reduced motion: one static frame, no tracking, a lit groove, no crumbs. If WebGL or the module fails, a flat SVG figure is shown.
+- **Left out on purpose:** the toy-room setting; Lenis smooth scroll; a physics engine; matcap textures (a procedural bump map does the job without an image); anything from 01 and 02.
+- **Dependencies:** three@0.160.0 (jsDelivr, dynamic `import()`, so the text never waits). The React build needs `three` (or R3F + drei), lazy-loaded.
+
 **Light take:** "studio in the morning": the warm pastels Rafał asked for (peach, butter yellow, mint, lilac) on a soft, warm-white set, with soft daylight shadows. Bright and happy.
+
+**As built (light), task 2.4: "Morning Claymation".** A stop-motion animator's table on a sunny morning. Everything is plasticine, and motion runs the way claymation does: 12 frames per second with a slight "boil". No 3D and no figure in the hero (that is the dark variant's hero object); Rafał appears only as a flat clay portrait in About.
+- **Palette:** table `#FFF9F2`; clay boards in peach `#FFC9AE`, butter `#FFE59C`, mint `#B7EBD7`, lilac `#D9CCF8`; ink `#2B2140`, muted `#5C5270`; the name in navy clay `#2F3C8F` (side `#1C2560`, like the blazer) with pink `#E04A74` loose marks; deep clay pink, blue, green and violet for the project initials only.
+- **Type:** Baloo 2 (display, 500–800) + Onest (body). No other direction uses either.
+- **Layout:** a typographic hero (the name fills the width, role and tagline bottom left, CTAs bottom right); sections as flattened clay boards with fingerprints pressed in. Sections: hero, About, Stack, Career, "Notes from the team" (quotes, new, after Career, not in the nav), Projects, Contact.
+- **Hero moment:** the name modelled from clay letters, each tilted slightly as if placed by hand. Letters squash towards the cursor or finger and spring back, redrawn only on the 12 fps clock. The stroke of the Ł and the accent of the Ć are separate pink clay pieces that pop off when poked and fall back with a bounce. Morning window light falls across the table.
+- **Section forms:** About with a flat SVG clay portrait that blinks; stack as trays (one per group) of rolled clay pieces, size and thickness by level, grouped under visible level labels, placed two per frame when a tray scrolls into view; career as a staircase of blocks (newest highest and furthest right on desktop) with an ink "Promoted" chip; quotes on plasticine notes pressed on with a pink thumbprint; projects as white modelling tiles with a pressed clay initial; contact with the email set large and a clay envelope that opens on hover or focus to show a ready "let's talk about a frontend role" mailto.
+- **Effects:** StopMotion (one 12 fps clock cycling three SVG turbulence filters), ClayLetters, LooseMarks, ClayPortrait, PlaceOnTray, Thumbprint, ClayEnvelope, PressButton (stepped timing), MobileMenu, console message. All custom.
+- **Changed from the first draft:** the letters were first a rainbow of clay colours; they read as a children's alphabet, so the name became one navy clay with pink marks (professional first).
+- **Left out on purpose:** WebGL, the clay figure, the ballpit, speech bubbles, smooth scroll and everything from "After Hours".
+- **Dependencies:** none. The React build needs nothing beyond React.
 
 **Typography:** Fredoka (rounded display), Nunito (body).
 

@@ -1,0 +1,1200 @@
+<!doctype html>
+<!--
+  Prototype 04 — Sticker Sheet (`sticker-sheet`), DARK variant: "Night Zine".
+  Direction brief: docs/design/DIRECTIONS.md, section 04.
+
+  Concept: a risograph zine printed at night. The page is a bento board of neubrutalist
+  blocks (thick white outlines, hard offset shadows in fluorescent riso inks: hot pink,
+  electric yellow, cyan) on charcoal paper with a halftone dot texture. Ralph has gone over
+  the printed page with a yellow marker: arrows, circles, stars and margin comments. His
+  sticker collection is stuck around the blocks; each sticker can be peeled and dragged on
+  desktop, and peeling one adds it to a sticker book. The facts stay big and easy to scan;
+  the wink is in the marker notes and the stickers.
+  It shares only the style (neubrutalism, hand-drawn notes, stickers) with the light variant.
+
+  Effects (each is a named function in the script below):
+  - RisoPlates ......... custom: the name is printed in two riso plates (pink and cyan, blended
+                         with `screen`); the cyan plate drifts out of register towards the
+                         cursor, like a misaligned print run
+  - Scribble ........... custom: a seeded generator for hand-drawn marker paths (circles,
+                         arrows, underlines, stars, a wobbly line)
+  - DrawOnScroll ....... custom (DrawSVG-style, CSS `stroke-dashoffset` + IntersectionObserver):
+                         marker notes draw themselves when they scroll into view
+  - CareerLine ......... custom: the hand-drawn line that connects the career cards draws with
+                         scroll progress (scrubbed)
+  - StickerPeel ........ inspired by React Bits StickerPeel, rewritten without GSAP: the corner
+                         curls on hover (a clip-path cut plus a folded flap), and the sticker
+                         lifts and follows the pointer when dragged
+  - StickerBook ........ custom: peeled stickers are collected into a <dialog> sticker book; the
+                         full set opens it with a thank-you (the direction's easter egg)
+  - HardPress .......... custom CSS: buttons with hard offset shadows that press down on click
+  - RisoPortrait ....... custom SVG: a marker sketch of Rafał with flat fills printed slightly
+                         out of register
+  - PolaroidArt ........ custom SVG: a generated two-ink riso print per project
+  - NavState, MobileMenu, ConsoleHello: custom
+
+  Libraries in this file: none.
+  Fonts: Bricolage Grotesque (display and body, variable opsz/wdth/wght) and Caveat Brush
+  (Ralph's marker notes), Google Fonts, latin-ext.
+  React build would need: nothing beyond React. GSAP Draggable is optional, only if inertia
+  is wanted for the stickers.
+
+  Phones and touch: stickers stay in place (no dragging); a tap peels the corner and collects
+  the sticker. The bento grid becomes one column, and the marker notes are kept.
+  Reduced motion: no plate drift (a fixed offset), marker notes are drawn from the start, the
+  career line is fully drawn, no peel or press transitions, native anchor jumps. No WebGL.
+
+  Content: all copy lives in the CONTENT object at the top of the script. Additions beyond
+  brief section 5 are marked `NEW CONTENT` there.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rafał Ciećwierz, Frontend Engineer</title>
+<meta name="description" content="Rafał Ciećwierz, Frontend Engineer. React & TypeScript, 5+ years building production apps.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,300..800&family=Caveat+Brush&display=swap" rel="stylesheet">
+<style>
+  @property --p { syntax: '<length>'; inherits: true; initial-value: 0px; }
+
+  :root {
+    --paper: #1F1E26;      /* charcoal zine paper */
+    --panel: #2A2933;      /* printed blocks */
+    --panel-2: #34333F;
+    --line: #F5F3FA;       /* white outlines and text, 14.9:1 on paper */
+    --muted: #C5C2D3;      /* 9.6:1 on paper, 8.3:1 on panel */
+    --pink: #FF4FA3;       /* fluorescent riso pink */
+    --yellow: #FFE83D;     /* electric yellow, also Ralph's marker */
+    --cyan: #3DE3FF;
+    --blue: #4A5BFF;       /* portrait blazer only */
+    --ink: #17161C;        /* text on neon fills: ≥ 7.4:1 on pink, cyan and yellow */
+    --r: 12px;
+    --bw: 3px;
+    --gut: clamp(16px, 4vw, 40px);
+    --display: 'Bricolage Grotesque', system-ui, sans-serif;
+    --hand: 'Caveat Brush', 'Comic Sans MS', cursive;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+  html { scroll-behavior: smooth; scroll-padding-top: 96px; }
+  body {
+    margin: 0;
+    background-color: var(--paper);
+    /* halftone dots, like a riso screen */
+    background-image: radial-gradient(rgba(245, 243, 250, .06) 1.1px, transparent 1.7px);
+    background-size: 7px 7px;
+    color: var(--line);
+    font: 400 17px/1.55 var(--display);
+    font-variation-settings: 'opsz' 14;
+    overflow-x: clip;
+    -webkit-font-smoothing: antialiased;
+  }
+  /* paper grain over everything */
+  body::after {
+    content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 100; opacity: .07;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  a { color: inherit; }
+  img, svg { display: block; }
+  ul { margin: 0; padding: 0; list-style: none; }
+  p { margin: 0; }
+  :focus-visible { outline: 3px solid var(--yellow); outline-offset: 3px; border-radius: 6px; }
+  .vh { position: absolute !important; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+  .skip {
+    position: absolute; left: 12px; top: -60px; z-index: 200; padding: 10px 16px;
+    background: var(--yellow); color: var(--ink); font-weight: 700; border: var(--bw) solid var(--ink); border-radius: 8px;
+  }
+  .skip:focus { top: 12px; }
+
+  .wrap { width: 100%; max-width: 1320px; margin: 0 auto; padding: 0 var(--gut); }
+
+  /* ---------- Marker notes (Ralph's handwriting) ---------- */
+  .note {
+    font-family: var(--hand); color: var(--yellow); font-size: 24px; line-height: 1.05;
+    transform: rotate(var(--tilt, -3deg)); display: inline-block;
+  }
+  .scr { position: absolute; overflow: visible; pointer-events: none; }
+  .scr path {
+    fill: none; stroke: var(--sc, var(--yellow)); stroke-width: var(--sw, 3.2);
+    stroke-linecap: round; stroke-linejoin: round;
+    stroke-dasharray: 1; stroke-dashoffset: 1; stroke-opacity: 0; /* hides the round-cap dot before drawing */
+    transition: stroke-opacity 0s var(--d, 0s), stroke-dashoffset .8s cubic-bezier(.65, .05, .35, 1) var(--d, 0s);
+  }
+  .scr.is-drawn path { stroke-dashoffset: 0; stroke-opacity: 1; }
+
+  /* ---------- Blocks (HardPress shadows) ---------- */
+  .blk {
+    position: relative; background: var(--panel); border: var(--bw) solid var(--line);
+    border-radius: var(--r); padding: clamp(18px, 2.4vw, 32px);
+    box-shadow: 8px 8px 0 var(--c, var(--pink)), 0 0 34px -6px color-mix(in srgb, var(--c, var(--pink)) 35%, transparent);
+  }
+  .blk.fill { background: var(--c); color: var(--ink); border-color: var(--line); box-shadow: 8px 8px 0 var(--line); }
+
+  .btn {
+    --sh: var(--pink);
+    display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+    min-height: 54px; padding: 12px 22px; border: var(--bw) solid var(--line); border-radius: 10px;
+    font: 700 18px/1 var(--display); text-decoration: none; cursor: pointer;
+    box-shadow: 5px 5px 0 var(--sh); transition: transform .08s, box-shadow .08s;
+  }
+  .btn svg { width: 22px; height: 22px; flex: none; }
+  .btn:hover { transform: translate(-2px, -2px); box-shadow: 7px 7px 0 var(--sh); }
+  .btn:active { transform: translate(5px, 5px); box-shadow: 0 0 0 var(--sh); }
+  .btn-primary { background: var(--yellow); color: var(--ink); }
+  .btn-ghost { --sh: var(--cyan); background: var(--paper); color: var(--line); }
+  .fill .btn { border-color: var(--ink); --sh: var(--ink); }
+  .fill .btn-ghost { background: var(--line); color: var(--ink); }
+
+  /* ---------- Header ---------- */
+  .header { position: fixed; inset: 12px 0 auto; z-index: 50; pointer-events: none; }
+  .header .bar {
+    pointer-events: auto; display: flex; align-items: center; gap: 12px; height: 60px; padding: 0 8px 0 10px;
+    background: var(--paper); border: var(--bw) solid var(--line); border-radius: 12px; box-shadow: 5px 5px 0 var(--cyan);
+  }
+  .logo { display: flex; align-items: center; gap: 10px; text-decoration: none; font-weight: 700; margin-right: auto; }
+  .logo-mark {
+    display: grid; place-items: center; width: 38px; height: 38px; border: var(--bw) solid var(--line); border-radius: 8px;
+    background: var(--yellow); color: var(--ink); font: 800 17px/1 var(--display); letter-spacing: -.04em; transform: rotate(-4deg);
+  }
+  .logo-name { display: none; }
+  .nav ul { display: none; gap: 4px; }
+  .nav a {
+    display: block; padding: 8px 12px; border-radius: 8px; text-decoration: none; font-weight: 600;
+    border: 2px solid transparent;
+  }
+  .nav a:hover { border-color: var(--line); }
+  .nav a[aria-current="true"] { background: var(--line); color: var(--ink); }
+  .book-btn, .menu-btn {
+    display: inline-flex; align-items: center; gap: 8px; height: 42px; padding: 0 12px; cursor: pointer;
+    border: 2px solid var(--line); border-radius: 9px; background: var(--panel); color: var(--line);
+    font: 700 15px/1 var(--display); box-shadow: 3px 3px 0 var(--pink); transition: transform .08s, box-shadow .08s;
+  }
+  .book-btn:active, .menu-btn:active { transform: translate(3px, 3px); box-shadow: 0 0 0 var(--pink); }
+  .book-btn svg { width: 20px; height: 20px; }
+  .book-btn .lbl { display: none; }
+  .book-btn.is-pop { animation: pop .45s cubic-bezier(.3, 1.8, .5, 1); }
+  @keyframes pop { 40% { transform: scale(1.18) rotate(-4deg); } }
+  .menu {
+    position: fixed; z-index: 49; inset: 84px var(--gut) auto; padding: 10px;
+    background: var(--panel); border: var(--bw) solid var(--line); border-radius: 12px; box-shadow: 6px 6px 0 var(--pink);
+  }
+  .menu a { display: block; padding: 14px 12px; font: 700 24px/1 var(--display); text-decoration: none; border-radius: 8px; }
+  .menu a:hover { background: var(--line); color: var(--ink); }
+  @media (min-width: 560px) { .logo-name { display: inline; } .book-btn .lbl { display: inline; } }
+  @media (min-width: 960px) {
+    .nav ul { display: flex; }
+    .menu-btn { display: none; }
+    .menu { display: none !important; }
+  }
+
+  /* ---------- Bento ---------- */
+  .bento { display: grid; grid-template-columns: 1fr; gap: 22px; }
+  @media (min-width: 720px) {
+    .bento { grid-template-columns: repeat(6, 1fr); }
+    .bento > * { grid-column: span var(--s6, 6); grid-row: span var(--r6, 1); }
+  }
+  @media (min-width: 1080px) {
+    .bento { grid-template-columns: repeat(12, 1fr); gap: 26px; }
+    .bento > * { grid-column: span var(--s12, 12); grid-row: span var(--r12, 1); }
+  }
+
+  /* ---------- Sections ---------- */
+  .sec { padding: clamp(72px, 9vw, 130px) 0 0; }
+  .sec-head { position: relative; display: flex; flex-wrap: wrap; align-items: flex-end; gap: 10px 28px; margin-bottom: clamp(28px, 4vw, 48px); }
+  .h2 {
+    position: relative; margin: 0; font: 800 clamp(52px, 9vw, 120px)/.86 var(--display);
+    font-variation-settings: 'opsz' 96, 'wdth' 78; letter-spacing: -.02em;
+  }
+  .h2 .scr { left: -2%; width: 104%; bottom: -16px; height: auto; }
+  .sec-head .note { max-width: 30ch; font-size: 26px; padding-bottom: 6px; }
+
+  /* ---------- Hero ---------- */
+  .hero { padding-top: 96px; }
+  .name-card { container-type: inline-size; padding-top: clamp(22px, 3vw, 40px); display: flex; flex-direction: column; justify-content: space-between; }
+  .name-card .who { margin-top: auto; }
+  .name {
+    position: relative; margin: 0 0 clamp(14px, 2vw, 24px); color: var(--pink);
+    font: 800 30.5cqi/.84 var(--display); font-variation-settings: 'opsz' 96, 'wdth' 75; letter-spacing: -.035em;
+  }
+  .name span { display: block; }
+  .name .plate {
+    position: absolute; inset: 0; color: var(--cyan); mix-blend-mode: screen; pointer-events: none;
+    transform: translate(var(--ox, 4px), var(--oy, 3px));
+  }
+  .role { font: 700 clamp(24px, 6.4cqi, 44px)/1.05 var(--display); font-variation-settings: 'opsz' 48; }
+  .tagline { margin-top: 8px; color: var(--muted); font-size: clamp(16px, 2.8cqi, 20px); }
+  .cta-card { display: flex; flex-direction: column; gap: 14px; }
+  .cta-note { position: relative; align-self: flex-end; height: 70px; width: 170px; margin-bottom: -6px; }
+  .cta-note .note { position: absolute; right: 0; top: 0; --tilt: 4deg; }
+  .cta-note .scr { left: 0; top: 18px; width: 110px; height: 56px; }
+  .cta-card .btn { width: 100%; }
+  @media (max-width: 719px) { .cta-note { height: 50px; width: 150px; } .cta-note .scr { top: 10px; width: 90px; height: 44px; } .hero { padding-top: 92px; } }
+  .avail { margin-top: 4px; color: var(--muted); font-size: 15px; }
+  .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  .stat { padding: 16px; border: var(--bw) solid var(--line); border-radius: 10px; background: var(--c); color: var(--ink); box-shadow: 5px 5px 0 var(--line); position: relative; }
+  .stat strong { display: block; font: 800 46px/.9 var(--display); font-variation-settings: 'opsz' 96, 'wdth' 80; letter-spacing: -.02em; }
+  .stat span { display: block; margin-top: 6px; font-size: 14.5px; line-height: 1.3; font-weight: 600; }
+  .stat .scr { --sc: var(--ink); --sw: 2.6; left: 2px; top: 2px; width: 62px; height: 60px; }
+  @media (min-width: 1080px) { .hero .bento { grid-template-rows: auto 1fr; } .hero .stats { align-self: stretch; } }
+
+  /* ---------- About ---------- */
+  .about-text p + p { margin-top: 14px; }
+  .about-text p:first-child { font: 600 clamp(21px, 2.1vw, 27px)/1.35 var(--display); font-variation-settings: 'opsz' 32; }
+  .about-text p { max-width: 62ch; }
+  .portrait { margin: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; }
+  .portrait svg { width: min(100%, 340px); height: auto; }
+  .portrait figcaption { font-family: var(--hand); font-size: 22px; text-align: center; transform: rotate(-2deg); }
+  .offclock { display: grid; gap: 18px; align-items: center; }
+  @media (min-width: 560px) { .offclock { grid-template-columns: 1fr auto; } }
+  .offclock h3 { margin: 0 0 6px; font: 800 30px/1 var(--display); font-variation-settings: 'opsz' 64, 'wdth' 80; }
+  .offclock svg { width: 210px; height: auto; }
+
+  /* ---------- Stack ---------- */
+  .legend { display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: center; margin-bottom: 26px; color: var(--muted); font-size: 15px; }
+  .legend li { display: flex; align-items: center; gap: 8px; }
+  .tile h3 { margin: 0 0 16px; font: 800 34px/1 var(--display); font-variation-settings: 'opsz' 64, 'wdth' 80; }
+  .lvl-row { display: grid; grid-template-columns: 72px 1fr; gap: 8px 10px; align-items: start; }
+  .lvl-row + .lvl-row { margin-top: 12px; }
+  .lvl-name { font-family: var(--hand); color: var(--c); font-size: 22px; line-height: 1.3; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip { padding: 6px 11px; border-radius: 999px; font-weight: 600; font-size: 15px; line-height: 1.2; border: 2.5px solid var(--c); }
+  .chip.strong { background: var(--c); color: var(--ink); }
+  .chip.medium { background: repeating-linear-gradient(-45deg, color-mix(in srgb, var(--c) 30%, transparent) 0 3px, transparent 3px 7px); color: var(--line); }
+  .chip.low { border-style: dashed; color: var(--line); }
+  .legend .chip { --c: var(--line); }
+
+  /* ---------- Career ---------- */
+  .career-list { position: relative; padding-left: 52px; }
+  .jobs { display: grid; gap: 34px; margin: 0; padding: 0; list-style: none; }
+  .career-line { position: absolute; left: 0; top: 0; width: 44px; height: 100%; overflow: visible; pointer-events: none; }
+  .career-line path { fill: none; stroke: var(--yellow); stroke-width: 3.4; stroke-linecap: round; stroke-dasharray: 1; }
+  .job { position: relative; display: grid; gap: 14px 40px; align-items: start; }
+  @media (min-width: 1080px) { .job { grid-template-columns: minmax(0, 780px) 1fr; } }
+  .job .blk { --c: var(--cyan); }
+  .job:nth-child(2n) .blk { --c: var(--pink); }
+  .job-dot { position: absolute; left: -46px; top: 26px; width: 26px; height: 26px; border: var(--bw) solid var(--line); border-radius: 50%; background: var(--c); }
+  .job h3 { margin: 0; font: 800 clamp(30px, 4vw, 46px)/1 var(--display); font-variation-settings: 'opsz' 96, 'wdth' 82; letter-spacing: -.01em; }
+  .job-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; margin: 10px 0 14px; }
+  .roles { font-weight: 700; font-size: 19px; }
+  .promo { position: relative; display: inline-block; }
+  .promo .scr { --sc: var(--yellow); left: -14px; top: -12px; width: calc(100% + 28px); height: calc(100% + 24px); }
+  .dates { padding: 3px 10px; border: 2px solid var(--line); border-radius: 6px; font-weight: 700; font-size: 14px; background: var(--paper); }
+  .job ul.points { display: grid; gap: 8px; margin-bottom: 16px; }
+  .job ul.points li { position: relative; padding-left: 22px; max-width: 72ch; }
+  .job ul.points li::before { content: ''; position: absolute; left: 2px; top: .62em; width: 10px; height: 10px; border-radius: 3px; background: var(--c); transform: rotate(12deg); }
+  .tags { display: flex; flex-wrap: wrap; gap: 6px; }
+  .tags li { padding: 3px 9px; border: 2px solid var(--muted); border-radius: 6px; font-size: 13.5px; font-weight: 600; color: var(--muted); }
+  .margin-note { position: relative; padding: 6px 0 0 8px; }
+  .margin-note .note { font-size: 25px; max-width: 18ch; }
+  .margin-note .scr { left: -44px; top: 4px; width: 50px; height: 40px; display: none; }
+  @media (min-width: 1080px) { .margin-note { padding-top: 46px; } .margin-note .scr { display: block; } }
+  .promo-label { font-family: var(--hand); color: var(--yellow); font-size: 22px; transform: rotate(-6deg); display: inline-block; }
+  @media (max-width: 719px) {
+    .career-list { padding-left: 30px; }
+    .career-line { left: -10px; }
+    .job-dot { left: -29px; width: 20px; height: 20px; }
+    .jobs { gap: 26px; }
+    /* stickers next to section titles join the flow instead of covering the title */
+    .sec-head .stk { position: relative; right: auto !important; top: auto !important; margin-left: auto; }
+  }
+  .edu { --c: var(--line); border-style: dashed; box-shadow: none; max-width: 780px; }
+  .edu h3 { font-size: clamp(24px, 3vw, 32px); }
+
+  /* ---------- Team (sticky notes) ---------- */
+  .notes { display: grid; gap: 34px; grid-template-columns: 1fr; padding-top: 10px; }
+  @media (min-width: 720px) { .notes { grid-template-columns: repeat(2, 1fr); } }
+  @media (min-width: 1080px) { .notes { grid-template-columns: repeat(3, 1fr); } }
+  .sticky {
+    position: relative; margin: 0; padding: 34px 26px 24px; background: var(--c); color: var(--ink);
+    border-radius: 3px 3px 22px 3px; transform: rotate(var(--rot)); transition: transform .3s cubic-bezier(.3, 1.4, .5, 1);
+    box-shadow: 0 14px 22px -10px rgba(0, 0, 0, .6);
+  }
+  .sticky:hover { transform: rotate(0) translateY(-4px); }
+  .sticky::before {
+    content: ''; position: absolute; top: -14px; left: 50%; width: 110px; height: 30px; margin-left: -55px;
+    background: rgba(245, 243, 250, .55); transform: rotate(var(--tape, -4deg)); border-left: 2px dashed rgba(23, 22, 28, .15); border-right: 2px dashed rgba(23, 22, 28, .15);
+  }
+  .sticky blockquote { margin: 0; font: 600 20px/1.4 var(--display); font-variation-settings: 'opsz' 24; }
+  .sticky blockquote p + p { margin-top: 10px; }
+  .sticky figcaption { margin-top: 18px; font-size: 15px; line-height: 1.35; }
+  .sticky figcaption strong { font-family: var(--hand); font-size: 26px; font-weight: 400; display: block; }
+
+  /* ---------- Projects (polaroids) ---------- */
+  .polaroids { display: grid; gap: 36px 30px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr)); }
+  .polaroid {
+    position: relative; margin: 0; padding: 12px 12px 20px; background: #F5F3FA; color: var(--ink);
+    border-radius: 6px; transform: rotate(var(--rot)); box-shadow: 8px 8px 0 var(--c);
+    transition: transform .3s cubic-bezier(.3, 1.4, .5, 1); display: flex; flex-direction: column;
+  }
+  .polaroid:hover, .polaroid:focus-within { transform: rotate(0) translateY(-6px); }
+  .polaroid .photo { border: var(--bw) solid var(--ink); border-radius: 3px; overflow: hidden; aspect-ratio: 4 / 3; background: var(--paper); }
+  .polaroid .photo svg { width: 100%; height: 100%; }
+  .polaroid .photo .inks > * { mix-blend-mode: screen; } /* overlapping inks mix like riso */
+  .polaroid h3 { margin: 16px 4px 0; font: 800 26px/1.05 var(--display); font-variation-settings: 'opsz' 64, 'wdth' 84; }
+  .polaroid .sub { margin: 4px 4px 0; font-family: var(--hand); font-size: 20px; line-height: 1.15; color: #4A4658; }
+  .polaroid .desc { margin: 10px 4px 14px; font-size: 15px; line-height: 1.5; }
+  .polaroid .tags { margin: auto 4px 0; }
+  .polaroid .tags li { border-color: #4A4658; color: #3A3646; }
+  .polaroid .repo { margin: 14px 4px 0; font-weight: 700; }
+  .status {
+    position: absolute; top: 24px; right: 24px; padding: 6px 12px; border: var(--bw) solid var(--ink); border-radius: 8px;
+    font: 800 15px/1 var(--display); transform: rotate(7deg); background: var(--s);
+  }
+  .slot {
+    display: grid; place-items: center; min-height: 360px; padding: 24px; text-align: center;
+    border: var(--bw) dashed var(--muted); border-radius: 6px; color: var(--muted); transform: rotate(1.5deg);
+  }
+  .slot .note { font-size: 28px; }
+  .slot .plus { font: 300 70px/1 var(--display); color: var(--muted); }
+
+  /* ---------- Contact ---------- */
+  .contact-card { container-type: inline-size; }
+  .contact-card .h2 { display: inline-block; font-size: clamp(52px, 12cqi, 140px); }
+  .contact-card .h2 .scr { --sc: var(--ink); }
+  .contact-card .avail-big { margin: 26px 0 8px; font: 700 clamp(20px, 3cqi, 30px)/1.25 var(--display); max-width: 30ch; }
+  .email {
+    position: relative; display: inline-block; margin: 18px 0 28px; font: 800 clamp(22px, 8.6cqi, 112px)/1 var(--display);
+    font-variation-settings: 'opsz' 96, 'wdth' 78; letter-spacing: -.02em; text-decoration: none; overflow-wrap: anywhere;
+  }
+  .email .scr { --sc: var(--ink); left: -4%; top: -30%; width: 108%; height: 160%; }
+  @media (max-width: 559px) { .email .scr { display: none; } .email { text-decoration: underline; text-decoration-thickness: 3px; text-underline-offset: 5px; } }
+  .email:hover { text-decoration: underline; text-decoration-thickness: 4px; text-underline-offset: 6px; }
+  .contact-actions { display: flex; flex-wrap: wrap; gap: 16px; }
+  .contact-links { display: flex; flex-wrap: wrap; gap: 10px 26px; margin-top: 28px; font-weight: 700; }
+  .contact-links .todo { opacity: .75; font-weight: 600; }
+  .contact-note { position: absolute; right: clamp(18px, 4cqi, 48px); top: clamp(26px, 5cqi, 60px); --tilt: 5deg; color: var(--ink); font-size: 26px; display: none; }
+  @media (min-width: 720px) { .contact-note { display: inline-block; } }
+
+  /* ---------- Footer ---------- */
+  .footer { padding: 90px 0 40px; color: var(--muted); font-size: 15px; }
+  .footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 10px 20px; }
+
+  /* ---------- Stickers (StickerPeel) ---------- */
+  .stk {
+    --p: 0px; --lift: 1; --sway: 0deg;
+    position: absolute; z-index: 6; padding: 0; border: 0; background: none; color: var(--ink); cursor: pointer;
+    transform: translate(var(--dx, 0px), var(--dy, 0px)) rotate(calc(var(--rot, 0deg) + var(--sway))) scale(var(--lift));
+    filter: drop-shadow(3px 4px 0 rgba(0, 0, 0, .5));
+    transition: --p .25s ease, transform .25s cubic-bezier(.3, 1.5, .5, 1), filter .25s;
+    touch-action: manipulation; -webkit-tap-highlight-color: transparent;
+  }
+  .can-drag .stk { cursor: grab; touch-action: none; }
+  .stk-face {
+    display: flex; align-items: center; gap: 8px; padding: 8px 14px; white-space: nowrap;
+    background: var(--bg); border: 4px solid #fff; border-radius: 10px;
+    font: 800 18px/1 var(--display); font-variation-settings: 'opsz' 32, 'wdth' 85;
+    clip-path: polygon(0 0, 100% 0, 100% calc(100% - var(--p)), calc(100% - var(--p)) 100%, 0 100%);
+  }
+  .stk-face.hand { font: 400 25px/1 var(--hand); }
+  .stk-face.big { font: 800 44px/1 var(--display); padding: 6px 14px 8px; font-variation-settings: 'opsz' 96; }
+  .stk-face small { display: block; font: 700 12px/1.1 var(--display); }
+  .stk-face svg { width: 24px; height: 24px; }
+  .stk-flap {
+    position: absolute; right: 0; bottom: 0; width: var(--p); height: var(--p);
+    background: linear-gradient(135deg, #fff 0%, #E4E2EC 45%, #A9A6B8 100%);
+    clip-path: polygon(0 0, 100% 0, 0 100%); border-radius: 2px;
+  }
+  .stk:hover, .stk:focus-visible { --p: 16px; }
+  .stk.is-peek { --p: 30px; --lift: 1.06; }
+  .stk.is-lifted { --p: 24px; --lift: 1.09; z-index: 60; filter: drop-shadow(10px 16px 0 rgba(0, 0, 0, .45)); cursor: grabbing; }
+  .stk.is-dragging { transition: --p .2s, filter .2s; }
+  .stk:focus-visible { outline-offset: 6px; }
+
+  /* ---------- Sticker book ---------- */
+  .book {
+    width: min(760px, calc(100% - 2 * var(--gut))); max-height: calc(100% - 40px); padding: clamp(20px, 4vw, 36px);
+    background: var(--panel); color: var(--line); border: var(--bw) solid var(--line); border-radius: 14px; box-shadow: 10px 10px 0 var(--pink);
+  }
+  .book::backdrop { background: rgba(10, 9, 14, .78); }
+  .book h2 { margin: 0; font: 800 clamp(40px, 7vw, 64px)/.9 var(--display); font-variation-settings: 'opsz' 96, 'wdth' 78; }
+  .book .lead { margin: 12px 0 22px; color: var(--muted); }
+  .book .done { margin: 0 0 22px; padding: 14px 16px; border: 2px solid var(--yellow); border-radius: 10px; }
+  .book .done .note { font-size: 26px; margin-bottom: 10px; }
+  .book-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 14px; }
+  .book-grid li { display: grid; place-items: center; min-height: 104px; padding: 12px; border: 2px dashed var(--muted); border-radius: 10px; text-align: center; color: var(--muted); font-size: 14px; }
+  .book-grid li.got { border-style: solid; border-color: var(--line); background: var(--panel-2); }
+  .book-grid .stk { position: relative; transform: rotate(var(--rot)); cursor: default; }
+  .book-close { position: absolute; top: 14px; right: 14px; }
+  .book-actions { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 24px; }
+
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    *, *::before, *::after { transition: none !important; animation: none !important; }
+    .scr path { stroke-dashoffset: 0; stroke-opacity: 1; }
+  }
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="header" id="header">
+  <div class="wrap">
+    <div class="bar">
+      <a class="logo" href="#top"><span class="logo-mark" aria-hidden="true">RC</span><span class="logo-name" id="logoName"></span></a>
+      <nav class="nav" aria-label="Main"><ul id="navList"></ul></nav>
+      <button class="book-btn" id="bookBtn" type="button" aria-haspopup="dialog"></button>
+      <button class="menu-btn" id="menuBtn" type="button" aria-expanded="false" aria-controls="menu">Menu</button>
+    </div>
+  </div>
+</header>
+<ul class="menu" id="menu" hidden></ul>
+
+<main id="main">
+  <section class="hero" id="top" aria-labelledby="heroName"><div class="wrap" id="heroWrap"></div></section>
+  <section class="sec" id="about" aria-labelledby="about-h"><div class="wrap" id="aboutWrap"></div></section>
+  <section class="sec" id="stack" aria-labelledby="stack-h"><div class="wrap" id="stackWrap"></div></section>
+  <section class="sec" id="career" aria-labelledby="career-h"><div class="wrap" id="careerWrap"></div></section>
+  <section class="sec" id="team" aria-labelledby="team-h"><div class="wrap" id="teamWrap"></div></section>
+  <section class="sec" id="projects" aria-labelledby="projects-h"><div class="wrap" id="projectsWrap"></div></section>
+  <section class="sec" id="contact" aria-labelledby="contact-h"><div class="wrap" id="contactWrap"></div></section>
+</main>
+<footer class="footer"><div class="wrap" id="footerWrap"></div></footer>
+
+<dialog class="book" id="book" aria-labelledby="book-h"></dialog>
+
+<script>
+  /* =====================================================================
+     Content (becomes src/content/ in the React build)
+     ===================================================================== */
+  const CONTENT = {
+    profile: {
+      name: 'Rafał Ciećwierz',
+      nameLines: ['Rafał', 'Ciećwierz'],
+      role: 'Frontend Engineer',
+      tagline: 'React & TypeScript · 5+ years building production apps',
+      availability: 'Open to frontend roles (React / TypeScript), remote or hybrid.',
+      email: 'rafal.ciecwierz4@gmail.com',
+      github: 'https://github.com/rafalciecwierz',
+      linkedin: null, // TODO: Rafał to provide URL
+      calendly: null, // TODO: Rafał to provide URL
+      cvFile: '/Rafal_Ciecwierz_CV.pdf'
+    },
+    nav: [
+      { id: 'about', label: 'About' },
+      { id: 'stack', label: 'Stack' },
+      { id: 'career', label: 'Career' },
+      { id: 'projects', label: 'Projects' },
+      { id: 'contact', label: 'Contact' }
+    ],
+    hero: {
+      cv: 'Download CV',
+      contact: 'Get in touch',
+      cvNote: 'start here', // NEW CONTENT
+      // NEW CONTENT: hero fact tiles (facts from brief section 5, rephrased as short labels)
+      stats: [
+        { value: '5+', label: 'years of React & TypeScript in production', circle: false },
+        { value: '6', label: 'developers led at Mood up', circle: false },
+        { value: '2', label: 'promotions: QA → dev → team lead', circle: true },
+        { value: '50+', label: 'components in a shared Storybook library', circle: false }
+      ]
+    },
+    about: {
+      title: 'About',
+      paragraphs: [
+        "I'm a frontend engineer with 5+ years of commercial experience in React and TypeScript. I started my career in QA automation, moved into frontend development after three months at my team's request, and later led a team of six developers.",
+        "I care about clean architecture, reusable UI and tests that actually protect the product. Lately I've been going deeper into the backend with NestJS and experimenting with motion and 3D in the browser."
+      ],
+      offClock: { title: 'Outside of code', text: 'Parkour (for over 22 years) and climbing.' },
+      note: 'the short version', // NEW CONTENT
+      // NEW CONTENT: portrait alt text and caption
+      portraitAlt: 'A marker sketch of Rafał: swept-up light-brown hair, light stubble, a wide smile, a navy blazer over a white T-shirt, arms crossed.',
+      portraitCaption: 'a sketch until the photo arrives' // TODO: replace with Rafał's photo or keep the sketch
+    },
+    stack: {
+      title: 'Stack',
+      note: 'same legend as the CV', // NEW CONTENT
+      levels: { strong: 'strong production experience', medium: 'medium production experience', low: 'low production experience' },
+      groups: [
+        { name: 'Frontend', items: [['React', 'strong'], ['TypeScript', 'strong'], ['JavaScript', 'strong'], ['HTML5', 'strong'], ['CSS / SCSS / Styled-components', 'strong'], ['Next.js', 'medium'], ['Gatsby', 'medium'], ['Module Federation', 'medium'], ['React Native', 'low']] },
+        { name: 'Data & UI', items: [['TanStack Query', 'strong'], ['Redux', 'strong'], ['Zod', 'strong'], ['React Hook Form', 'strong'], ['Storybook', 'strong'], ['Ant Design', 'strong'], ['Material UI', 'strong'], ['Tailwind CSS', 'medium'], ['WebSockets', 'medium']] },
+        { name: 'Testing', items: [['Jest / Vitest', 'strong'], ['React Testing Library', 'strong'], ['Cypress', 'strong']] },
+        { name: 'Backend', items: [['Node.js', 'medium'], ['NestJS', 'medium'], ['PostgreSQL', 'medium'], ['Strapi', 'medium']] },
+        { name: 'Tooling', items: [['Git', 'strong'], ['Figma', 'strong'], ['Postman', 'strong'], ['Vite', 'strong'], ['Webpack', 'strong'], ['Docker', 'medium'], ['Claude Code', 'medium']] }
+      ]
+    },
+    career: {
+      title: 'Career',
+      note: 'newest first', // NEW CONTENT
+      promoted: 'promoted!', // NEW CONTENT
+      jobs: [
+        {
+          company: 'MUG Software', roles: ['Front-end Software Engineer'], dates: '04.2025 – 08.2026',
+          points: [
+            'Maintained and extended a white-label React platform: a core repository with client-specific forks, propagating global changes upstream-to-fork while keeping client customizations isolated.',
+            'Developed and maintained a shared Storybook component library (50+ components), improving UI consistency and speeding up feature development.',
+            'Introduced TanStack Query (replacing Redux for server state) and Zod (replacing Yup), adopting them incrementally across the app as part of ongoing feature work.'
+          ],
+          stack: ['React', 'TypeScript', 'Styled Components', 'Jest', 'Redux', 'Storybook', 'Webpack', 'TanStack Query', 'Zod'],
+          note: 'one core repo, many client forks' // NEW CONTENT
+        },
+        {
+          company: 'VML Enterprise Solutions', roles: ['Front-end Software Engineer'], dates: '09.2024 – 04.2025',
+          points: [
+            'Owned a reference-data micro-frontend (countries, currencies and other company-wide dictionaries) integrated into a large enterprise advertising platform via Webpack Module Federation.',
+            "Maintained and developed the module's codebase, increasing unit test coverage from 11% to over 80%.",
+            'Took part in the migration of a subdomain to a standalone microservice.'
+          ],
+          stack: ['React', 'TypeScript', 'SCSS', 'Jest', 'React Hook Form', 'Webpack', 'Vite', 'Module Federation'],
+          note: 'yes, really: 11% → 80% test coverage' // NEW CONTENT
+        },
+        {
+          company: 'Mood up', roles: ['React Developer', 'Front-end Team Leader'], dates: '10.2022 – 08.2024',
+          points: [
+            'Built the React/Redux interface for a smart intercom running on an embedded Raspberry Pi device.',
+            'Promoted to Front-end Team Leader; led a team of 6 developers delivering MVPs for international startup clients.',
+            'Delivered projects from requirements gathering and estimation with clients through development, testing (Jest) and deployment.',
+            "Led a headless CMS evaluation (Strapi, Sanity, Contentful, headless WordPress and others), narrowing the shortlist to Strapi and Payload CMS for the company's stack."
+          ],
+          stack: ['React', 'Gatsby', 'Next.js', 'React Native', 'TypeScript', 'SCSS', 'Strapi', 'Material UI', 'Ant Design', 'Webpack', 'Vite', 'Figma'],
+          note: 'a team of 6, from client calls to deploys' // NEW CONTENT
+        },
+        {
+          company: 'mTab sp. z o.o.', roles: ['QA Automation Engineer', 'JavaScript Developer'], dates: '07.2021 – 09.2022',
+          points: [
+            "Promoted from QA Automation Engineer (Cypress E2E) to front-end developer after 3 months at the product team's request.",
+            'Developed views and features in React for a data visualization platform with dynamic, reactive charts and presentation-style reports.',
+            'Built Node.js scripts run nightly by Jenkins that aggregated test results into reports and posted them to Slack.',
+            'Maintained and extended a legacy Backbone.js codebase.'
+          ],
+          stack: ['React', 'JavaScript', 'TypeScript', 'Redux', 'SCSS', 'Jest', 'Cypress', 'Node.js', 'Backbone.js'],
+          note: 'where it started: testing, then 3 months later, building' // NEW CONTENT
+        }
+      ],
+      education: { label: 'Education', school: 'Adam Mickiewicz University', degree: "Engineer's degree in Computer Science", dates: '2015 – 2021' }
+    },
+    team: {
+      title: 'Team notes',                                                   // NEW CONTENT
+      note: 'LinkedIn recommendations from my team at Mood up, June 2024',  // NEW CONTENT
+      quotes: [
+        { name: 'Wiktoria W.', role: 'Marketing & Communication', text: ["Seriously, I've never met a leader as tuned in and supportive as him.", "Whoever snags him next is super lucky - yeah, I'm a bit envious. 😉"] },
+        { name: 'Rafał H.', role: 'Frontend Developer', text: ['His enthusiasm and optimism were contagious, making him a joy to work with.'] },
+        { name: 'Szymon K.', role: 'Frontend Developer', text: ['His technical skills and ability to simplify complex concepts, guiding others through challenges, have been invaluable in enhancing the overall quality and efficiency of our development processes.'] }
+      ],
+      source: 'Mood up, 2024'
+    },
+    projects: {
+      title: 'Projects',
+      note: 'more prints coming', // NEW CONTENT
+      repoLabel: 'Repository',
+      slot: 'next project goes here', // NEW CONTENT
+      items: [
+        { name: 'Ashen Contracts', status: 'in progress', description: 'Browser-based idle/RPG game built as a full-stack showcase: pnpm monorepo with a Next.js app, NestJS API, shared Storybook UI library and shared TypeScript types. Architecture decisions documented in an ADR-style log.', tags: ['Next.js', 'NestJS', 'PostgreSQL', 'Prisma', 'Storybook', 'Docker', 'GitHub Actions'], repo: 'https://github.com/rafalciecwierz/ashen-contracts' },
+        { name: 'Ultimate Frisbee Tournament Platform', status: 'archived', note: 'Engineering thesis (team of 4), built for the Polish Ultimate Players Association', description: 'Owned the entire NestJS + PostgreSQL backend, built live match scoring with Socket.io (scorekeeper tablet view + real-time spectator view), designed the full UI in Figma, deployed to AWS and tested at a live tournament in Szczecin.', tags: ['NestJS', 'PostgreSQL', 'Socket.io', 'Swagger', 'AWS', 'Nuxt', 'Figma'] },
+        { name: 'This website', status: 'live', description: 'Personal site with a procedural 3D hero (React Three Fiber) and scroll-driven animations (GSAP, Lenis), built with a performance and accessibility budget.', tags: ['React', 'TypeScript', 'Three.js', 'GSAP', 'Vite'], repo: 'https://github.com/rafalciecwierz/rafalciecwierz.github.io' },
+        { name: 'Next.js page transitions', status: 'archived', description: 'Comparison of three page-transition approaches in Next.js: custom implementation, Framer Motion and GSAP.', tags: ['Next.js', 'Framer Motion', 'GSAP'], repo: 'https://github.com/rafalciecwierz/Nextjs-page-transition' }
+      ]
+    },
+    contact: {
+      title: 'Contact',
+      note: 'no forms, just email', // NEW CONTENT
+      calendlyLabel: 'Book a 20-min call',
+      emailLabel: 'Email me' // NEW CONTENT
+    },
+    footer: {
+      builtWith: 'Built with React, Three.js and GSAP',
+      repo: 'https://github.com/rafalciecwierz/rafalciecwierz.github.io'
+    },
+    // NEW CONTENT: the sticker set (the direction's easter egg). `where` is the hint shown in the
+    // book for a sticker that has not been found yet.
+    stickers: [
+      { id: 'ralph', text: 'call me Ralph', bg: 'yellow', style: 'hand', rot: -9, where: 'the first screen' },
+      { id: 'l', text: 'Ł', bg: 'pink', style: 'big', rot: 8, where: 'About' },
+      { id: 'parkour', text: '22+ years', small: 'of parkour', bg: 'cyan', icon: 'jump', rot: -6, where: 'About' },
+      { id: 'c', text: 'Ć', bg: 'cyan', style: 'big', rot: -7, where: 'Stack' },
+      { id: 'coverage', text: '11% → 80%', small: 'test coverage', bg: 'pink', rot: 6, where: 'Stack' },
+      { id: 'promoted', text: 'promoted ×2', bg: 'yellow', icon: 'star', rot: -5, where: 'Career' },
+      { id: 'six', text: 'team of 6', bg: 'cyan', style: 'hand', rot: 5, where: 'Team notes' },
+      { id: 'ship', text: 'ship it', bg: 'pink', style: 'hand', rot: -8, where: 'Projects' },
+      { id: 'hi', text: 'say hi', bg: 'yellow', icon: 'wave', rot: 7, where: 'Contact' }
+    ],
+    book: {
+      title: 'Sticker book',
+      button: 'Stickers',
+      lead: 'Stickers are stuck all over this page. Peel one (drag it, or click or tap it) to add it here.',
+      done: 'Full set! Thanks for reading everything.',
+      doneText: 'The CV has the rest, in one PDF.',
+      close: 'Close'
+    },
+    // NEW CONTENT: console greeting
+    console: 'Night Zine, printed in three inks. There are 9 stickers on the page: peel them all.'
+  };
+
+  /* =====================================================================
+     Helpers
+     ===================================================================== */
+  const $ = (s, r = document) => r.querySelector(s);
+  const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+  const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const P = CONTENT.profile;
+  const INK = { pink: 'var(--pink)', yellow: 'var(--yellow)', cyan: 'var(--cyan)' };
+  const ICON = {
+    download: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11m0 0-4.5-4.5M12 15l4.5-4.5M5 20h14"/></svg>',
+    mail: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5.5" width="18" height="13" rx="2"/><path d="m4 7 8 6 8-6"/></svg>',
+    book: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h11l3 3v13H5z"/><path d="M15.5 4v3.5H19"/><circle cx="10" cy="12" r="2.6"/><path d="m12.5 15.5 3-3 1.5 4z"/></svg>',
+    star: '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="m12 2.5 2.8 6 6.6.7-4.9 4.5 1.4 6.5L12 16.9l-5.9 3.3 1.4-6.5L2.6 9.2l6.6-.7z"/></svg>',
+    jump: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="15" cy="4.5" r="2"/><path d="m8 9 4-2 3 3 3 1M12 7l-1 6 4 2-1 5M11 13l-4 2-2-2M3 21h18"/></svg>',
+    wave: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 13V6.5a1.5 1.5 0 0 1 3 0V12M11 11V4.5a1.5 1.5 0 0 1 3 0V11M14 11V6a1.5 1.5 0 0 1 3 0v8a6 6 0 0 1-6 6h-.5a6 6 0 0 1-5-2.7L3 13.5a1.5 1.5 0 0 1 2.5-1.6L8 15"/></svg>'
+  };
+
+  /* =====================================================================
+     Scribble (custom): seeded hand-drawn marker paths
+     ===================================================================== */
+  const Scribble = (() => {
+    function rng(seed) { // mulberry32: same seed, same scribble on every load
+      return () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
+    }
+    const f = (n) => n.toFixed(1);
+    // Smooth a list of points with quadratic curves through their midpoints
+    function smooth(pts) {
+      let d = `M${f(pts[0][0])} ${f(pts[0][1])}`;
+      for (let i = 1; i < pts.length - 1; i++) {
+        const mx = (pts[i][0] + pts[i + 1][0]) / 2, my = (pts[i][1] + pts[i + 1][1]) / 2;
+        d += ` Q${f(pts[i][0])} ${f(pts[i][1])} ${f(mx)} ${f(my)}`;
+      }
+      const l = pts[pts.length - 1];
+      return d + ` L${f(l[0])} ${f(l[1])}`;
+    }
+    // A loose loop around a box, overshooting its start like a quick marker circle
+    function circle(w, h, seed, turns = 1.12) {
+      const r = rng(seed), pts = [], n = 30, start = -2.3 + r() * .5;
+      for (let k = 0; k <= n; k++) {
+        const a = start + (k / n) * turns * Math.PI * 2, j = 1 + (r() - .5) * .07 + k * .002;
+        pts.push([w / 2 + Math.cos(a) * (w / 2 - 4) * j, h / 2 + Math.sin(a) * (h / 2 - 4) * j]);
+      }
+      return [smooth(pts)];
+    }
+    // A wavy underline with a second, shorter return stroke
+    function underline(w, seed) {
+      const r = rng(seed), a = [], b = [];
+      for (let x = 2; x <= w - 2; x += w / 14) a.push([x, 7 + Math.sin(x / w * 5) * 2 + (r() - .5) * 3]);
+      for (let x = w * .92; x >= w * .2; x -= w / 12) b.push([x, 15 + (r() - .5) * 3]);
+      return [smooth(a), smooth(b)];
+    }
+    // A curved arrow from (x1,y1) to (x2,y2): one path for the shaft, one for the head
+    function arrow(x1, y1, x2, y2, bend, seed) {
+      const r = rng(seed), pts = [];
+      const mx = (x1 + x2) / 2, my = (y1 + y2) / 2, dx = x2 - x1, dy = y2 - y1, len = Math.hypot(dx, dy);
+      const cx = mx - dy / len * bend, cy = my + dx / len * bend;
+      for (let i = 0; i <= 12; i++) {
+        const t = i / 12, u = 1 - t, jit = i > 0 && i < 12 ? (r() - .5) * 2 : 0;
+        pts.push([u * u * x1 + 2 * u * t * cx + t * t * x2 + jit, u * u * y1 + 2 * u * t * cy + t * t * y2 + jit]);
+      }
+      const ang = Math.atan2(y2 - cy, x2 - cx), h = 13;
+      const head = `M${f(x2 - Math.cos(ang - .5) * h)} ${f(y2 - Math.sin(ang - .5) * h)} L${f(x2)} ${f(y2)} L${f(x2 - Math.cos(ang + .5) * h)} ${f(y2 - Math.sin(ang + .5) * h)}`;
+      return [smooth(pts), head];
+    }
+    // A five-point star drawn in one stroke, a little uneven
+    function star(cx, cy, rad, seed) {
+      const r = rng(seed), pts = [];
+      for (let i = 0; i <= 10; i++) {
+        const a = -Math.PI / 2 + i * Math.PI / 5, rr = (i % 2 ? rad * .45 : rad) * (1 + (r() - .5) * .16);
+        pts.push([cx + Math.cos(a) * rr, cy + Math.sin(a) * rr]);
+      }
+      return ['M' + pts.map((p) => `${f(p[0])} ${f(p[1])}`).join(' L')];
+    }
+    // A long vertical wobbly line, for the career strip
+    function vline(height, seed) {
+      const r = rng(seed), pts = [];
+      for (let y = 4; y <= height; y += 46) pts.push([22 + Math.sin(y / 140) * 8 + (r() - .5) * 5, y]);
+      pts.push([22, height]);
+      return smooth(pts);
+    }
+    // Render paths as an SVG; `pathLength=1` lets CSS draw any path with the same dash values
+    function svg(paths, vb, { cls = '', delay = 0, step = .35 } = {}) {
+      return `<svg class="scr ${cls}" viewBox="${vb}" aria-hidden="true" focusable="false">${paths.map((d, i) => `<path d="${d}" pathLength="1" style="--d:${(delay + i * step).toFixed(2)}s"/>`).join('')}</svg>`;
+    }
+    // A circle that is drawn after layout, at the real size of its box (see FitScribbles)
+    function fitCircle(seed, delay = 0, turns = 1.12) {
+      return `<svg class="scr" data-fit="circle" data-seed="${seed}" data-turns="${turns}" aria-hidden="true" focusable="false"><path pathLength="1" style="--d:${delay}s"/></svg>`;
+    }
+    return { circle, underline, arrow, star, vline, svg, fitCircle };
+  })();
+
+  const head = (id, title, note, seed) => `
+    <div class="sec-head">
+      <h2 class="h2" id="${id}">${esc(title)}${Scribble.svg(Scribble.underline(300, seed), '0 0 300 22')}</h2>
+      ${note ? `<p class="note">${esc(note)}</p>` : ''}
+    </div>`;
+
+  /* =====================================================================
+     Stickers: markup (StickerPeel and StickerBook add the behaviour)
+     ===================================================================== */
+  const STK = Object.fromEntries(CONTENT.stickers.map((s) => [s.id, s]));
+  function stickerFace(s) {
+    return `<span class="stk-face ${s.style || ''}" style="--bg:${INK[s.bg]}">${s.icon ? ICON[s.icon] : ''}<span>${esc(s.text)}${s.small ? `<small>${esc(s.small)}</small>` : ''}</span></span><span class="stk-flap" aria-hidden="true"></span>`;
+  }
+  function sticker(id, pos) {
+    const s = STK[id];
+    const label = `Sticker: ${s.text}${s.small ? ' ' + s.small : ''}. Peel it into the sticker book.`;
+    return `<button class="stk" type="button" data-stk="${id}" style="${pos};--rot:${s.rot}deg" aria-label="${esc(label)}">${stickerFace(s)}</button>`;
+  }
+
+  /* =====================================================================
+     Rendering (one function per section = one component later)
+     ===================================================================== */
+  function renderHeader() {
+    $('#logoName').textContent = P.name;
+    const items = CONTENT.nav.map((n) => `<li><a href="#${n.id}" data-nav="${n.id}">${esc(n.label)}</a></li>`).join('');
+    $('#navList').innerHTML = items;
+    $('#menu').innerHTML = items;
+  }
+
+  function renderHero() {
+    const H = CONTENT.hero, lines = P.nameLines.map((l) => `<span>${esc(l)}</span>`).join('');
+    $('#heroWrap').innerHTML = `
+      <div class="bento">
+        <div class="blk name-card" style="--c:var(--pink);--s6:6;--s12:8;--r12:2">
+          <h1 class="name" id="heroName">${lines}<span class="plate" aria-hidden="true">${lines}</span></h1>
+          <div class="who"><p class="role">${esc(P.role)}</p>
+          <p class="tagline">${esc(P.tagline)}</p></div>
+          ${sticker('ralph', 'right:clamp(10px,6%,60px);top:-22px')}
+        </div>
+        <div class="blk cta-card" style="--c:var(--cyan);--s6:3;--s12:4">
+          <div class="cta-note" aria-hidden="true">
+            <span class="note">${esc(H.cvNote)}</span>
+            ${Scribble.svg(Scribble.arrow(100, 6, 14, 50, -18, 4), '0 0 110 56', { delay: .3 })}
+          </div>
+          <a class="btn btn-primary" href="${P.cvFile}" download>${ICON.download}${esc(H.cv)}</a>
+          <a class="btn btn-ghost" href="#contact">${ICON.mail}${esc(H.contact)}</a>
+          <p class="avail">${esc(P.availability)}</p>
+        </div>
+        <ul class="stats" style="--s6:3;--s12:4">
+          ${H.stats.map((s, i) => `
+            <li class="stat" style="--c:${['var(--yellow)', 'var(--cyan)', 'var(--line)', 'var(--pink)'][i % 4]}">
+              ${s.circle ? Scribble.fitCircle(9, .9) : ''}
+              <strong>${esc(s.value)}</strong><span>${esc(s.label)}</span>
+            </li>`).join('')}
+        </ul>
+      </div>`;
+  }
+
+  // RisoPortrait (custom SVG): line art in ink, flat fills printed a few pixels out of register
+  function portraitSVG() {
+    const fills = `
+      <g transform="translate(5 4)">
+        <path d="M30 262 C34 214 62 194 100 188 L120 218 L140 188 C178 194 206 214 210 262Z" fill="var(--blue)"/>
+        <path d="M104 188 L120 224 L136 188Z" fill="#fff"/>
+        <ellipse cx="120" cy="112" rx="46" ry="54" fill="#F7C6A6"/>
+        <path d="M72 102 C64 64 86 38 112 40 C118 24 142 20 160 34 C172 42 178 58 172 78 C166 66 154 60 144 62 C128 52 104 56 92 68 C84 76 78 88 76 102Z" fill="#B57A47"/>
+        <path d="M96 138 Q120 162 144 138Z" fill="#fff"/>
+      </g>`;
+    const r = (() => { let s = 7; return () => (s = (s * 9301 + 49297) % 233280) / 233280; })();
+    let dots = '';
+    for (let a = .35; a < 2.8; a += .16) { // stubble along the jaw
+      const rr = .82 + r() * .1;
+      dots += `<circle cx="${(120 + Math.cos(a) * 44 * rr).toFixed(1)}" cy="${(116 + Math.sin(a) * 48 * rr).toFixed(1)}" r="1.4"/>`;
+    }
+    return `
+      <svg viewBox="0 0 240 262" role="img" aria-label="${esc(CONTENT.about.portraitAlt)}">
+        ${fills}
+        <g fill="none" stroke="var(--ink)" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M30 262 C34 214 62 194 100 188 L120 218 L140 188 C178 194 206 214 210 262"/>
+          <path d="M104 188 L120 224 L136 188 M100 188 L112 236 M140 188 L128 236"/>
+          <path d="M108 160 L106 188 M132 160 L134 188"/>
+          <ellipse cx="120" cy="112" rx="46" ry="54"/>
+          <path d="M75 110 q-10 -2 -8 10 q2 10 10 8 M165 110 q10 -2 8 10 q-2 10 -10 8"/>
+          <path d="M72 102 C64 64 86 38 112 40 C118 24 142 20 160 34 C172 42 178 58 172 78 C166 66 154 60 144 62 C128 52 104 56 92 68 C84 76 78 88 76 102"/>
+          <path d="M112 40 C116 50 124 54 132 52 M140 34 C146 42 154 46 160 46"/>
+          <path d="M92 95 q10 -7 20 -1 M128 94 q10 -6 20 1"/>
+          <path d="M95 111 q8 -7 16 0 M129 111 q8 -7 16 0"/>
+          <path d="M120 113 q-6 14 2 17"/>
+          <path d="M96 138 Q120 162 144 138 Z M101 143 Q120 151 139 143"/>
+        </g>
+        <g stroke-linecap="round">
+          <path d="M44 244 L172 226" stroke="var(--ink)" stroke-width="34"/>
+          <path d="M44 244 L172 226" stroke="var(--blue)" stroke-width="27"/>
+          <ellipse cx="178" cy="226" rx="11" ry="10" fill="#F7C6A6" stroke="var(--ink)" stroke-width="3.2"/>
+          <path d="M196 248 L68 232" stroke="var(--ink)" stroke-width="34"/>
+          <path d="M196 248 L68 232" stroke="var(--blue)" stroke-width="27"/>
+          <ellipse cx="62" cy="231" rx="11" ry="10" fill="#F7C6A6" stroke="var(--ink)" stroke-width="3.2"/>
+          <path d="M150 236 l10 -4 M90 238 l-8 -3" stroke="var(--ink)" stroke-width="2.6"/>
+        </g>
+        <g fill="var(--ink)" opacity=".7">${dots}</g>
+      </svg>`;
+  }
+
+  // A small marker doodle of a vault over a wall and a climbing route, for "Outside of code"
+  function offClockDoodle() {
+    return `
+      <svg viewBox="0 0 210 130" aria-hidden="true" focusable="false">
+        <g fill="none" stroke="var(--yellow)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M8 118 H120 M40 118 V88 H86 V118"/>
+          <circle cx="70" cy="46" r="7"/>
+          <path d="M66 54 L58 74 L40 70 M60 66 L80 70 L96 60 M58 74 L72 84 L90 82"/>
+          <path d="M30 96 q20 -40 44 -46" stroke-dasharray="2 7"/>
+          <path d="M150 122 L150 8 M150 8 h44 v114"/>
+          <path d="M160 108 q4 -6 8 0 M178 86 q5 -6 9 0 M158 64 q4 -6 8 0 M176 40 q5 -6 9 0 M164 20 q4 -6 8 0"/>
+          <path d="M164 106 C184 90 160 70 182 56 C196 46 166 32 168 18" stroke="var(--pink)" stroke-dasharray="1 6"/>
+        </g>
+      </svg>`;
+  }
+
+  function renderAbout() {
+    const A = CONTENT.about;
+    $('#aboutWrap').innerHTML = `
+      ${head('about-h', A.title, A.note, 11)}
+      <div class="bento">
+        <div class="blk about-text" style="--c:var(--yellow);--s6:6;--s12:7">
+          ${A.paragraphs.map((p) => `<p>${esc(p)}</p>`).join('')}
+        </div>
+        <figure class="blk fill portrait" style="--c:var(--yellow);--s6:3;--s12:5;--r12:2">
+          ${portraitSVG()}
+          <figcaption>${esc(A.portraitCaption)}</figcaption>
+          ${sticker('l', 'left:-18px;bottom:30px')}
+        </figure>
+        <div class="blk offclock" style="--c:var(--cyan);--s6:3;--s12:7">
+          <div><h3>${esc(A.offClock.title)}</h3><p>${esc(A.offClock.text)}</p></div>
+          ${offClockDoodle()}
+          ${sticker('parkour', 'right:-12px;top:-24px')}
+        </div>
+      </div>`;
+  }
+
+  function renderStack() {
+    const S = CONTENT.stack, colours = ['var(--pink)', 'var(--cyan)', 'var(--yellow)', 'var(--cyan)', 'var(--pink)'];
+    const spans = [[6, 7], [6, 5], [3, 4], [3, 4], [6, 4]];
+    const extra = { Frontend: sticker('c', 'right:-14px;top:-26px'), Testing: sticker('coverage', 'right:-12px;bottom:-22px') };
+    $('#stackWrap').innerHTML = `
+      ${head('stack-h', S.title, S.note, 23)}
+      <ul class="legend" aria-label="Legend">
+        ${Object.entries(S.levels).map(([k, v]) => `<li><span class="chip ${k}">${k}</span>${esc(v)}</li>`).join('')}
+      </ul>
+      <div class="bento">
+        ${S.groups.map((g, i) => {
+          const rows = ['strong', 'medium', 'low'].map((lvl) => {
+            const items = g.items.filter((it) => it[1] === lvl);
+            return items.length ? `<div class="lvl-row"><span class="lvl-name">${lvl}</span><ul class="chips">${items.map((it) => `<li class="chip ${lvl}">${esc(it[0])}<span class="vh"> (${lvl})</span></li>`).join('')}</ul></div>` : '';
+          }).join('');
+          return `<div class="blk tile" style="--c:${colours[i]};--s6:${spans[i][0]};--s12:${spans[i][1]}"><h3>${esc(g.name)}</h3>${rows}${extra[g.name] || ''}</div>`;
+        }).join('')}
+      </div>`;
+  }
+
+  function renderCareer() {
+    const C = CONTENT.career;
+    const jobs = C.jobs.map((j, i) => {
+      const roles = j.roles.length > 1
+        ? `${esc(j.roles[0])} → <span class="promo">${esc(j.roles[1])}${Scribble.fitCircle(40 + i, .2)}</span> <span class="promo-label">${esc(C.promoted)}</span>`
+        : esc(j.roles[0]);
+      return `
+        <li class="job">
+          <article class="blk">
+            <span class="job-dot" aria-hidden="true"></span>
+            <h3>${esc(j.company)}</h3>
+            <div class="job-meta"><span class="roles">${roles}</span><span class="dates">${esc(j.dates)}</span></div>
+            <ul class="points">${j.points.map((p) => `<li>${esc(p)}</li>`).join('')}</ul>
+            <ul class="tags" aria-label="Stack">${j.stack.map((t) => `<li>${esc(t)}</li>`).join('')}</ul>
+          </article>
+          <div class="margin-note" aria-hidden="true">
+            ${Scribble.svg(Scribble.arrow(46, 10, 4, 30, 8, 60 + i), '0 0 50 40', { delay: .2 })}
+            <span class="note" style="--tilt:${i % 2 ? 3 : -3}deg">${esc(j.note)}</span>
+          </div>
+        </li>`;
+    }).join('');
+    const E = C.education;
+    $('#careerWrap').innerHTML = `
+      ${head('career-h', C.title, C.note, 31)}
+      <div class="career-list" id="careerList">
+        <svg class="career-line" id="careerLine" aria-hidden="true" focusable="false"><path pathLength="1"/></svg>
+        <ol class="jobs">
+        ${jobs}
+        <li class="job"><div class="blk edu"><span class="note" style="--tilt:-2deg">${esc(E.label)}</span><h3>${esc(E.school)}</h3><div class="job-meta"><span class="roles">${esc(E.degree)}</span><span class="dates">${esc(E.dates)}</span></div></div></li>
+        </ol>
+      </div>`;
+    $('#careerWrap .sec-head').insertAdjacentHTML('beforeend', sticker('promoted', 'right:0;top:-6px'));
+  }
+
+  function renderTeam() {
+    const T = CONTENT.team, colours = ['var(--yellow)', 'var(--pink)', 'var(--cyan)'], rots = [-2.5, 1.8, -1.2], tapes = [-4, 3, -2];
+    $('#teamWrap').innerHTML = `
+      ${head('team-h', T.title, T.note, 43)}
+      <div class="notes">
+        ${T.quotes.map((q, i) => `
+          <figure class="sticky" style="--c:${colours[i % 3]};--rot:${rots[i % 3]}deg;--tape:${tapes[i % 3]}deg">
+            <blockquote>${q.text.map((t) => `<p>${esc(t)}</p>`).join('')}</blockquote>
+            <figcaption><strong>${esc(q.name)}</strong>${esc(q.role)}, ${esc(T.source)}</figcaption>
+          </figure>`).join('')}
+      </div>`;
+    $('#teamWrap .sec-head').insertAdjacentHTML('beforeend', sticker('six', 'right:4%;top:-10px'));
+  }
+
+  // PolaroidArt (custom SVG): a two-ink riso print per project, generated from its index
+  function polaroidArt(p, i) {
+    const inks = [['#FF4FA3', '#3DE3FF'], ['#FFE83D', '#FF4FA3'], ['#3DE3FF', '#FFE83D']][i % 3];
+    const initials = p.name.split(/\s+/).filter((w) => /^[A-Za-z]/.test(w)).slice(0, 2).map((w) => w[0]).join('');
+    const shapes = [
+      `<circle cx="200" cy="120" r="78" fill="${inks[0]}"/><rect x="40" y="40" width="120" height="120" fill="${inks[1]}" transform="rotate(-10 100 100)"/>`,
+      `<path d="M30 200 L150 30 L270 200Z" fill="${inks[0]}"/><circle cx="90" cy="80" r="50" fill="${inks[1]}"/>`,
+      `<rect x="20" y="110" width="260" height="60" fill="${inks[0]}"/><circle cx="150" cy="90" r="64" fill="${inks[1]}"/>`,
+      `<path d="M10 150 C70 40 130 220 190 110 S280 60 300 120 V230 H10Z" fill="${inks[0]}"/><circle cx="230" cy="60" r="36" fill="${inks[1]}"/>`
+    ][i % 4];
+    return `
+      <svg viewBox="0 0 300 225" aria-hidden="true" focusable="false">
+        <defs><pattern id="ht${i}" width="9" height="9" patternUnits="userSpaceOnUse" patternTransform="rotate(${15 + i * 20})"><circle cx="4.5" cy="4.5" r="2.4" fill="#1F1E26"/></pattern></defs>
+        <rect width="300" height="225" fill="#2A2933"/>
+        <g class="inks">${shapes}</g>
+        <rect width="300" height="225" fill="url(#ht${i})" opacity=".35"/>
+        <text x="22" y="205" font-family="Bricolage Grotesque, sans-serif" font-weight="800" font-size="74" fill="#F5F3FA" style="font-variation-settings:'wdth' 75">${esc(initials)}</text>
+      </svg>`;
+  }
+
+  function renderProjects() {
+    const PR = CONTENT.projects, shadows = ['var(--pink)', 'var(--cyan)', 'var(--yellow)'], rots = [-1.6, 1.2, -.8, 1.8];
+    const statusInk = { live: 'var(--yellow)', 'in progress': 'var(--cyan)', archived: '#C5C2D3' };
+    $('#projectsWrap').innerHTML = `
+      ${head('projects-h', PR.title, PR.note, 53)}
+      <ul class="polaroids">
+        ${PR.items.map((p, i) => `
+          <li class="polaroid" style="--c:${shadows[i % 3]};--rot:${rots[i % 4]}deg">
+            <div class="photo">${polaroidArt(p, i)}</div>
+            <span class="status" style="--s:${statusInk[p.status]}">${esc(p.status)}</span>
+            <h3>${esc(p.name)}</h3>
+            ${p.note ? `<p class="sub">${esc(p.note)}</p>` : ''}
+            <p class="desc">${esc(p.description)}</p>
+            <ul class="tags" aria-label="Tech">${p.tags.map((t) => `<li>${esc(t)}</li>`).join('')}</ul>
+            ${p.repo ? `<a class="repo" href="${p.repo}">${esc(PR.repoLabel)}<span class="vh">: ${esc(p.name)}</span></a>` : ''}
+          </li>`).join('')}
+        <li class="slot" aria-hidden="true"><div><div class="plus">+</div><span class="note">${esc(PR.slot)}</span></div></li>
+      </ul>`;
+    $('#projectsWrap .sec-head').insertAdjacentHTML('beforeend', sticker('ship', 'right:2%;top:0'));
+  }
+
+  function renderContact() {
+    const C = CONTENT.contact;
+    $('#contactWrap').innerHTML = `
+      <div class="blk fill contact-card" style="--c:var(--pink)">
+        <h2 class="h2" id="contact-h">${esc(C.title)}${Scribble.svg(Scribble.underline(300, 61), '0 0 300 22')}</h2>
+        <span class="note contact-note" aria-hidden="true">${esc(C.note)}</span>
+        <p class="avail-big">${esc(P.availability)}</p>
+        <a class="email" href="mailto:${P.email}">${esc(P.email)}${Scribble.fitCircle(67, .3, 1.08)}</a>
+        <div class="contact-actions">
+          <a class="btn btn-ghost" href="mailto:${P.email}">${ICON.mail}${esc(C.emailLabel)}</a>
+          <a class="btn btn-primary" href="${P.cvFile}" download>${ICON.download}${esc(CONTENT.hero.cv)}</a>
+        </div>
+        <ul class="contact-links">
+          <li><a href="${P.github}">GitHub</a></li>
+          <li>${P.linkedin ? `<a href="${P.linkedin}">LinkedIn</a>` : '<span class="todo">LinkedIn (TODO: URL)</span>'}</li>
+          <li>${P.calendly ? `<a href="${P.calendly}">${esc(C.calendlyLabel)}</a>` : `<span class="todo">${esc(C.calendlyLabel)} (TODO: Calendly URL)</span>`}</li>
+        </ul>
+        ${sticker('hi', 'right:6%;bottom:-24px')}
+      </div>`;
+  }
+
+  function renderFooter() {
+    const F = CONTENT.footer;
+    $('#footerWrap').innerHTML = `<p>${esc(F.builtWith)} · <a href="${F.repo}">Source on GitHub</a></p><p>© ${new Date().getFullYear()} ${esc(P.name)}</p>`;
+  }
+
+  /* =====================================================================
+     Effects (one function per effect = one hook or component later)
+     ===================================================================== */
+
+  // RisoPlates (custom): the cyan plate drifts out of register towards the cursor
+  function RisoPlates() {
+    const plate = $('#heroName .plate');
+    if (reduceMotion || !matchMedia('(pointer: fine)').matches) return; // fixed offset from CSS
+    let tx = 4, ty = 3, x = 4, y = 3, raf = 0;
+    addEventListener('pointermove', (e) => {
+      const r = plate.parentElement.getBoundingClientRect();
+      if (r.bottom < 0) return;
+      tx = clamp((e.clientX - (r.left + r.width / 2)) / r.width * 18, -10, 10);
+      ty = clamp((e.clientY - (r.top + r.height / 2)) / r.height * 10, -7, 7);
+      if (!raf) raf = requestAnimationFrame(step);
+    }, { passive: true });
+    function step() {
+      x += (tx - x) * .12; y += (ty - y) * .12;
+      plate.style.setProperty('--ox', x.toFixed(2) + 'px');
+      plate.style.setProperty('--oy', y.toFixed(2) + 'px');
+      raf = Math.abs(tx - x) + Math.abs(ty - y) > .05 ? requestAnimationFrame(step) : 0;
+    }
+  }
+
+  // FitScribbles (custom): redraws fitted marker circles whenever their box changes size
+  function FitScribbles() {
+    const ro = new ResizeObserver((entries) => entries.forEach(({ target: svg }) => {
+      const { width: w, height: h } = svg.getBoundingClientRect();
+      if (!w || !h) return;
+      svg.setAttribute('viewBox', `0 0 ${w.toFixed(0)} ${h.toFixed(0)}`);
+      svg.firstElementChild.setAttribute('d', Scribble.circle(w, h, +svg.dataset.seed, +svg.dataset.turns)[0]);
+    }));
+    $$('.scr[data-fit]').forEach((svg) => ro.observe(svg));
+  }
+
+  // DrawOnScroll (custom, DrawSVG-style): marker notes draw when they enter the viewport
+  function DrawOnScroll() {
+    const all = $$('.scr');
+    if (reduceMotion || !('IntersectionObserver' in window)) { all.forEach((s) => s.classList.add('is-drawn')); return; }
+    const io = new IntersectionObserver((entries) => entries.forEach((en) => {
+      if (en.isIntersecting) { en.target.classList.add('is-drawn'); io.unobserve(en.target); }
+    }), { rootMargin: '0px 0px -12% 0px' });
+    all.forEach((s) => io.observe(s));
+  }
+
+  // CareerLine (custom, scrubbed): the hand-drawn line follows scroll progress through the list
+  function CareerLine() {
+    const list = $('#careerList'), svg = $('#careerLine'), path = $('path', svg);
+    function build() {
+      const h = list.offsetHeight;
+      svg.setAttribute('viewBox', `0 0 44 ${h}`);
+      path.setAttribute('d', Scribble.vline(h, 77));
+      update();
+    }
+    function update() {
+      if (reduceMotion) { path.style.strokeDashoffset = 0; return; }
+      const r = list.getBoundingClientRect();
+      const p = clamp((innerHeight * .7 - r.top) / r.height, 0, 1);
+      path.style.strokeDashoffset = (1 - p).toFixed(4);
+    }
+    new ResizeObserver(build).observe(list);
+    addEventListener('scroll', update, { passive: true });
+  }
+
+  // StickerBook (custom): collected stickers, shown in a native <dialog>
+  const StickerBook = (() => {
+    const got = new Set(), B = CONTENT.book, total = CONTENT.stickers.length;
+    const dlg = $('#book'), btn = $('#bookBtn');
+    function renderButton() {
+      btn.innerHTML = `${ICON.book}<span class="lbl">${esc(B.button)}</span> ${got.size}/${total}`;
+      btn.setAttribute('aria-label', `${B.title}: ${got.size} of ${total} stickers collected`);
+    }
+    function render() {
+      const done = got.size === total;
+      dlg.innerHTML = `
+        <h2 id="book-h">${esc(B.title)}</h2>
+        <p class="lead">${esc(B.lead)}</p>
+        ${done ? `<div class="done"><p class="note">${esc(B.done)}</p><p>${esc(B.doneText)}</p></div>` : ''}
+        <ul class="book-grid">
+          ${CONTENT.stickers.map((s) => got.has(s.id)
+            ? `<li class="got"><span class="stk" style="--rot:${s.rot}deg">${stickerFace(s)}</span><span class="vh">${esc(s.text)}</span></li>`
+            : `<li>Not found yet. Look in ${esc(s.where)}.</li>`).join('')}
+        </ul>
+        <div class="book-actions">
+          ${done ? `<a class="btn btn-primary" href="${P.cvFile}" download>${ICON.download}${esc(CONTENT.hero.cv)}</a>` : ''}
+          <button class="btn btn-ghost" type="button" data-close>${esc(B.close)}</button>
+        </div>`;
+    }
+    function open() { render(); dlg.showModal(); }
+    function collect(id) {
+      if (got.has(id)) return;
+      got.add(id);
+      renderButton();
+      btn.classList.remove('is-pop'); void btn.offsetWidth; btn.classList.add('is-pop');
+      if (got.size === total) setTimeout(open, 500);
+    }
+    btn.addEventListener('click', open);
+    dlg.addEventListener('click', (e) => { if (e.target.closest('[data-close]') || e.target === dlg) dlg.close(); });
+    renderButton();
+    return { collect };
+  })();
+
+  // StickerPeel (inspired by React Bits StickerPeel, no GSAP): peel on hover, drag to move.
+  // Dragging only on wide screens with a fine pointer; elsewhere a tap peels and collects.
+  function StickerPeel() {
+    const canDrag = matchMedia('(pointer: fine) and (min-width: 900px)').matches;
+    document.documentElement.classList.toggle('can-drag', canDrag);
+    $$('main .stk').forEach((el) => {
+      let sx = 0, sy = 0, ox = 0, oy = 0, lastX = 0, vx = 0, down = false, moved = false, justDragged = false;
+      if (canDrag) {
+        el.addEventListener('pointerdown', (e) => {
+          if (e.button !== 0) return;
+          el.setPointerCapture(e.pointerId);
+          down = true; moved = false; sx = e.clientX; sy = e.clientY; lastX = e.clientX; vx = 0;
+          el.classList.add('is-lifted');
+        });
+        el.addEventListener('pointermove', (e) => {
+          if (!down) return;
+          const dx = e.clientX - sx, dy = e.clientY - sy;
+          if (!moved && Math.hypot(dx, dy) < 4) return;
+          moved = true; el.classList.add('is-dragging');
+          vx = vx * .7 + (e.clientX - lastX) * .3; lastX = e.clientX;
+          el.style.setProperty('--dx', ox + dx + 'px');
+          el.style.setProperty('--dy', oy + dy + 'px');
+          el.style.setProperty('--sway', clamp(vx * 1.4, -16, 16).toFixed(1) + 'deg'); // tilts with the drag
+        });
+        const end = (e) => {
+          if (!down) return;
+          down = false;
+          el.classList.remove('is-lifted', 'is-dragging');
+          el.style.setProperty('--sway', '0deg');
+          if (moved) { ox += e.clientX - sx; oy += e.clientY - sy; justDragged = true; StickerBook.collect(el.dataset.stk); }
+        };
+        el.addEventListener('pointerup', end);
+        el.addEventListener('pointercancel', end);
+      }
+      el.addEventListener('click', () => {
+        if (justDragged) { justDragged = false; return; }
+        el.classList.add('is-peek');
+        setTimeout(() => el.classList.remove('is-peek'), 650);
+        StickerBook.collect(el.dataset.stk);
+      });
+    });
+  }
+
+  function NavState() {
+    const links = $$('[data-nav]');
+    const io = new IntersectionObserver((entries) => entries.forEach((en) => {
+      if (!en.isIntersecting) return;
+      links.forEach((a) => {
+        if (a.dataset.nav === en.target.id) a.setAttribute('aria-current', 'true');
+        else a.removeAttribute('aria-current');
+      });
+    }), { rootMargin: '-45% 0px -50% 0px' });
+    ['top', ...CONTENT.nav.map((n) => n.id)].forEach((id) => io.observe(document.getElementById(id)));
+  }
+
+  function MobileMenu() {
+    const btn = $('#menuBtn'), menu = $('#menu');
+    const focusables = () => [btn, ...$$('a', menu)];
+    function set(open) {
+      menu.hidden = !open;
+      btn.setAttribute('aria-expanded', String(open));
+      btn.textContent = open ? 'Close' : 'Menu';
+      document.documentElement.style.overflow = open ? 'hidden' : '';
+      if (open) $('a', menu).focus();
+    }
+    btn.addEventListener('click', () => set(menu.hidden));
+    menu.addEventListener('click', (e) => { if (e.target.closest('a')) set(false); });
+    document.addEventListener('keydown', (e) => {
+      if (menu.hidden) return;
+      if (e.key === 'Escape') { set(false); btn.focus(); }
+      if (e.key === 'Tab') {
+        const f = focusables(), i = f.indexOf(document.activeElement);
+        if (e.shiftKey && i <= 0) { e.preventDefault(); f[f.length - 1].focus(); }
+        else if (!e.shiftKey && i === f.length - 1) { e.preventDefault(); f[0].focus(); }
+      }
+    });
+    matchMedia('(min-width: 960px)').addEventListener('change', () => set(false));
+  }
+
+  function ConsoleHello() {
+    console.log('%c● ● ● %c' + CONTENT.console, 'color:#FF4FA3;font-size:18px;text-shadow:3px 2px 0 #3DE3FF', 'font:700 13px sans-serif');
+  }
+
+  /* =====================================================================
+     Boot
+     ===================================================================== */
+  renderHeader();
+  renderHero();
+  renderAbout();
+  renderStack();
+  renderCareer();
+  renderTeam();
+  renderProjects();
+  renderContact();
+  renderFooter();
+  NavState();
+  MobileMenu();
+  RisoPlates();
+  FitScribbles();
+  DrawOnScroll();
+  CareerLine();
+  StickerPeel();
+  ConsoleHello();
+</script>
+</body>
+</html>

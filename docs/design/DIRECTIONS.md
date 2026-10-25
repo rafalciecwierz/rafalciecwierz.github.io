@@ -91,7 +91,7 @@ How the directions spread across the axes from the research. No two directions s
 
 ## 02 — Swiss Signal (`swiss-signal`)
 
-**Status:** dark variant built; light variant to build. **Files:** `design/prototypes/02-swiss-signal-dark.html`.
+**Status:** built (both variants). **Files:** `design/prototypes/02-swiss-signal-dark.html`, `design/prototypes/02-swiss-signal-light.html`.
 
 **Concept:** Rafał's name *is* the hero. It is set enormous on a strict, visible grid, in the tradition of 1950s Swiss posters. The type is alive: it changes width and weight as you scroll and move the cursor, and it reflows into the grid section by section. Ł and Ć become graphic marks: the stroke of the Ł extends into a grid line, and the acute accent of the Ć becomes the site's "signal" accent, used for active states and links. Serious structure, with a wink in the details.
 
@@ -124,6 +124,16 @@ How the directions spread across the axes from the research. No two directions s
 - **Dependencies:** GSAP 3.13 (ScrollTrigger, SplitText) only; the React build needs `gsap` + `@gsap/react`.
 
 **Light take:** a white page, black type, **signal red-orange** as the accent, and printed-poster calm. Stricter and quieter, with motion limited to the hero and hover states.
+
+**As built (light), task 2.4: "Plakat".** The page is a series of International Typographic Style posters printed on white paper (Müller-Brockmann's concert posters as the reference), with one geometric actor throughout: a red-orange signal disc. Nothing from "Night Grid" is reused: no Archivo, no width axis, no visible grid, no docking name, no Ł/Ć marks.
+- **Palette:** paper `#FFFFFF`, ink `#000000`, grey `#626262`, pale `#EDEDED`; signal `#FF4000` for fills and large type only (ink on it is 6:1), deep signal `#C43000` for small marks and focus; navy `#1E2B4F` in the portrait only.
+- **Type:** Schibsted Grotesk (400–900) as the only typeface, as on Swiss posters. Display type (the name, section titles) is heavy, tight and lowercase. No other direction uses this font.
+- **Layout:** an invisible grid (6/2 columns) felt only through alignment: a section title in the narrow left column, content on the right, each section opened by a thick rule. Contact is the one inverted section (a full signal field). Sections: hero, About, Stack, Career, "From the team" (quotes, new, after Career, not in the nav), Projects, Contact.
+- **Hero moment:** a poster composition: role and tagline at the top, the name fitted large at the bottom, CTAs below. A big signal disc bites into the name; the letters it covers knock out to white, and the letters at its edge step aside and tilt. The disc follows the mouse with a spring and settles into the nearest grid module when the cursor rests; on touch, a tap moves it.
+- **Section forms:** About with a geometric Swiss-poster portrait (it winks on hover); stack as columns where the level is a shape (full disc, half disc, ring) plus a text label; career as a list where each job has a bar on a shared 2021–2026 time scale (the bar length is the job's real duration) and promotions get a signal disc; quotes in three columns under initial discs; projects as mini posters generated from the list (four layouts cycled by position, the shape moves on hover); the email fitted to the grid width on the signal field.
+- **Effects:** SignalDisc, KnockoutName, LetterRepel, FitName, FitText, NavSignal, ProjectPosters, PortraitWink, PrintPoster (easter egg: printing the page gives a one-page A4 poster CV), MobileMenu, a console message. All custom.
+- **Left out on purpose:** scroll-driven motion of any kind (the direction asks for motion only in the hero and hover states), GSAP, smooth scroll, the `G` grid overlay (the dark variant's easter egg) and everything else from "Night Grid".
+- **Dependencies:** none. The React build needs nothing beyond React.
 
 **Typography:** Archivo (variable width and weight, used for the kinetic type), Hanken Grotesk for the body.
 

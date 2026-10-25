@@ -1,0 +1,871 @@
+<!doctype html>
+<!--
+  Prototype 02 — Swiss Signal (`swiss-signal`), LIGHT variant: "Plakat".
+  Direction brief: docs/design/DIRECTIONS.md, section 02.
+
+  Concept: the page is a series of International Typographic Style posters printed on white
+  paper, in the spirit of Josef Müller-Brockmann's concert posters. One geometric actor runs
+  through the whole series: a red-orange signal disc. In the hero it is a big disc that slowly
+  follows the cursor and settles into the modules of an invisible six-column grid; the letters
+  it covers knock out to white (like an overprint), and the letters at its edge step aside.
+  The rest of the page is still, strict and quiet: one typeface, lowercase display type, a grid
+  felt only through alignment, and motion limited to the hero and hover states.
+  It shares only the style (Swiss typography, kinetic type) with the dark variant, "Night Grid".
+
+  Effects (each is a named function in the script below):
+  - SignalDisc .......... custom: a spring-driven disc that follows the mouse, snaps to the
+                          nearest grid module when the cursor rests, and moves to a tapped point
+                          on touch (rAF, paused when the hero is off-screen)
+  - KnockoutName ........ custom: a white copy of the name clipped to the disc (CSS clip-path)
+  - LetterRepel ......... custom: letters near the disc edge shift and tilt away from it
+  - FitName, FitText .... custom: the name and the email are sized to the grid width
+  - NavSignal ........... custom: a small signal disc marks the section in view
+  - ProjectPosters ...... custom SVG: each project gets a mini poster built from its position in
+                          the list; its shape moves on hover
+  - PortraitWink ........ custom CSS: the geometric portrait winks on hover
+  - PrintPoster ......... custom easter egg: printing the page (Ctrl/Cmd+P, or the footer
+                          button) gives a one-page A4 poster CV (print stylesheet)
+  - MobileMenu, ConsoleHello: custom
+
+  Libraries in this file: none.
+  Fonts: Schibsted Grotesk (Google Fonts, wght 400–900, latin-ext), the only typeface.
+  React build would need: nothing beyond React. No GSAP, no WebGL.
+
+  Reduced motion: the disc sits still in its composed position (the knockout and the letter
+  offsets are drawn once), no smooth scroll, no hover transitions. No WebGL is used, so there is
+  no WebGL fallback to provide.
+
+  Content: all copy lives in the CONTENT object at the top of the script. Additions beyond
+  brief section 5 are marked `NEW CONTENT` there.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rafał Ciećwierz, Frontend Engineer</title>
+<meta name="description" content="Rafał Ciećwierz, Frontend Engineer. React & TypeScript, 5+ years building production apps.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400..900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #FFFFFF;
+    --ink: #000000;
+    --grey: #626262;        /* 6.1:1 on paper */
+    --pale: #EDEDED;
+    --signal: #FF4000;      /* fills and large type only: 3.5:1 on paper, ink on it is 6:1 */
+    --signal-deep: #C43000; /* small text, outlines, focus: 5.6:1 on paper */
+    --navy: #1E2B4F;
+    --gut: 16px;
+    --gap: 16px;
+    --hdr: 60px;
+    --ff: "Schibsted Grotesk", "Helvetica Neue", Arial, sans-serif;
+  }
+  @media (min-width: 600px) { :root { --gut: 24px; --gap: 20px; } }
+  @media (min-width: 1000px) { :root { --gut: 40px; --gap: 24px; } }
+
+  *, *::before, *::after { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  @media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+  body { margin: 0; background: var(--paper); color: var(--ink); font-family: var(--ff); font-size: 17px; line-height: 1.5; overflow-x: clip; }
+  svg { display: block; }
+  a { color: inherit; }
+  :focus-visible { outline: 3px solid var(--signal-deep); outline-offset: 3px; }
+  [id] { scroll-margin-top: var(--hdr); }
+  .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap; margin: -1px; padding: 0; border: 0; }
+  .skip { position: fixed; left: var(--gut); top: -100px; z-index: 100; background: var(--ink); color: #fff; padding: 12px 16px; font-weight: 700; text-decoration: none; }
+  .skip:focus { top: 10px; }
+
+  .wrap { max-width: 1680px; margin: 0 auto; padding-inline: var(--gut); }
+  .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: var(--gap); }
+  @media (min-width: 1000px) { .grid { grid-template-columns: repeat(6, minmax(0, 1fr)); } }
+
+  /* ---------- Header ---------- */
+  .hdr { position: fixed; inset: 0 0 auto; height: var(--hdr); background: var(--paper); z-index: 50; transition: box-shadow .2s; }
+  .hdr.ruled { box-shadow: 0 3px 0 var(--ink); }
+  .hdr .wrap { height: 100%; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+  .lockup { font-weight: 800; font-size: 19px; letter-spacing: -.03em; text-decoration: none; text-transform: lowercase; }
+  .nav ul { display: flex; gap: 32px; list-style: none; margin: 0; padding: 0; }
+  .nav a { position: relative; display: block; padding: 8px 0; text-decoration: none; font-weight: 600; font-size: 16px; }
+  .nav a::before { content: ""; position: absolute; left: -15px; top: 50%; width: 9px; height: 9px; margin-top: -4.5px; border-radius: 50%; background: var(--signal); transform: scale(0); transition: transform .2s; }
+  .nav a:hover::before, .nav a[aria-current="true"]::before { transform: scale(1); }
+  .menu-btn { display: none; align-items: center; min-height: 44px; padding: 0 16px; border: 3px solid var(--ink); background: var(--paper); color: var(--ink); font: 700 16px/1 var(--ff); cursor: pointer; }
+  .menu { position: fixed; inset: var(--hdr) 0 0; z-index: 49; background: var(--paper); padding: 24px var(--gut); overflow-y: auto; }
+  .menu[hidden] { display: none; }
+  .menu ul { list-style: none; margin: 0; padding: 0; border-top: 3px solid var(--ink); }
+  .menu a { display: block; padding: 10px 0; font-size: 48px; font-weight: 900; letter-spacing: -.05em; line-height: 1; text-decoration: none; text-transform: lowercase; }
+  .menu a:hover { color: var(--signal-deep); }
+  @media (max-width: 899px) { .nav { display: none; } .menu-btn { display: inline-flex; } }
+
+  /* ---------- Hero ---------- */
+  main { padding-top: var(--hdr); }
+  .hero { position: relative; overflow: hidden; min-height: calc(100svh - var(--hdr)); display: flex; }
+  .hero > .wrap { position: relative; z-index: 2; display: flex; flex-direction: column; width: 100%; padding-block: 20px 28px; pointer-events: none; }
+  .hero a, .hero button { pointer-events: auto; }
+  .disc { position: absolute; left: 0; top: 0; z-index: 1; border-radius: 50%; background: var(--signal); pointer-events: none; will-change: transform; }
+  .hero-top { padding-bottom: 28px; }
+  .role { max-width: 12ch; margin: 0; font-size: clamp(26px, 3vw, 44px); font-weight: 800; letter-spacing: -.035em; line-height: 1.02; }
+  .tagline { max-width: 60ch; margin: 6px 0 0; font-size: clamp(16px, 1.3vw, 19px); line-height: 1.35; }
+  .name-box { position: relative; margin-top: auto; }
+  .name { margin: 0; font-weight: 900; font-size: 22vw; line-height: .84; letter-spacing: -.055em; text-transform: lowercase; white-space: nowrap; }
+  .name .ln { display: block; }
+  .name .ch { display: inline-block; transform-origin: 50% 70%; }
+  .knock { position: absolute; inset: 0; color: var(--paper); pointer-events: none; clip-path: circle(0 at 0 0); }
+  .cta { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 28px; }
+  .btn { display: inline-flex; align-items: center; min-height: 52px; padding: 0 22px; border: 3px solid var(--ink); font: 700 17px/1 var(--ff); text-decoration: none; cursor: pointer; transition: background-color .15s, color .15s; }
+  .btn-primary { background: var(--ink); color: var(--paper); }
+  .btn-primary:hover { background: var(--signal); color: var(--ink); }
+  .btn-ghost { background: var(--paper); color: var(--ink); }
+  .btn-ghost:hover { background: var(--ink); color: var(--paper); }
+
+  /* ---------- Sections ---------- */
+  .sec { padding-block: 72px; }
+  @media (min-width: 1000px) { .sec { padding-block: 112px; } }
+  .sec .grid { border-top: 3px solid var(--ink); padding-top: 20px; }
+  .sec-head { grid-column: 1 / -1; margin-bottom: 40px; }
+  .sec-body { grid-column: 1 / -1; min-width: 0; }
+  @media (min-width: 1000px) {
+    .sec-head { grid-column: 1 / span 2; margin-bottom: 0; padding-right: 24px; }
+    .sec-body { grid-column: 3 / -1; }
+  }
+  .h2 { margin: 0; font-size: clamp(48px, 6.2vw, 104px); font-weight: 900; letter-spacing: -.055em; line-height: .86; text-transform: lowercase; }
+  .intro { margin: 16px 0 0; max-width: 26ch; color: var(--grey); }
+
+  /* About */
+  .about-lead { margin: 0 0 36px; max-width: 30ch; font-size: clamp(25px, 2.5vw, 40px); font-weight: 500; line-height: 1.16; letter-spacing: -.025em; }
+  .about-cols { display: grid; gap: 8px var(--gap); }
+  .about-cols p { margin: 0; max-width: 46ch; }
+  @media (min-width: 700px) { .about-cols { grid-template-columns: 1fr 1fr; } }
+  .portrait { width: min(100%, 220px); height: auto; margin-top: 32px; }
+  @media (min-width: 1000px) { .portrait { width: min(100%, 280px); margin-top: 48px; } }
+  .portrait .eye-r { transform-box: fill-box; transform-origin: center; transition: transform .15s; }
+  .portrait:hover .eye-r { transform: scaleY(.15); }
+
+  /* Stack */
+  .legend { display: flex; flex-wrap: wrap; gap: 8px 28px; list-style: none; margin: 0 0 40px; padding: 0; color: var(--grey); font-size: 15px; }
+  .legend li, .stack li { display: flex; align-items: center; gap: 10px; }
+  .lvl { width: 16px; height: 16px; flex: none; transition: transform .35s; }
+  .stack-groups { display: grid; gap: 40px var(--gap); grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); }
+  .grp { margin: 0 0 10px; font-size: 21px; font-weight: 800; letter-spacing: -.02em; }
+  .stack ul { list-style: none; margin: 0; padding: 0; }
+  .stack li { padding: 4px 0; }
+  .stack li:hover .lvl { transform: rotate(180deg); }
+
+  /* Career */
+  .scale { position: relative; height: 22px; color: var(--grey); font-size: 13px; font-variant-numeric: tabular-nums; }
+  .scale span { position: absolute; top: 0; padding-left: 5px; border-left: 2px solid var(--grey); line-height: 1.2; }
+  .jobs { list-style: none; margin: 0; padding: 0; }
+  .job { display: grid; gap: 14px var(--gap); padding: 0 0 48px; }
+  @media (min-width: 700px) { .job { grid-template-columns: minmax(0, 1fr) minmax(0, 3fr); } }
+  .track { grid-column: 1 / -1; position: relative; height: 12px; background: var(--pale); margin-top: 4px; }
+  .track .bar { position: absolute; top: 0; bottom: 0; background: var(--ink); transition: background-color .2s; }
+  .job:hover .bar { background: var(--signal); }
+  .job-dates { margin: 0; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .job h3 { margin: 0; font-size: clamp(28px, 2.7vw, 42px); font-weight: 800; letter-spacing: -.035em; line-height: 1; }
+  .job-role { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; margin: 10px 0 16px; font-size: 19px; font-weight: 600; line-height: 1.3; }
+  .promo { display: inline-flex; align-items: center; gap: 8px; }
+  .promo::before { content: ""; width: 14px; height: 14px; border-radius: 50%; background: var(--signal); flex: none; }
+  .job ul.pts { margin: 0; padding-left: 1.1em; list-style: square; }
+  .job ul.pts li { max-width: 68ch; margin-bottom: 6px; }
+  .tags { display: flex; flex-wrap: wrap; gap: 4px 16px; list-style: none; margin: 16px 0 0; padding: 0; color: var(--grey); font-size: 15px; }
+
+  /* Team */
+  .quotes { display: grid; gap: 48px var(--gap); }
+  @media (min-width: 900px) { .quotes { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+  .q { margin: 0; }
+  .q-mark { display: grid; place-items: center; width: 64px; height: 64px; margin-bottom: 20px; border-radius: 50%; background: var(--signal); font-size: 30px; font-weight: 900; line-height: 1; }
+  .q blockquote { margin: 0; font-size: clamp(20px, 1.6vw, 25px); font-weight: 500; line-height: 1.28; letter-spacing: -.012em; }
+  .q blockquote p { margin: 0 0 .6em; }
+  .q figcaption { margin-top: 12px; font-size: 15px; }
+  .q figcaption span { display: block; color: var(--grey); }
+
+  /* Projects */
+  .posters { display: grid; gap: 48px var(--gap); grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); list-style: none; margin: 0; padding: 0; }
+  .art { aspect-ratio: 7 / 5; overflow: hidden; background: var(--pale); }
+  .art svg { width: 100%; height: 100%; }
+  .art .mv { transition: transform .6s cubic-bezier(.2, .8, .2, 1); }
+  .pcard:hover .mv, .pcard:focus-within .mv { transform: translate(var(--hx, 0), var(--hy, 0)); }
+  .pcard h3 { margin: 18px 0 8px; font-size: 25px; font-weight: 800; letter-spacing: -.03em; line-height: 1.05; }
+  .status { display: inline-block; padding: 2px 8px; border: 2px solid var(--ink); font-size: 14px; font-weight: 700; }
+  .status.live { background: var(--signal); border-color: var(--signal); }
+  .status.archived { border-color: var(--grey); color: var(--grey); }
+  .pnote { margin: 10px 0 0; color: var(--grey); font-size: 15px; }
+  .pdesc { margin: 10px 0 0; font-size: 16px; }
+  .plinks { margin: 12px 0 0; font-weight: 700; }
+
+  /* Contact */
+  .contact { background: var(--signal); color: var(--ink); }
+  .contact :focus-visible { outline-color: var(--ink); }
+  .avail { margin: 0; max-width: 28ch; font-size: clamp(24px, 2.4vw, 36px); font-weight: 700; line-height: 1.12; letter-spacing: -.025em; }
+  .email { grid-column: 1 / -1; display: block; width: max-content; max-width: 100%; margin: 56px 0 40px; color: var(--paper); font-size: 9vw; font-weight: 900; letter-spacing: -.055em; line-height: .95; text-decoration: none; white-space: nowrap; }
+  .email:hover { color: var(--ink); }
+  .c-row { grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 24px; }
+  .c-links { display: flex; flex-wrap: wrap; gap: 8px 32px; list-style: none; margin: 0; padding: 0; font-size: 19px; font-weight: 700; }
+  .c-links .todo { font-weight: 500; }
+  .contact .btn-primary:hover { background: var(--paper); color: var(--ink); }
+
+  /* Footer */
+  .ftr { padding-block: 28px 40px; font-size: 15px; }
+  .ftr .wrap { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px; }
+  .ftr p { margin: 0; }
+  .btn-small { min-height: 44px; padding: 0 16px; font-size: 15px; }
+
+  #poster { display: none; }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { transition: none !important; animation: none !important; }
+  }
+
+  /* ---------- PrintPoster: the page prints as a one-page A4 poster CV ---------- */
+  @media print {
+    @page { size: A4; margin: 0; }
+    html, body { background: #fff; }
+    body > *:not(#poster) { display: none !important; }
+    #poster { display: block; position: relative; width: 210mm; height: 296mm; overflow: hidden; padding: 14mm; color: #000; font-family: var(--ff); font-size: 9pt; line-height: 1.35; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .pp-disc { position: absolute; right: -38mm; top: -34mm; width: 150mm; height: 150mm; border-radius: 50%; background: var(--signal); }
+    .pp-top { position: relative; max-width: 80mm; }
+    .pp-role { margin: 0; font-size: 22pt; font-weight: 800; letter-spacing: -.03em; line-height: 1; }
+    .pp-tag { margin: 2mm 0 0; font-size: 10pt; }
+    .pp-name { position: relative; margin: 52mm 0 12mm; font-size: 70pt; font-weight: 900; line-height: .84; letter-spacing: -.055em; text-transform: lowercase; }
+    .pp-grid { position: relative; display: grid; grid-template-columns: 1.4fr 1fr 1fr; gap: 6mm; border-top: 1mm solid #000; padding-top: 4mm; }
+    .pp-grid h2 { margin: 0 0 2mm; font-size: 11pt; font-weight: 800; }
+    .pp-grid ul { list-style: none; margin: 0; padding: 0; }
+    .pp-grid li { margin-bottom: 2.2mm; }
+    .pp-grid b { display: block; }
+    .pp-grid .pp-tight li { margin-bottom: .6mm; }
+    .pp-foot { position: absolute; left: 14mm; right: 14mm; bottom: 12mm; font-size: 12pt; font-weight: 700; }
+  }
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="hdr" id="hdr">
+  <div class="wrap">
+    <a class="lockup" href="#top" id="lockup"></a>
+    <nav class="nav" aria-label="Main"><ul id="navList"></ul></nav>
+    <button class="menu-btn" id="menuBtn" type="button" aria-expanded="false" aria-controls="menu">Menu</button>
+  </div>
+</header>
+<div class="menu" id="menu" hidden><nav aria-label="Main, mobile"><ul id="menuList"></ul></nav></div>
+
+<main id="main">
+  <section class="hero" id="top" aria-labelledby="hero-name">
+    <div class="disc" id="disc" aria-hidden="true"></div>
+    <div class="wrap" id="heroInner"></div>
+  </section>
+  <section class="sec" id="about" aria-labelledby="about-t"><div class="wrap"><div class="grid" id="aboutInner"></div></div></section>
+  <section class="sec stack" id="stack" aria-labelledby="stack-t"><div class="wrap"><div class="grid" id="stackInner"></div></div></section>
+  <section class="sec" id="career" aria-labelledby="career-t"><div class="wrap"><div class="grid" id="careerInner"></div></div></section>
+  <!-- NEW CONTENT: team quotes section (brief 5.6), after Career, not in the nav -->
+  <section class="sec" id="team" aria-labelledby="team-t"><div class="wrap"><div class="grid" id="teamInner"></div></div></section>
+  <section class="sec" id="projects" aria-labelledby="projects-t"><div class="wrap"><div class="grid" id="projectsInner"></div></div></section>
+  <section class="sec contact" id="contact" aria-labelledby="contact-t"><div class="wrap"><div class="grid" id="contactInner"></div></div></section>
+</main>
+
+<footer class="ftr"><div class="wrap" id="footerInner"></div></footer>
+
+<!-- NEW CONTENT: the print-only poster CV (easter egg) -->
+<div id="poster" aria-hidden="true"></div>
+
+<script>
+  /* =====================================================================
+     CONTENT: everything the page says (src/content/ in the React build)
+     ===================================================================== */
+  const CONTENT = {
+    profile: {
+      name: 'Rafał Ciećwierz',
+      nameLines: ['Rafał', 'Ciećwierz'],
+      role: 'Frontend Engineer',
+      tagline: 'React & TypeScript · 5+ years building production apps',
+      availability: 'Open to frontend roles (React / TypeScript), remote or hybrid.',
+      email: 'rafal.ciecwierz4@gmail.com',
+      github: 'https://github.com/rafalciecwierz',
+      linkedin: null, // TODO: Rafał to provide URL
+      calendly: null, // TODO: Rafał to provide URL
+      cvFile: '/Rafal_Ciecwierz_CV.pdf'
+    },
+    nav: [
+      { id: 'about', label: 'About' },
+      { id: 'stack', label: 'Stack' },
+      { id: 'career', label: 'Career' },
+      { id: 'projects', label: 'Projects' },
+      { id: 'contact', label: 'Contact' }
+    ],
+    about: {
+      title: 'About',
+      paragraphs: [
+        "I'm a frontend engineer with 5+ years of commercial experience in React and TypeScript. I started my career in QA automation, moved into frontend development after three months at my team's request, and later led a team of six developers.",
+        "I care about clean architecture, reusable UI and tests that actually protect the product. Lately I've been going deeper into the backend with NestJS and experimenting with motion and 3D in the browser.",
+        'Outside of code: parkour (for over 22 years) and climbing.'
+      ],
+      // NEW CONTENT: alt text of the geometric portrait (a placeholder for Rafał's photo)
+      portraitAlt: 'A geometric portrait of Rafał: swept-up hair, a wide smile, a navy blazer over a white T-shirt, arms crossed.'
+    },
+    stack: {
+      title: 'Stack',
+      intro: 'What I work with, and how much of it in production.', // NEW CONTENT
+      levels: {
+        strong: 'strong production experience',
+        medium: 'medium production experience',
+        low: 'low production experience'
+      },
+      groups: [
+        { name: 'Frontend', items: [['React', 'strong'], ['TypeScript', 'strong'], ['JavaScript', 'strong'], ['HTML5', 'strong'], ['CSS / SCSS / Styled-components', 'strong'], ['Next.js', 'medium'], ['Gatsby', 'medium'], ['Module Federation', 'medium'], ['React Native', 'low']] },
+        { name: 'Data & UI', items: [['TanStack Query', 'strong'], ['Redux', 'strong'], ['Zod', 'strong'], ['React Hook Form', 'strong'], ['Storybook', 'strong'], ['Ant Design', 'strong'], ['Material UI', 'strong'], ['Tailwind CSS', 'medium'], ['WebSockets', 'medium']] },
+        { name: 'Testing', items: [['Jest / Vitest', 'strong'], ['React Testing Library', 'strong'], ['Cypress', 'strong']] },
+        { name: 'Backend', items: [['Node.js', 'medium'], ['NestJS', 'medium'], ['PostgreSQL', 'medium'], ['Strapi', 'medium']] },
+        { name: 'Tooling', items: [['Git', 'strong'], ['Figma', 'strong'], ['Postman', 'strong'], ['Vite', 'strong'], ['Webpack', 'strong'], ['Docker', 'medium'], ['Claude Code', 'medium']] }
+      ]
+    },
+    career: {
+      title: 'Career',
+      intro: 'Four companies, two promotions. Each bar shows where the job sits on the timeline.', // NEW CONTENT
+      jobs: [
+        {
+          company: 'MUG Software', roles: ['Front-end Software Engineer'], dates: '04.2025 – 08.2026', from: '2025-04', to: '2026-08',
+          points: [
+            'Maintained and extended a white-label React platform: a core repository with client-specific forks, propagating global changes upstream-to-fork while keeping client customizations isolated.',
+            'Developed and maintained a shared Storybook component library (50+ components), improving UI consistency and speeding up feature development.',
+            'Introduced TanStack Query (replacing Redux for server state) and Zod (replacing Yup), adopting them incrementally across the app as part of ongoing feature work.'
+          ],
+          stack: ['React', 'TypeScript', 'Styled Components', 'Jest', 'Redux', 'Storybook', 'Webpack', 'TanStack Query', 'Zod']
+        },
+        {
+          company: 'VML Enterprise Solutions', roles: ['Front-end Software Engineer'], dates: '09.2024 – 04.2025', from: '2024-09', to: '2025-04',
+          points: [
+            'Owned a reference-data micro-frontend (countries, currencies and other company-wide dictionaries) integrated into a large enterprise advertising platform via Webpack Module Federation.',
+            "Maintained and developed the module's codebase, increasing unit test coverage from 11% to over 80%.",
+            'Took part in the migration of a subdomain to a standalone microservice.'
+          ],
+          stack: ['React', 'TypeScript', 'SCSS', 'Jest', 'React Hook Form', 'Webpack', 'Vite', 'Module Federation']
+        },
+        {
+          company: 'Mood up', roles: ['React Developer', 'Front-end Team Leader'], dates: '10.2022 – 08.2024', from: '2022-10', to: '2024-08',
+          points: [
+            'Built the React/Redux interface for a smart intercom running on an embedded Raspberry Pi device.',
+            'Promoted to Front-end Team Leader; led a team of 6 developers delivering MVPs for international startup clients.',
+            'Delivered projects from requirements gathering and estimation with clients through development, testing (Jest) and deployment.',
+            "Led a headless CMS evaluation (Strapi, Sanity, Contentful, headless WordPress and others), narrowing the shortlist to Strapi and Payload CMS for the company's stack."
+          ],
+          stack: ['React', 'Gatsby', 'Next.js', 'React Native', 'TypeScript', 'SCSS', 'Strapi', 'Material UI', 'Ant Design', 'Webpack', 'Vite', 'Figma']
+        },
+        {
+          company: 'mTab sp. z o.o.', roles: ['QA Automation Engineer', 'JavaScript Developer'], dates: '07.2021 – 09.2022', from: '2021-07', to: '2022-09',
+          points: [
+            "Promoted from QA Automation Engineer (Cypress E2E) to front-end developer after 3 months at the product team's request.",
+            'Developed views and features in React for a data visualization platform with dynamic, reactive charts and presentation-style reports.',
+            'Built Node.js scripts run nightly by Jenkins that aggregated test results into reports and posted them to Slack.',
+            'Maintained and extended a legacy Backbone.js codebase.'
+          ],
+          stack: ['React', 'JavaScript', 'TypeScript', 'Redux', 'SCSS', 'Jest', 'Cypress', 'Node.js', 'Backbone.js']
+        }
+      ],
+      education: { school: 'Adam Mickiewicz University', degree: "Engineer's degree in Computer Science", dates: '2015 – 2021' }
+    },
+    team: {
+      title: 'From the team',             // NEW CONTENT
+      intro: 'LinkedIn recommendations from Mood up, June 2024.', // NEW CONTENT
+      quotes: [
+        { name: 'Wiktoria W.', role: 'Marketing & Communication', text: ["Seriously, I've never met a leader as tuned in and supportive as him.", 'Whoever snags him next is super lucky - yeah, I\'m a bit envious. 😉'] },
+        { name: 'Rafał H.', role: 'Frontend Developer', text: ['His enthusiasm and optimism were contagious, making him a joy to work with.'] },
+        { name: 'Szymon K.', role: 'Frontend Developer', text: ['His technical skills and ability to simplify complex concepts, guiding others through challenges, have been invaluable in enhancing the overall quality and efficiency of our development processes.'] }
+      ],
+      source: 'Mood up, 2024'
+    },
+    projects: {
+      title: 'Projects',
+      intro: 'A list that keeps growing.', // NEW CONTENT
+      items: [
+        { name: 'Ashen Contracts', status: 'in progress', description: 'Browser-based idle/RPG game built as a full-stack showcase: pnpm monorepo with a Next.js app, NestJS API, shared Storybook UI library and shared TypeScript types. Architecture decisions documented in an ADR-style log.', tags: ['Next.js', 'NestJS', 'PostgreSQL', 'Prisma', 'Storybook', 'Docker', 'GitHub Actions'], repo: 'https://github.com/rafalciecwierz/ashen-contracts' },
+        { name: 'Ultimate Frisbee Tournament Platform', status: 'archived', note: 'Engineering thesis (team of 4), built for the Polish Ultimate Players Association', description: 'Owned the entire NestJS + PostgreSQL backend, built live match scoring with Socket.io (scorekeeper tablet view + real-time spectator view), designed the full UI in Figma, deployed to AWS and tested at a live tournament in Szczecin.', tags: ['NestJS', 'PostgreSQL', 'Socket.io', 'Swagger', 'AWS', 'Nuxt', 'Figma'] },
+        { name: 'This website', status: 'live', description: 'Personal site with a procedural 3D hero (React Three Fiber) and scroll-driven animations (GSAP, Lenis), built with a performance and accessibility budget.', tags: ['React', 'TypeScript', 'Three.js', 'GSAP', 'Vite'], repo: 'https://github.com/rafalciecwierz/rafalciecwierz.github.io' },
+        { name: 'Next.js page transitions', status: 'archived', description: 'Comparison of three page-transition approaches in Next.js: custom implementation, Framer Motion and GSAP.', tags: ['Next.js', 'Framer Motion', 'GSAP'], repo: 'https://github.com/rafalciecwierz/Nextjs-page-transition' }
+      ]
+    },
+    contact: {
+      title: 'Contact',
+      calendlyLabel: 'Book a 20-min call'
+    },
+    footer: {
+      builtWith: 'Built with React, Three.js and GSAP',
+      repo: 'https://github.com/rafalciecwierz/rafalciecwierz.github.io',
+      printLabel: 'Print as a poster' // NEW CONTENT
+    },
+    // NEW CONTENT: console greeting
+    console: 'Swiss Signal, light. Print this page and it turns into a one-page poster CV.'
+  };
+
+  /* =====================================================================
+     Helpers
+     ===================================================================== */
+  const $ = (s, r = document) => r.querySelector(s);
+  const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const wideMQ = matchMedia('(min-width: 1000px)');
+  const P = CONTENT.profile;
+
+  const head = (id, title, intro) => `
+    <div class="sec-head">
+      <h2 class="h2" id="${id}">${esc(title)}</h2>
+      ${intro ? `<p class="intro">${esc(intro)}</p>` : ''}
+    </div>`;
+
+  /* =====================================================================
+     Rendering (one function per section = one component later)
+     ===================================================================== */
+  function renderHeader() {
+    $('#lockup').textContent = P.name;
+    const items = CONTENT.nav.map((n) => `<li><a href="#${n.id}" data-nav="${n.id}">${esc(n.label)}</a></li>`).join('');
+    $('#navList').innerHTML = items;
+    $('#menuList').innerHTML = items;
+  }
+
+  function renderHero() {
+    const letters = (word) => [...word].map((c) => `<span class="ch">${esc(c)}</span>`).join('');
+    const lines = P.nameLines;
+    $('#heroInner').innerHTML = `
+      <div class="hero-top">
+        <p class="role">${esc(P.role)}</p>
+        <p class="tagline">${esc(P.tagline)}</p>
+      </div>
+      <div class="name-box" id="nameBox">
+        <h1 class="name" id="hero-name">${lines.map((l, i) => `<span class="ln">${letters(l)}</span>${i < lines.length - 1 ? '<span class="sr"> </span>' : ''}`).join('')}</h1>
+        <div class="name knock" id="nameKnock" aria-hidden="true">${lines.map((l) => `<span class="ln">${letters(l)}</span>`).join('')}</div>
+      </div>
+      <div class="cta">
+        <a class="btn btn-primary" href="${esc(P.cvFile)}" download>Download CV</a>
+        <a class="btn btn-ghost" href="#contact">Get in touch</a>
+      </div>`;
+  }
+
+  function portraitSVG() {
+    // custom SVG: a flat, Swiss-poster portrait built from circles and simple shapes
+    const skin = '#F1C7A5', hair = '#8C5B3A';
+    return `
+      <svg class="portrait" viewBox="0 0 240 300" role="img" aria-label="${esc(CONTENT.about.portraitAlt)}">
+        <rect width="240" height="300" fill="var(--pale)"/>
+        <circle cx="158" cy="96" r="74" fill="var(--signal)"/>
+        <path d="M24 300 L40 222 Q56 188 120 182 Q184 188 200 222 L216 300 Z" fill="var(--navy)"/>
+        <path d="M100 184 L140 184 L134 300 L106 300 Z" fill="#fff"/>
+        <path d="M100 184 L120 236 L92 300 L64 300 L84 196 Z M140 184 L120 236 L148 300 L176 300 L156 196 Z" fill="#26375F"/>
+        <rect x="108" y="150" width="24" height="38" fill="${skin}"/>
+        <circle cx="75" cy="116" r="9" fill="${skin}"/>
+        <circle cx="165" cy="116" r="9" fill="${skin}"/>
+        <circle cx="120" cy="114" r="46" fill="${skin}"/>
+        <path d="M86 132 Q120 176 154 132 Q150 158 120 162 Q90 158 86 132 Z" fill="#000" opacity=".12"/>
+        <path d="M76 108 Q70 64 104 52 Q140 38 170 60 Q178 70 168 92 Q150 72 120 74 Q94 76 82 104 Z" fill="${hair}"/>
+        <circle cx="104" cy="112" r="4.5" fill="#000"/>
+        <circle class="eye-r" cx="136" cy="112" r="4.5" fill="#000"/>
+        <path d="M98 128 Q120 154 142 128 Z" fill="#000"/>
+        <rect x="46" y="230" width="148" height="34" rx="17" fill="#16213F" transform="rotate(7 120 247)"/>
+        <rect x="46" y="230" width="148" height="34" rx="17" fill="#2E4170" transform="rotate(-7 120 247)"/>
+        <circle cx="188" cy="236" r="13" fill="${skin}"/>
+        <circle cx="52" cy="236" r="13" fill="${skin}"/>
+      </svg>`;
+  }
+
+  function renderAbout() {
+    const [lead, ...rest] = CONTENT.about.paragraphs;
+    $('#aboutInner').innerHTML = `
+      <div class="sec-head">
+        <h2 class="h2" id="about-t">${esc(CONTENT.about.title)}</h2>
+        ${portraitSVG()}
+      </div>
+      <div class="sec-body">
+        <p class="about-lead">${esc(lead)}</p>
+        <div class="about-cols">${rest.map((p) => `<p>${esc(p)}</p>`).join('')}</div>
+      </div>`;
+  }
+
+  function levelSVG(level) {
+    // custom SVG: strong = full disc, medium = half disc, low = ring
+    const ring = '<circle cx="8" cy="8" r="6.2" fill="none" stroke="var(--signal-deep)" stroke-width="1.6"/>';
+    const body = level === 'strong' ? '<circle cx="8" cy="8" r="7" fill="var(--signal)"/>'
+      : level === 'medium' ? `${ring}<path d="M8 1.8 A6.2 6.2 0 0 0 8 14.2 Z" fill="var(--signal)"/>`
+      : ring;
+    return `<svg class="lvl" viewBox="0 0 16 16" aria-hidden="true">${body}</svg>`;
+  }
+
+  function renderStack() {
+    const S = CONTENT.stack;
+    $('#stackInner').innerHTML = `
+      ${head('stack-t', S.title, S.intro)}
+      <div class="sec-body">
+        <ul class="legend" aria-label="Legend">
+          ${Object.entries(S.levels).map(([k, v]) => `<li>${levelSVG(k)}${esc(v)}</li>`).join('')}
+        </ul>
+        <div class="stack-groups">
+          ${S.groups.map((g) => `
+            <div>
+              <h3 class="grp">${esc(g.name)}</h3>
+              <ul>${g.items.map(([name, lvl]) => `<li>${levelSVG(lvl)}<span>${esc(name)}<span class="sr">, ${esc(S.levels[lvl])}</span></span></li>`).join('')}</ul>
+            </div>`).join('')}
+        </div>
+      </div>`;
+  }
+
+  function renderCareer() {
+    const C = CONTENT.career;
+    const month = (s) => { const [y, m] = s.split('-').map(Number); return y * 12 + (m - 1); };
+    const min = Math.min(...C.jobs.map((j) => month(j.from)));
+    const max = Math.max(...C.jobs.map((j) => month(j.to)));
+    const total = max - min + 1;
+    const pct = (v) => `${((v / total) * 100).toFixed(3)}%`;
+    const years = [];
+    for (let y = Math.floor(min / 12) + 1; y * 12 <= max; y++) years.push(y);
+
+    const roleLine = (roles) => roles.map((r, i) => i === 0 ? `<span>${esc(r)}</span>`
+      : `<span aria-hidden="true">→</span><span class="sr">promoted to</span><span class="promo">${esc(r)}</span>`).join('');
+
+    $('#careerInner').innerHTML = `
+      ${head('career-t', C.title, C.intro)}
+      <div class="sec-body">
+        <div class="scale" aria-hidden="true">${years.map((y) => `<span style="left:${pct(y * 12 - min)}">${y}</span>`).join('')}</div>
+        <ol class="jobs" reversed>
+          ${C.jobs.map((j) => {
+            const a = month(j.from) - min, b = month(j.to) - min + 1;
+            return `
+            <li class="job">
+              <div class="track" aria-hidden="true"><span class="bar" style="left:${pct(a)};width:${pct(b - a)}"></span></div>
+              <p class="job-dates">${esc(j.dates)}</p>
+              <div>
+                <h3>${esc(j.company)}</h3>
+                <p class="job-role">${roleLine(j.roles)}</p>
+                <ul class="pts">${j.points.map((p) => `<li>${esc(p)}</li>`).join('')}</ul>
+                <ul class="tags" aria-label="Stack">${j.stack.map((t) => `<li>${esc(t)}</li>`).join('')}</ul>
+              </div>
+            </li>`;
+          }).join('')}
+          <li class="job">
+            <p class="job-dates">${esc(C.education.dates)}</p>
+            <div>
+              <h3>${esc(C.education.school)}</h3>
+              <p class="job-role"><span>${esc(C.education.degree)}</span></p>
+            </div>
+          </li>
+        </ol>
+      </div>`;
+  }
+
+  function renderTeam() {
+    const T = CONTENT.team;
+    $('#teamInner').innerHTML = `
+      ${head('team-t', T.title, T.intro)}
+      <div class="sec-body">
+        <div class="quotes">
+          ${T.quotes.map((q) => `
+            <figure class="q">
+              <div class="q-mark" aria-hidden="true">${esc(q.name[0])}</div>
+              <blockquote>${q.text.map((t) => `<p>“${esc(t)}”</p>`).join('')}</blockquote>
+              <figcaption><strong>${esc(q.name)}</strong><span>${esc(q.role)}, ${esc(T.source)}</span></figcaption>
+            </figure>`).join('')}
+        </div>
+      </div>`;
+  }
+
+  // ProjectPosters (custom SVG): four poster layouts, cycled by the project's position in the list.
+  // --hx/--hy is where the moving shape goes on hover.
+  function posterSVG(name, i) {
+    // the name is set in lines of up to 16 characters, like poster headline type
+    const lines = name.toLowerCase().split(' ').reduce((acc, w) => {
+      const lastLine = acc[acc.length - 1];
+      if (lastLine && (lastLine + ' ' + w).length <= 16) acc[acc.length - 1] = lastLine + ' ' + w; else acc.push(w);
+      return acc;
+    }, []);
+    const label = lines.map((l, k) => `<tspan x="12" dy="${k ? 12 : 0}">${esc(l)}</tspan>`).join('');
+    const layouts = [
+      { bg: '#fff', fg: '#000', hx: '-16px', hy: '12px', art: '<g class="mv"><circle cx="150" cy="58" r="64" fill="var(--signal)"/></g><rect y="118" width="210" height="32" fill="#000"/>' },
+      { bg: '#000', fg: '#fff', hx: '0px', hy: '-18px', art: '<g class="mv"><circle cx="105" cy="158" r="74" fill="var(--signal)"/></g>' },
+      { bg: '#fff', fg: '#000', hx: '34px', hy: '0px', art: '<g class="mv"><circle cx="72" cy="82" r="42" fill="none" stroke="#000" stroke-width="16"/></g><circle cx="172" cy="44" r="13" fill="var(--signal)"/>' },
+      { bg: 'var(--pale)', fg: '#000', hx: '-70px', hy: '0px', art: [190, 150, 110, 70].map((w, k) => `<rect y="${34 + k * 20}" width="${w}" height="11" fill="#000"/>`).join('') + '<g class="mv"><circle cx="172" cy="114" r="26" fill="var(--signal)"/></g>' }
+    ];
+    const L = layouts[i % layouts.length];
+    return `<svg viewBox="0 0 210 150" preserveAspectRatio="xMidYMid slice" aria-hidden="true" style="--hx:${L.hx};--hy:${L.hy}">
+      <rect width="210" height="150" fill="${L.bg}"/>${L.art}
+      <text x="12" y="20" fill="${L.fg}" font-family="Schibsted Grotesk, Arial, sans-serif" font-weight="800" font-size="11" letter-spacing="-.3">${label}</text>
+    </svg>`;
+  }
+
+  function renderProjects() {
+    const PR = CONTENT.projects;
+    $('#projectsInner').innerHTML = `
+      ${head('projects-t', PR.title, PR.intro)}
+      <div class="sec-body">
+        <ul class="posters">
+          ${PR.items.map((p, i) => `
+            <li class="pcard">
+              <div class="art">${posterSVG(p.name, i)}</div>
+              <h3>${esc(p.name)}</h3>
+              <span class="status ${p.status.replace(' ', '-')}">${esc(p.status)}</span>
+              ${p.note ? `<p class="pnote">${esc(p.note)}</p>` : ''}
+              <p class="pdesc">${esc(p.description)}</p>
+              <ul class="tags" aria-label="Tags">${p.tags.map((t) => `<li>${esc(t)}</li>`).join('')}</ul>
+              ${p.repo || p.demo ? `<p class="plinks">${p.repo ? `<a href="${esc(p.repo)}">Repository<span class="sr">: ${esc(p.name)}</span></a>` : ''}${p.demo ? ` <a href="${esc(p.demo)}">Demo</a>` : ''}</p>` : ''}
+            </li>`).join('')}
+        </ul>
+      </div>`;
+  }
+
+  function renderContact() {
+    const CT = CONTENT.contact;
+    const link = (url, label, todo) => url ? `<li><a href="${esc(url)}">${esc(label)}</a></li>` : `<li class="todo">${esc(label)} (TODO: URL)</li>`;
+    $('#contactInner').innerHTML = `
+      ${head('contact-t', CT.title)}
+      <div class="sec-body"><p class="avail">${esc(P.availability)}</p></div>
+      <a class="email" id="email" href="mailto:${esc(P.email)}">${esc(P.email)}</a>
+      <div class="c-row">
+        <ul class="c-links">
+          ${link(P.github, 'GitHub')}
+          ${link(P.linkedin, 'LinkedIn')}
+          ${link(P.calendly, CT.calendlyLabel)}
+        </ul>
+        <a class="btn btn-primary" href="${esc(P.cvFile)}" download>Download CV</a>
+      </div>`;
+  }
+
+  function renderFooter() {
+    const F = CONTENT.footer;
+    $('#footerInner').innerHTML = `
+      <p>${esc(F.builtWith)}. <a href="${esc(F.repo)}">Source on GitHub</a></p>
+      <p>${new Date().getFullYear()}</p>
+      <button class="btn btn-ghost btn-small" type="button" id="printBtn">${esc(F.printLabel)}</button>`;
+  }
+
+  // PrintPoster (custom): the print-only A4 poster, rendered from the same content
+  function renderPrintPoster() {
+    const C = CONTENT.career, S = CONTENT.stack;
+    const strong = S.groups.flatMap((g) => g.items.filter(([, l]) => l === 'strong').map(([n]) => n));
+    $('#poster').innerHTML = `
+      <div class="pp-disc"></div>
+      <div class="pp-top"><p class="pp-role">${esc(P.role)}</p><p class="pp-tag">${esc(P.tagline)}</p></div>
+      <p class="pp-name">${P.nameLines.map(esc).join('<br>')}</p>
+      <div class="pp-grid">
+        <div><h2>Career</h2><ul>${C.jobs.map((j) => `<li><b>${esc(j.company)}</b>${esc(j.roles.join(' → '))}<br>${esc(j.dates)}</li>`).join('')}
+          <li><b>${esc(C.education.school)}</b>${esc(C.education.degree)}<br>${esc(C.education.dates)}</li></ul></div>
+        <div><h2>Strong in</h2><ul class="pp-tight">${strong.map((n) => `<li>${esc(n)}</li>`).join('')}</ul></div>
+        <div><h2>Contact</h2><ul><li>${esc(P.email)}</li><li>${esc(P.github.replace('https://', ''))}</li></ul><p>${esc(P.availability)}</p></div>
+      </div>
+      <p class="pp-foot">${esc(P.name)}</p>`;
+    $('#printBtn').addEventListener('click', () => window.print());
+  }
+
+  /* =====================================================================
+     Effects
+     ===================================================================== */
+
+  // FitName (custom): the longest name line fills a set share of the grid width,
+  // capped so the two lines never take more than ~46% of the hero height.
+  function FitName() {
+    const box = $('#nameBox'), h1 = $('#hero-name'), knock = $('#nameKnock'), hero = $('#top');
+    const lineWidth = (ln) => { const c = ln.children; return c[c.length - 1].offsetLeft + c[c.length - 1].offsetWidth - c[0].offsetLeft; };
+    let width = 0;
+    function fit() {
+      h1.style.fontSize = knock.style.fontSize = '100px';
+      const w = Math.max(...$$('.ln', h1).map(lineWidth));
+      const share = wideMQ.matches ? 0.8 : 0.99;
+      const cap = (hero.clientHeight * 0.46) / 1.68;
+      const fs = Math.min((box.clientWidth * share * 100) / w, cap);
+      h1.style.fontSize = knock.style.fontSize = `${fs}px`;
+      width = (w * fs) / 100;
+    }
+    return { fit, get width() { return width; }, get fontSize() { return parseFloat(h1.style.fontSize); } };
+  }
+
+  // KnockoutName (custom): the white copy of the name shows only inside the disc
+  function KnockoutName() {
+    const knock = $('#nameKnock');
+    return {
+      update(cx, cy, r) { knock.style.clipPath = `circle(${r.toFixed(1)}px at ${cx.toFixed(1)}px ${cy.toFixed(1)}px)`; }
+    };
+  }
+
+  // LetterRepel (custom): letters close to the disc edge shift and tilt away from its centre.
+  // Positions are measured once per layout (offsetLeft ignores transforms), so a frame only does maths.
+  function LetterRepel() {
+    const inks = $$('#hero-name .ch'), knocks = $$('#nameKnock .ch');
+    let base = [], fs = 100;
+    return {
+      measure(fontSize) {
+        fs = fontSize;
+        base = inks.map((el) => ({ x: el.offsetLeft + el.offsetWidth / 2, y: el.offsetTop + el.offsetHeight * 0.6 }));
+      },
+      update(cx, cy, r) {
+        const maxPush = fs * 0.09, sigma = fs * 0.22;
+        base.forEach((b, i) => {
+          const dx = b.x - cx, dy = b.y - cy, d = Math.hypot(dx, dy) || 1;
+          const edge = d - r;
+          const f = Math.exp(-(edge * edge) / (2 * sigma * sigma));
+          const tx = (dx / d) * maxPush * f, ty = (dy / d) * maxPush * f * 0.5, rot = (dx / d) * f * 5;
+          const t = f < 0.01 ? '' : `translate(${tx.toFixed(1)}px, ${ty.toFixed(1)}px) rotate(${rot.toFixed(2)}deg)`;
+          inks[i].style.transform = t;
+          knocks[i].style.transform = t;
+        });
+      }
+    };
+  }
+
+  // SignalDisc (custom): a spring follows a target point. The target is the mouse, the nearest
+  // grid module once the mouse rests, a tapped point on touch, or the composed rest position.
+  function SignalDisc({ fitName, knockout, repel }) {
+    const hero = $('#top'), disc = $('#disc'), box = $('#nameBox');
+    let D = 0, nb = { x: 0, y: 0, w: 0 }, rest = { x: 0, y: 0 };
+    const pos = { x: 0, y: 0 }, vel = { x: 0, y: 0 }, target = { x: 0, y: 0 };
+    let raf = 0, last = 0, idle = 0, visible = true, down = null;
+
+    function layout() {
+      fitName.fit();
+      const hr = hero.getBoundingClientRect(), br = box.getBoundingClientRect();
+      const wide = wideMQ.matches;
+      nb = { x: br.left - hr.left, y: br.top - hr.top, w: br.width, h: br.height };
+      D = wide ? Math.min(hr.width * 0.42, hr.height * 0.6) : Math.min(hr.width * 0.86, hr.height * 0.46);
+      // Rest: right of the short first line, biting into the end of the long second line
+      rest = wide
+        ? { x: nb.x + fitName.width * 0.8 + D * 0.06, y: nb.y + nb.h * 0.3 }
+        : { x: nb.x + nb.w - D * 0.34, y: nb.y + nb.h * 0.9 - D / 2 };
+      repel.measure(fitName.fontSize);
+      Object.assign(target, rest);
+      Object.assign(pos, rest);
+      vel.x = vel.y = 0;
+      draw();
+    }
+
+    function snap(p) {
+      // modules of the invisible grid: 6 columns on desktop, 4 on phones, square cells
+      const cols = wideMQ.matches ? 6 : 4;
+      const gap = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--gap')) || 16;
+      const pitch = (nb.w + gap) / cols, half = (pitch - gap) / 2;
+      const col = Math.max(0, Math.min(cols - 1, Math.round((p.x - nb.x - half) / pitch)));
+      const rows = Math.max(1, Math.floor(hero.clientHeight / pitch));
+      const row = Math.max(0, Math.min(rows - 1, Math.round((p.y - half) / pitch)));
+      return { x: nb.x + half + col * pitch, y: half + row * pitch };
+    }
+
+    function draw() {
+      const r = D / 2;
+      disc.style.width = disc.style.height = `${D}px`;
+      disc.style.transform = `translate3d(${(pos.x - r).toFixed(1)}px, ${(pos.y - r).toFixed(1)}px, 0)`;
+      const cx = pos.x - nb.x, cy = pos.y - nb.y;
+      knockout.update(cx, cy, r);
+      repel.update(cx, cy, r);
+    }
+
+    function tick(now) {
+      const dt = Math.min(3, (now - last) / 16.67 || 1);
+      last = now;
+      for (const k of ['x', 'y']) {
+        vel[k] += (target[k] - pos[k]) * 0.035 * dt;
+        vel[k] *= Math.pow(0.86, dt);
+        pos[k] += vel[k] * dt;
+      }
+      draw();
+      const settled = Math.abs(vel.x) + Math.abs(vel.y) < 0.05 && Math.abs(target.x - pos.x) + Math.abs(target.y - pos.y) < 0.5;
+      raf = settled || !visible ? 0 : requestAnimationFrame(tick);
+    }
+    function wake() { if (!raf && visible) { last = performance.now(); raf = requestAnimationFrame(tick); } }
+    function aim(p) { Object.assign(target, p); wake(); }
+    const local = (e) => { const hr = hero.getBoundingClientRect(); return { x: e.clientX - hr.left, y: e.clientY - hr.top }; };
+
+    layout();
+    let rt = 0;
+    addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(layout, 120); });
+    if (reduceMotion) return; // static composition: drawn once at rest
+
+    new IntersectionObserver(([e]) => { visible = e.isIntersecting; if (visible) wake(); }).observe(hero);
+    hero.addEventListener('pointermove', (e) => {
+      if (e.pointerType !== 'mouse') return;
+      aim(local(e));
+      clearTimeout(idle);
+      idle = setTimeout(() => aim(snap(local(e))), 450);
+    });
+    hero.addEventListener('pointerleave', (e) => { if (e.pointerType === 'mouse') { clearTimeout(idle); aim(rest); } });
+    hero.addEventListener('pointerdown', (e) => { if (e.pointerType !== 'mouse') down = { x: e.clientX, y: e.clientY }; });
+    hero.addEventListener('pointerup', (e) => {
+      if (e.pointerType === 'mouse' || !down || e.target.closest('a, button')) return;
+      if (Math.hypot(e.clientX - down.x, e.clientY - down.y) < 10) aim(snap(local(e)));
+      down = null;
+    });
+  }
+
+  // FitText (custom): the email fills the grid width
+  function FitText(el, max = 220) {
+    function fit() {
+      const avail = el.parentElement.clientWidth;
+      el.style.fontSize = '100px';
+      const w = el.scrollWidth;
+      el.style.fontSize = `${Math.min((avail * 100) / w, max)}px`;
+    }
+    fit();
+    addEventListener('resize', fit);
+  }
+
+  // NavSignal (custom): a small disc marks the nav link of the section in view; the header
+  // gets its rule once the hero has scrolled away
+  function NavSignal() {
+    const links = $$('[data-nav]');
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((e) => {
+        if (!e.isIntersecting) return;
+        links.forEach((a) => a.toggleAttribute('aria-current', false));
+        links.filter((a) => a.dataset.nav === e.target.id).forEach((a) => a.setAttribute('aria-current', 'true'));
+      });
+    }, { rootMargin: '-45% 0px -50% 0px' });
+    CONTENT.nav.forEach((n) => io.observe(document.getElementById(n.id)));
+    new IntersectionObserver(([e]) => $('#hdr').classList.toggle('ruled', !e.isIntersecting), { rootMargin: '-80px 0px 0px 0px' })
+      .observe($('.cta'));
+  }
+
+  // MobileMenu (custom): full-screen list, focus trapped while open, Esc closes
+  function MobileMenu() {
+    const btn = $('#menuBtn'), menu = $('#menu');
+    const focusables = () => [btn, ...$$('a', menu)];
+    function set(open) {
+      menu.hidden = !open;
+      btn.setAttribute('aria-expanded', String(open));
+      btn.textContent = open ? 'Close' : 'Menu';
+      document.documentElement.style.overflow = open ? 'hidden' : '';
+      if (open) $('a', menu).focus();
+    }
+    btn.addEventListener('click', () => set(menu.hidden));
+    menu.addEventListener('click', (e) => { if (e.target.closest('a')) set(false); });
+    document.addEventListener('keydown', (e) => {
+      if (menu.hidden) return;
+      if (e.key === 'Escape') { set(false); btn.focus(); }
+      if (e.key === 'Tab') {
+        const f = focusables(), i = f.indexOf(document.activeElement);
+        if (e.shiftKey && i <= 0) { e.preventDefault(); f[f.length - 1].focus(); }
+        else if (!e.shiftKey && i === f.length - 1) { e.preventDefault(); f[0].focus(); }
+      }
+    });
+    wideMQ.addEventListener('change', () => set(false));
+  }
+
+  function ConsoleHello() {
+    console.log('%c● %c' + CONTENT.console, 'color:#FF4000;font-size:20px', 'font:700 13px sans-serif');
+  }
+
+  /* =====================================================================
+     Boot
+     ===================================================================== */
+  renderHeader();
+  renderHero();
+  renderAbout();
+  renderStack();
+  renderCareer();
+  renderTeam();
+  renderProjects();
+  renderContact();
+  renderFooter();
+  renderPrintPoster();
+  MobileMenu();
+  NavSignal();
+  ConsoleHello();
+
+  document.fonts.ready.then(() => {
+    SignalDisc({ fitName: FitName(), knockout: KnockoutName(), repel: LetterRepel() });
+    FitText($('#email'));
+  });
+</script>
+</body>
+</html>

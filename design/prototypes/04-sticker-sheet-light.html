@@ -1,0 +1,967 @@
+<!doctype html>
+<!--
+  Prototype 04 — Sticker Sheet (`sticker-sheet`), LIGHT variant: "Fresh Sketchbook".
+  Direction brief: docs/design/DIRECTIONS.md, section 04.
+
+  Concept: a sheet of die-cut stickers on bright white sketchbook paper. Every piece of content
+  is a real sticker type with its own vernacular: the name is one big die-cut sticker on glossy
+  backing paper (peel its corner and the backing has "call me Ralph" pencilled on it), the
+  section titles are die-cut labels, the career is printed on label-maker tape, the team quotes
+  are "HELLO my name is" badges, the projects are shipping labels, and the contact section is a
+  wall you can stick things on. Ralph's notes are in pencil. Thick black outlines, hard black
+  shadows and flat summer colours (lime, sunshine yellow, sky blue, bubblegum pink).
+  It shares only the style (neubrutalism, hand-drawn notes, stickers) with the dark variant,
+  "Night Zine": no bento grid, no marker, no riso inks, no sticker book.
+
+  Effects (each is a named function in the script below):
+  - PeelBack ........... custom: the name sticker's corner folds back along a real fold line
+                         (the perpendicular bisector between the corner and the pointer); the
+                         sticker is clipped with clip-path and the folded flap is an SVG polygon
+                         mirrored across that line. Drag the corner to peel, release to re-stick
+                         with a spring.
+  - StickerSlap ........ custom (IntersectionObserver + CSS keyframes): stickers are slapped onto
+                         the sheet as they scroll into view, one after another
+  - Pencil ............. custom: a seeded generator for sketchy double-stroke pencil lines,
+                         plus an SVG grain filter so the strokes look like graphite
+  - DymoTape ........... custom CSS: embossed label-maker tape (raised letters, crimped ends)
+  - Barcode ............ custom SVG: a barcode generated from each project's name
+  - SealBadge .......... inspired by React Bits CircularText, rebuilt as an SVG textPath that
+                         turns with scroll
+  - StickerWall ........ custom: click or tap the empty contact wall to stick a sticker there
+  - IndexTabs .......... custom: notebook divider tabs as the navigation on wide screens
+  - MobileMenu, ConsoleHello: custom
+
+  Libraries in this file: none.
+  Fonts: Gabarito (display and body, 400–900), Caveat (pencil notes), Rubik Mono One (label
+  tape only), Google Fonts, latin-ext.
+  React build would need: nothing beyond React.
+
+  Reduced motion: the name sticker rests with a small static peel and snaps back without a
+  spring, stickers are already in place (no slap), the seal does not turn, native anchor jumps.
+  No WebGL, so no WebGL fallback is needed.
+
+  Content: all copy lives in the CONTENT object at the top of the script. Additions beyond
+  brief section 5 are marked `NEW CONTENT` there.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rafał Ciećwierz, Frontend Engineer</title>
+<meta name="description" content="Rafał Ciećwierz, Frontend Engineer. React & TypeScript, 5+ years building production apps.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Gabarito:wght@400..900&family=Caveat:wght@500..700&family=Rubik+Mono+One&display=swap" rel="stylesheet">
+<script>document.documentElement.classList.add('js');</script>
+<style>
+  :root {
+    --paper: #FFFFFF;
+    --dots: #DCDCE2;        /* sketchbook dot grid */
+    --ink: #000000;         /* outlines, text and hard shadows */
+    --pencil: #55555C;      /* pencil notes, 7.4:1 on white */
+    --lime: #B8F03C;
+    --yellow: #FFD52E;
+    --sky: #86CCFF;
+    --pink: #FF92CB;
+    --backing: #EAF5FF;     /* glossy sticker backing paper */
+    --backing-grid: #C9E2F7;
+    --backing-print: #3A6E9C; /* print on the backing, 5.3:1 on backing */
+    --bw: 3px;
+    --gut: clamp(16px, 4vw, 40px);
+    --tabs: 0px;
+    --sans: 'Gabarito', system-ui, sans-serif;
+    --hand: 'Caveat', 'Segoe Print', cursive;
+    --tape: 'Rubik Mono One', 'Courier New', monospace;
+  }
+  @media (min-width: 1100px) { :root { --tabs: 128px; } }
+
+  *, *::before, *::after { box-sizing: border-box; }
+  html { scroll-behavior: smooth; scroll-padding-top: 30px; }
+  body {
+    margin: 0; background-color: var(--paper); color: var(--ink);
+    background-image: radial-gradient(var(--dots) 1.3px, transparent 1.6px); background-size: 26px 26px;
+    font: 400 18px/1.55 var(--sans); overflow-x: clip; -webkit-font-smoothing: antialiased;
+  }
+  a { color: inherit; }
+  img, svg { display: block; }
+  ul, ol { margin: 0; padding: 0; list-style: none; }
+  p { margin: 0; }
+  :focus-visible { outline: 3px solid var(--ink); outline-offset: 4px; box-shadow: 0 0 0 8px var(--lime); border-radius: 6px; }
+  .vh { position: absolute !important; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .skip { position: absolute; left: 12px; top: -60px; z-index: 200; padding: 10px 16px; background: var(--lime); border: var(--bw) solid var(--ink); border-radius: 8px; font-weight: 800; }
+  .skip:focus { top: 12px; }
+
+  .wrap { width: 100%; max-width: 1240px; margin: 0 auto; padding: 0 calc(var(--gut) + var(--tabs)) 0 var(--gut); }
+
+  /* ---------- Shared sticker look ---------- */
+  .stk { border: var(--bw) solid var(--ink); border-radius: 14px; box-shadow: 5px 5px 0 var(--ink); background: var(--c, var(--paper)); }
+  .kiss { outline: 2px dashed #A9C9E6; outline-offset: 6px; }
+  .note { font: 600 25px/1.05 var(--hand); color: var(--pencil); transform: rotate(var(--tilt, -2deg)); display: inline-block; }
+  .pencil { position: absolute; overflow: visible; pointer-events: none; }
+  .pencil path { fill: none; stroke: var(--pencil); stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; filter: url(#graphite); }
+
+  /* StickerSlap */
+  .js .slap { opacity: 0; }
+  .js .slap.in { animation: slap .5s cubic-bezier(.2, 1.4, .4, 1) var(--delay, 0s) both; }
+  @keyframes slap {
+    0% { opacity: 0; transform: scale(1.35) rotate(calc(var(--r, 0deg) + 9deg)); box-shadow: 18px 22px 0 rgba(0, 0, 0, .18); }
+    60% { opacity: 1; }
+    100% { opacity: 1; transform: scale(1) rotate(var(--r, 0deg)); }
+  }
+
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 10px; min-height: 56px; padding: 12px 24px;
+    border: var(--bw) solid var(--ink); border-radius: 999px; box-shadow: 5px 5px 0 var(--ink);
+    font: 800 19px/1 var(--sans); text-decoration: none; cursor: pointer; transition: transform .08s, box-shadow .08s;
+  }
+  .btn svg { width: 22px; height: 22px; flex: none; }
+  .btn:hover { transform: translate(-2px, -2px); box-shadow: 7px 7px 0 var(--ink); }
+  .btn:active { transform: translate(5px, 5px); box-shadow: 0 0 0 var(--ink); }
+  .btn-primary { background: var(--lime); }
+  .btn-secondary { background: var(--paper); }
+
+  /* ---------- DymoTape ---------- */
+  .dymo {
+    --tc: var(--ink);
+    display: inline-block; padding: 7px 16px 6px; background: var(--tc); color: #fff;
+    font: 400 15px/1.2 var(--tape); letter-spacing: .06em; text-transform: uppercase; white-space: nowrap;
+    text-shadow: 0 1px 0 rgba(255, 255, 255, .55), 0 -1px 0 rgba(0, 0, 0, .55); /* embossed letters */
+    background-image: linear-gradient(180deg, rgba(255, 255, 255, .16), transparent 40%, rgba(0, 0, 0, .14));
+    clip-path: polygon(0 8%, 4px 0, calc(100% - 4px) 0, 100% 8%, calc(100% - 3px) 50%, 100% 92%, calc(100% - 4px) 100%, 4px 100%, 0 92%, 3px 50%);
+    box-shadow: 3px 3px 0 rgba(0, 0, 0, .25); transform: rotate(var(--r, -1.5deg));
+  }
+  .dymo.pink { --tc: #C2186B; }
+  .dymo.blue { --tc: #1D5FA8; }
+  .dymo.green { --tc: #2F7A1F; }
+
+  /* ---------- Header ---------- */
+  .header { position: absolute; inset: 0 0 auto; z-index: 40; padding-top: 18px; }
+  .header .wrap { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .logo { text-decoration: none; }
+  .logo .dymo { font-size: 14px; }
+  .menu-btn { display: inline-flex; align-items: center; height: 46px; padding: 0 18px; border: var(--bw) solid var(--ink); border-radius: 999px; background: var(--yellow); box-shadow: 3px 3px 0 var(--ink); font: 800 16px/1 var(--sans); cursor: pointer; }
+  .menu {
+    position: fixed; z-index: 60; inset: 76px var(--gut) auto; padding: 12px; background: var(--paper);
+    border: var(--bw) solid var(--ink); border-radius: 18px; box-shadow: 7px 7px 0 var(--ink);
+  }
+  .menu a { display: block; padding: 12px 14px; border-radius: 10px; font: 800 26px/1 var(--sans); text-decoration: none; }
+  .menu a:hover { background: var(--lime); }
+  .mobile-bar { position: fixed; z-index: 55; inset: 0 0 auto; padding: 12px var(--gut); display: flex; justify-content: flex-end; pointer-events: none; }
+  .mobile-bar .menu-btn { pointer-events: auto; }
+
+  /* IndexTabs (wide screens) */
+  .tabs { display: none; }
+  @media (min-width: 1100px) {
+    .mobile-bar, .menu { display: none !important; }
+    .tabs { display: flex; flex-direction: column; gap: 6px; position: fixed; right: 0; top: 50%; transform: translateY(-50%); z-index: 50; }
+    .tabs a {
+      display: block; width: 132px; padding: 13px 16px 13px 18px; margin-right: -22px; text-decoration: none;
+      background: var(--c); border: var(--bw) solid var(--ink); border-right: 0; border-radius: 14px 0 0 14px;
+      font: 800 17px/1 var(--sans); box-shadow: -4px 4px 0 var(--ink); transition: margin-right .2s cubic-bezier(.3, 1.4, .5, 1);
+    }
+    .tabs a:hover, .tabs a[aria-current="true"] { margin-right: 0; }
+    .tabs a[aria-current="true"] { text-decoration: underline; text-decoration-thickness: 3px; text-underline-offset: 4px; }
+  }
+
+  /* ---------- Section titles: die-cut label stickers ---------- */
+  .sec { padding: clamp(80px, 10vw, 140px) 0 0; position: relative; }
+  .sec-head { position: relative; display: flex; flex-wrap: wrap; align-items: center; gap: 12px 26px; margin-bottom: clamp(30px, 4vw, 50px); }
+  .title {
+    margin: 0; padding: .08em .32em .14em; display: inline-block; background: var(--c, var(--paper));
+    border: var(--bw) solid var(--ink); border-radius: .28em; box-shadow: 6px 6px 0 var(--ink);
+    font: 900 clamp(46px, 7.5vw, 96px)/1 var(--sans); letter-spacing: -.035em; transform: rotate(var(--r, -1.5deg));
+  }
+  .sec-head .note { max-width: 34ch; }
+
+  /* ---------- Hero ---------- */
+  .hero { padding-top: 84px; }
+  .sheet {
+    position: relative; padding: clamp(18px, 3vw, 40px); border: var(--bw) solid var(--ink); border-radius: 26px;
+    background-color: var(--backing);
+    background-image: linear-gradient(var(--backing-grid) 1px, transparent 1px), linear-gradient(90deg, var(--backing-grid) 1px, transparent 1px);
+    background-size: 28px 28px; background-position: -1px -1px;
+  }
+  .sheet-print { position: absolute; left: clamp(18px, 3vw, 40px); bottom: 10px; color: var(--backing-print); font: 700 12px/1 var(--sans); letter-spacing: .02em; }
+  .peel-wrap { position: relative; container-type: inline-size; }
+  .backing-note { position: absolute; right: 16px; bottom: 12px; font: 700 clamp(26px, 5cqi, 46px)/1 var(--hand); color: var(--backing-print); transform: rotate(-4deg); }
+  .name-shadow, .name-sticker { border-radius: 30px; }
+  .name-shadow { position: absolute; inset: 0; background: var(--ink); transform: translate(9px, 9px); }
+  .name-sticker { position: relative; padding: clamp(14px, 3.4cqi, 40px) clamp(16px, 4cqi, 48px) clamp(18px, 3.8cqi, 44px); background: var(--yellow); border: 4px solid var(--ink); }
+  .name { margin: 0; font: 900 clamp(48px, 19cqi, 240px)/.86 var(--sans); letter-spacing: -.05em; }
+  .name span { display: block; }
+  .name span + span { padding-left: .5em; }
+  .flap { position: absolute; left: 0; top: 0; overflow: visible; pointer-events: none; }
+  .flap polygon { stroke: var(--ink); stroke-width: 3.5; stroke-linejoin: round; }
+  .peel-handle { position: absolute; right: -10px; bottom: -10px; width: 120px; height: 110px; cursor: grab; touch-action: none; z-index: 3; }
+  .peel-handle.is-down { cursor: grabbing; }
+  .hero-row { display: grid; gap: 22px; margin-top: clamp(26px, 3.4vw, 40px); align-items: end; }
+  @media (min-width: 820px) { .hero-row { grid-template-columns: 1.2fr 1fr; } }
+  .role { display: inline-block; padding: 10px 20px; font: 800 clamp(24px, 3vw, 36px)/1 var(--sans); --c: var(--sky); border-radius: 999px; transform: rotate(-1deg); }
+  .tagline { margin-top: 18px; font-size: clamp(18px, 1.6vw, 21px); font-weight: 500; }
+  .ctas { position: relative; display: flex; flex-wrap: wrap; gap: 14px; justify-content: flex-start; }
+  @media (min-width: 820px) { .ctas { justify-content: flex-end; } }
+  .ctas .btn { flex: 1 1 200px; }
+  @media (min-width: 820px) { .ctas .btn { flex: 0 0 auto; } }
+  .cta-note { position: absolute; right: 8px; top: -54px; --tilt: 3deg; display: none; }
+  .cta-note .pencil { left: -66px; top: 12px; width: 80px; height: 50px; }
+  @media (min-width: 820px) { .cta-note { display: block; } }
+  .avail { margin-top: 18px; font-weight: 600; color: var(--pencil); }
+
+  /* ---------- About ---------- */
+  .about-grid { display: grid; gap: 40px; align-items: start; }
+  @media (min-width: 860px) { .about-grid { grid-template-columns: minmax(260px, 380px) 1fr; gap: 60px; } }
+  .sketch { margin: 0; text-align: center; }
+  .sketch svg { width: min(100%, 360px); height: auto; margin: 0 auto; }
+  .sketch figcaption { margin-top: 6px; }
+  .about-text p { max-width: 60ch; }
+  .about-text p + p { margin-top: 16px; }
+  .about-text p:first-child { font: 700 clamp(22px, 2.2vw, 28px)/1.35 var(--sans); }
+  .rounds { display: flex; flex-wrap: wrap; gap: 26px; margin-top: 36px; align-items: center; }
+  .round {
+    display: grid; place-items: center; width: 184px; height: 184px; padding: 24px; border-radius: 50%; text-align: center;
+    font: 800 19px/1.15 var(--sans); --r: -6deg;
+  }
+  .round strong { display: block; font: 900 36px/1 var(--sans); letter-spacing: -.03em; }
+  .rounds .note { max-width: 22ch; }
+
+  /* ---------- Stack: sticker sheets in columns ---------- */
+  .legend { display: flex; flex-wrap: wrap; gap: 14px 26px; align-items: center; margin-bottom: 34px; font-weight: 600; }
+  .legend li { display: flex; align-items: center; gap: 10px; }
+  .sheets { columns: 1; column-gap: 28px; }
+  @media (min-width: 720px) { .sheets { columns: 2; } }
+  @media (min-width: 1180px) { .sheets { columns: 3; } }
+  .group { break-inside: avoid; margin-bottom: 30px; border: var(--bw) solid var(--ink); border-radius: 20px; overflow: hidden; background: var(--paper); box-shadow: 6px 6px 0 var(--ink); }
+  .group h3 { margin: 0; padding: 12px 20px; background: var(--c); border-bottom: var(--bw) solid var(--ink); font: 900 28px/1 var(--sans); letter-spacing: -.02em; }
+  .group-body { display: flex; flex-wrap: wrap; gap: 14px 12px; align-items: center; padding: 22px 20px 24px; }
+  .lvl { width: 100%; font: 700 21px/1 var(--hand); color: var(--pencil); margin-top: 4px; }
+  .pill { display: inline-block; border: var(--bw) solid var(--ink); border-radius: 999px; font-weight: 800; line-height: 1.1; box-shadow: 3px 3px 0 var(--ink); transform: rotate(var(--r, 0deg)); }
+  .pill.strong { background: var(--c); font-size: 19px; padding: 10px 16px; }
+  .pill.medium { background: var(--paper); font-size: 17px; padding: 8px 14px; }
+  .pill.low { background: var(--paper); font-size: 15px; padding: 6px 12px; border-style: dashed; box-shadow: none; }
+  .legend .pill { --c: var(--yellow); }
+
+  /* ---------- Career: label-maker tape + index cards ---------- */
+  .jobs { display: grid; gap: 46px; }
+  .job { display: grid; gap: 16px 34px; align-items: start; }
+  @media (min-width: 900px) { .job { grid-template-columns: 300px 1fr; } }
+  .job-tape { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; padding-top: 6px; }
+  .job-tape .dymo:first-child { font-size: 17px; white-space: normal; max-width: 100%; line-height: 1.45; }
+  @media (min-width: 900px) { .job-tape { position: sticky; top: 30px; } }
+  .card {
+    position: relative; padding: 26px clamp(18px, 3vw, 34px) 26px; border: var(--bw) solid var(--ink); border-radius: 16px; background: var(--paper);
+    box-shadow: 6px 6px 0 var(--ink);
+    background-image: linear-gradient(transparent 0 33px, #F2B8D3 33px 35px, transparent 35px), repeating-linear-gradient(transparent 0 31px, #D9E8F5 31px 32px);
+    background-position: 0 0, 0 4px;
+  }
+  .card .roles { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; margin: 0 0 16px; font: 800 clamp(22px, 2.4vw, 28px)/1.2 var(--sans); letter-spacing: -.01em; }
+  .card .roles .arrow { color: var(--pencil); }
+  .promo { position: relative; display: inline-flex; align-items: center; gap: 8px; }
+  .promo .star { width: 34px; height: 34px; position: relative; flex: none; }
+  .promo .star .pencil { inset: 0; width: 100%; height: 100%; }
+  .card ul.points { display: grid; gap: 8px; margin-bottom: 18px; }
+  .card ul.points li { position: relative; padding-left: 24px; max-width: 70ch; font-size: 17px; }
+  .card ul.points li::before { content: ''; position: absolute; left: 3px; top: .55em; width: 11px; height: 11px; border: 2px solid var(--ink); border-radius: 50%; background: var(--c); }
+  .tags { display: flex; flex-wrap: wrap; gap: 6px; }
+  .tags li { padding: 3px 10px; border: 2px solid var(--ink); border-radius: 999px; font-size: 14px; font-weight: 700; background: var(--paper); }
+  .edu .card { background-image: none; border-style: dashed; box-shadow: none; }
+
+  /* ---------- Team: HELLO my name is ---------- */
+  .badges { display: grid; gap: 34px; }
+  @media (min-width: 760px) { .badges { grid-template-columns: repeat(2, 1fr); } }
+  @media (min-width: 1100px) { .badges { grid-template-columns: repeat(3, 1fr); } }
+  .badge { margin: 0; overflow: hidden; border: var(--bw) solid var(--ink); border-radius: 20px; background: var(--paper); box-shadow: 6px 6px 0 var(--ink); }
+  .badge-top { padding: 14px 18px 12px; background: var(--c); border-bottom: var(--bw) solid var(--ink); text-align: center; }
+  .badge-top b { display: block; font: 900 44px/.9 var(--sans); letter-spacing: -.02em; }
+  .badge-top span { font-weight: 700; font-size: 16px; }
+  .badge-name { padding: 14px 18px 4px; text-align: center; font: 700 44px/1 var(--hand); border-bottom: 2px solid #E3E3E8; }
+  .badge blockquote { margin: 0; padding: 18px 22px 8px; font-size: 18px; line-height: 1.5; font-weight: 500; }
+  .badge blockquote p + p { margin-top: 10px; }
+  .badge figcaption { padding: 6px 22px 20px; color: var(--pencil); font-size: 15px; font-weight: 600; }
+
+  /* ---------- Projects: shipping labels ---------- */
+  .labels { display: grid; gap: 34px 30px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr)); }
+  .label { position: relative; display: flex; flex-direction: column; border: var(--bw) solid var(--ink); border-radius: 12px; background: var(--paper); box-shadow: 6px 6px 0 var(--ink); }
+  .label-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 10px 16px; background: var(--c); border-bottom: var(--bw) solid var(--ink); border-radius: 9px 9px 0 0; font: 900 14px/1 var(--sans); letter-spacing: .06em; }
+  .label-body { padding: 16px 16px 18px; display: flex; flex-direction: column; flex: 1; }
+  .field { font: 700 11.5px/1 var(--sans); letter-spacing: .08em; text-transform: uppercase; color: var(--pencil); margin-bottom: 6px; }
+  .label h3 { margin: 0 0 14px; font: 900 27px/1.05 var(--sans); letter-spacing: -.02em; }
+  .label .sub { margin: -6px 0 14px; font: 600 21px/1.15 var(--hand); color: var(--pencil); }
+  .label .desc { font-size: 16px; line-height: 1.5; margin-bottom: 16px; }
+  .label .tags { margin-bottom: 16px; }
+  .label-foot { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 14px; margin-top: auto; padding-top: 14px; border-top: 2px dashed var(--ink); }
+  .barcode { width: 120px; height: 44px; flex: none; }
+  .label-foot a { font-weight: 800; }
+  .foot-r { display: flex; flex-direction: column; align-items: flex-end; gap: 12px; }
+  .stamp {
+    display: inline-block; padding: 6px 12px; border: 3px solid var(--sc); border-radius: 8px; color: var(--sc);
+    font: 400 15px/1 var(--tape); text-transform: uppercase; white-space: nowrap; transform: rotate(-9deg); background: rgba(255, 255, 255, .8);
+  }
+  .label.blank { border-style: dashed; box-shadow: none; display: grid; place-items: center; min-height: 340px; text-align: center; background: transparent; }
+
+  /* ---------- Contact: sticker wall ---------- */
+  .wall { position: relative; padding-bottom: 30px; }
+  .contact-grid { display: grid; gap: 34px; align-items: center; }
+  @media (min-width: 900px) { .contact-grid { grid-template-columns: 1fr auto; } }
+  .contact-lead { font: 800 clamp(24px, 3vw, 36px)/1.2 var(--sans); max-width: 26ch; letter-spacing: -.01em; }
+  .email-stk {
+    display: inline-block; margin: 26px 0 30px; padding: .3em .7em .36em; --c: var(--pink); border-radius: 999px;
+    font: 900 clamp(20px, 4.2vw, 56px)/1 var(--sans); letter-spacing: -.03em; text-decoration: none; overflow-wrap: anywhere; transform: rotate(-1.5deg);
+  }
+  .email-stk:hover { background: var(--yellow); }
+  .contact-actions { display: flex; flex-wrap: wrap; gap: 14px; }
+  .contact-links { display: flex; flex-wrap: wrap; gap: 10px 26px; margin-top: 26px; font-weight: 700; }
+  .contact-links .todo { color: var(--pencil); font-weight: 600; }
+  .seal { width: clamp(180px, 22vw, 260px); justify-self: center; }
+  .seal svg { width: 100%; height: auto; overflow: visible; }
+  .seal-text { font: 800 14px var(--sans); letter-spacing: .1em; text-transform: uppercase; }
+  .wall-note { margin-top: 44px; }
+  .wall-area { position: absolute; inset: 0; z-index: 0; }
+  .wall > .wrap { position: relative; z-index: 1; }
+  .placed { position: absolute; z-index: 2; pointer-events: none; display: grid; place-items: center; animation: slap .45s cubic-bezier(.2, 1.4, .4, 1) both; transform: rotate(var(--r)); }
+
+  /* ---------- Footer ---------- */
+  .footer { padding: 70px 0 40px; font-size: 15px; color: var(--pencil); font-weight: 600; }
+  .footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 10px 20px; }
+
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    *, *::before, *::after { transition: none !important; animation: none !important; }
+    .js .slap { opacity: 1; }
+  }
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<!-- Pencil: graphite grain for pencil strokes -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <filter id="graphite" x="-10%" y="-10%" width="120%" height="120%">
+    <feTurbulence type="fractalNoise" baseFrequency="1.4" numOctaves="1" seed="3" result="n"/>
+    <feDisplacementMap in="SourceGraphic" in2="n" scale="1.6" result="d"/>
+    <feColorMatrix in="n" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -1.4 1.25" result="grain"/>
+    <feComposite in="d" in2="grain" operator="in"/>
+  </filter>
+</svg>
+
+<header class="header"><div class="wrap"><a class="logo" href="#top" id="logo"></a></div></header>
+<div class="mobile-bar"><button class="menu-btn" id="menuBtn" type="button" aria-expanded="false" aria-controls="menu">Menu</button></div>
+<ul class="menu" id="menu" hidden></ul>
+<nav class="tabs" id="tabs" aria-label="Main"></nav>
+
+<main id="main">
+  <section class="hero" id="top" aria-labelledby="heroName"><div class="wrap" id="heroWrap"></div></section>
+  <section class="sec" id="about" aria-labelledby="about-h"><div class="wrap" id="aboutWrap"></div></section>
+  <section class="sec" id="stack" aria-labelledby="stack-h"><div class="wrap" id="stackWrap"></div></section>
+  <section class="sec" id="career" aria-labelledby="career-h"><div class="wrap" id="careerWrap"></div></section>
+  <section class="sec" id="team" aria-labelledby="team-h"><div class="wrap" id="teamWrap"></div></section>
+  <section class="sec" id="projects" aria-labelledby="projects-h"><div class="wrap" id="projectsWrap"></div></section>
+  <section class="sec wall" id="contact" aria-labelledby="contact-h"><div class="wall-area" id="wallArea" aria-hidden="true"></div><div class="wrap" id="contactWrap"></div></section>
+</main>
+<footer class="footer"><div class="wrap" id="footerWrap"></div></footer>
+
+<script>
+  /* =====================================================================
+     Content (becomes src/content/ in the React build)
+     ===================================================================== */
+  const CONTENT = {
+    profile: {
+      name: 'Rafał Ciećwierz',
+      nameLines: ['Rafał', 'Ciećwierz'],
+      role: 'Frontend Engineer',
+      tagline: 'React & TypeScript · 5+ years building production apps',
+      availability: 'Open to frontend roles (React / TypeScript), remote or hybrid.',
+      email: 'rafal.ciecwierz4@gmail.com',
+      github: 'https://github.com/rafalciecwierz',
+      linkedin: null, // TODO: Rafał to provide URL
+      calendly: null, // TODO: Rafał to provide URL
+      cvFile: '/Rafal_Ciecwierz_CV.pdf'
+    },
+    nav: [
+      { id: 'about', label: 'About', colour: 'var(--lime)' },
+      { id: 'stack', label: 'Stack', colour: 'var(--yellow)' },
+      { id: 'career', label: 'Career', colour: 'var(--sky)' },
+      { id: 'projects', label: 'Projects', colour: 'var(--pink)' },
+      { id: 'contact', label: 'Contact', colour: 'var(--paper)' }
+    ],
+    hero: {
+      cv: 'Download CV',
+      contact: 'Get in touch',
+      cvNote: 'everything below, as a PDF', // NEW CONTENT
+      backing: 'call me Ralph',            // NEW CONTENT: pencilled on the backing under the name sticker
+      sheetPrint: 'Sheet 01 · kiss-cut, peel from the corner' // NEW CONTENT: small print on the backing paper
+    },
+    about: {
+      title: 'About',
+      note: 'a quick pencil sketch, the photo comes later', // NEW CONTENT
+      paragraphs: [
+        "I'm a frontend engineer with 5+ years of commercial experience in React and TypeScript. I started my career in QA automation, moved into frontend development after three months at my team's request, and later led a team of six developers.",
+        "I care about clean architecture, reusable UI and tests that actually protect the product. Lately I've been going deeper into the backend with NestJS and experimenting with motion and 3D in the browser."
+      ],
+      outside: 'Outside of code: parkour (for over 22 years) and climbing.',
+      // NEW CONTENT: the two round stickers restate the brief's facts
+      rounds: [
+        { big: '22+', text: 'years of parkour', colour: 'var(--lime)' },
+        { big: '', text: 'and lately, climbing', colour: 'var(--pink)' }
+      ],
+      sketchAlt: 'A pencil sketch of Rafał: swept-up hair, light stubble, a wide smile, a blazer over a T-shirt, arms crossed.', // NEW CONTENT
+      sketchCaption: 'sketched until the photo arrives' // TODO: replace with Rafał's photo or keep the sketch
+    },
+    stack: {
+      title: 'Stack',
+      note: 'bigger sticker, more production time', // NEW CONTENT
+      levels: { strong: 'strong production experience', medium: 'medium production experience', low: 'low production experience' },
+      groups: [
+        { name: 'Frontend', items: [['React', 'strong'], ['TypeScript', 'strong'], ['JavaScript', 'strong'], ['HTML5', 'strong'], ['CSS / SCSS / Styled-components', 'strong'], ['Next.js', 'medium'], ['Gatsby', 'medium'], ['Module Federation', 'medium'], ['React Native', 'low']] },
+        { name: 'Data & UI', items: [['TanStack Query', 'strong'], ['Redux', 'strong'], ['Zod', 'strong'], ['React Hook Form', 'strong'], ['Storybook', 'strong'], ['Ant Design', 'strong'], ['Material UI', 'strong'], ['Tailwind CSS', 'medium'], ['WebSockets', 'medium']] },
+        { name: 'Testing', items: [['Jest / Vitest', 'strong'], ['React Testing Library', 'strong'], ['Cypress', 'strong']] },
+        { name: 'Backend', items: [['Node.js', 'medium'], ['NestJS', 'medium'], ['PostgreSQL', 'medium'], ['Strapi', 'medium']] },
+        { name: 'Tooling', items: [['Git', 'strong'], ['Figma', 'strong'], ['Postman', 'strong'], ['Vite', 'strong'], ['Webpack', 'strong'], ['Docker', 'medium'], ['Claude Code', 'medium']] }
+      ]
+    },
+    career: {
+      title: 'Career',
+      note: 'newest first, printed on label tape', // NEW CONTENT
+      promoted: 'promoted', // NEW CONTENT
+      jobs: [
+        {
+          company: 'MUG Software', roles: ['Front-end Software Engineer'], dates: '04.2025 – 08.2026',
+          points: [
+            'Maintained and extended a white-label React platform: a core repository with client-specific forks, propagating global changes upstream-to-fork while keeping client customizations isolated.',
+            'Developed and maintained a shared Storybook component library (50+ components), improving UI consistency and speeding up feature development.',
+            'Introduced TanStack Query (replacing Redux for server state) and Zod (replacing Yup), adopting them incrementally across the app as part of ongoing feature work.'
+          ],
+          stack: ['React', 'TypeScript', 'Styled Components', 'Jest', 'Redux', 'Storybook', 'Webpack', 'TanStack Query', 'Zod']
+        },
+        {
+          company: 'VML Enterprise Solutions', roles: ['Front-end Software Engineer'], dates: '09.2024 – 04.2025',
+          points: [
+            'Owned a reference-data micro-frontend (countries, currencies and other company-wide dictionaries) integrated into a large enterprise advertising platform via Webpack Module Federation.',
+            "Maintained and developed the module's codebase, increasing unit test coverage from 11% to over 80%.",
+            'Took part in the migration of a subdomain to a standalone microservice.'
+          ],
+          stack: ['React', 'TypeScript', 'SCSS', 'Jest', 'React Hook Form', 'Webpack', 'Vite', 'Module Federation']
+        },
+        {
+          company: 'Mood up', roles: ['React Developer', 'Front-end Team Leader'], dates: '10.2022 – 08.2024',
+          points: [
+            'Built the React/Redux interface for a smart intercom running on an embedded Raspberry Pi device.',
+            'Promoted to Front-end Team Leader; led a team of 6 developers delivering MVPs for international startup clients.',
+            'Delivered projects from requirements gathering and estimation with clients through development, testing (Jest) and deployment.',
+            "Led a headless CMS evaluation (Strapi, Sanity, Contentful, headless WordPress and others), narrowing the shortlist to Strapi and Payload CMS for the company's stack."
+          ],
+          stack: ['React', 'Gatsby', 'Next.js', 'React Native', 'TypeScript', 'SCSS', 'Strapi', 'Material UI', 'Ant Design', 'Webpack', 'Vite', 'Figma']
+        },
+        {
+          company: 'mTab sp. z o.o.', roles: ['QA Automation Engineer', 'JavaScript Developer'], dates: '07.2021 – 09.2022',
+          points: [
+            "Promoted from QA Automation Engineer (Cypress E2E) to front-end developer after 3 months at the product team's request.",
+            'Developed views and features in React for a data visualization platform with dynamic, reactive charts and presentation-style reports.',
+            'Built Node.js scripts run nightly by Jenkins that aggregated test results into reports and posted them to Slack.',
+            'Maintained and extended a legacy Backbone.js codebase.'
+          ],
+          stack: ['React', 'JavaScript', 'TypeScript', 'Redux', 'SCSS', 'Jest', 'Cypress', 'Node.js', 'Backbone.js']
+        }
+      ],
+      education: { label: 'Education', school: 'Adam Mickiewicz University', degree: "Engineer's degree in Computer Science", dates: '2015 – 2021' }
+    },
+    team: {
+      title: 'Hello from the team',                                          // NEW CONTENT
+      note: 'LinkedIn recommendations from my team at Mood up, June 2024', // NEW CONTENT
+      hello: 'HELLO', myNameIs: 'my name is',                              // NEW CONTENT
+      quotes: [
+        { name: 'Wiktoria W.', role: 'Marketing & Communication', text: ["Seriously, I've never met a leader as tuned in and supportive as him.", "Whoever snags him next is super lucky - yeah, I'm a bit envious. 😉"] },
+        { name: 'Rafał H.', role: 'Frontend Developer', text: ['His enthusiasm and optimism were contagious, making him a joy to work with.'] },
+        { name: 'Szymon K.', role: 'Frontend Developer', text: ['His technical skills and ability to simplify complex concepts, guiding others through challenges, have been invaluable in enhancing the overall quality and efficiency of our development processes.'] }
+      ],
+      source: 'Mood up, 2024'
+    },
+    projects: {
+      title: 'Projects',
+      note: 'each one ships with its own label', // NEW CONTENT
+      repoLabel: 'Repository',
+      fields: { project: 'Project', contents: 'Contents' }, // NEW CONTENT
+      blank: 'next label, already cut', // NEW CONTENT
+      items: [
+        { name: 'Ashen Contracts', status: 'in progress', description: 'Browser-based idle/RPG game built as a full-stack showcase: pnpm monorepo with a Next.js app, NestJS API, shared Storybook UI library and shared TypeScript types. Architecture decisions documented in an ADR-style log.', tags: ['Next.js', 'NestJS', 'PostgreSQL', 'Prisma', 'Storybook', 'Docker', 'GitHub Actions'], repo: 'https://github.com/rafalciecwierz/ashen-contracts' },
+        { name: 'Ultimate Frisbee Tournament Platform', status: 'archived', note: 'Engineering thesis (team of 4), built for the Polish Ultimate Players Association', description: 'Owned the entire NestJS + PostgreSQL backend, built live match scoring with Socket.io (scorekeeper tablet view + real-time spectator view), designed the full UI in Figma, deployed to AWS and tested at a live tournament in Szczecin.', tags: ['NestJS', 'PostgreSQL', 'Socket.io', 'Swagger', 'AWS', 'Nuxt', 'Figma'] },
+        { name: 'This website', status: 'live', description: 'Personal site with a procedural 3D hero (React Three Fiber) and scroll-driven animations (GSAP, Lenis), built with a performance and accessibility budget.', tags: ['React', 'TypeScript', 'Three.js', 'GSAP', 'Vite'], repo: 'https://github.com/rafalciecwierz/rafalciecwierz.github.io' },
+        { name: 'Next.js page transitions', status: 'archived', description: 'Comparison of three page-transition approaches in Next.js: custom implementation, Framer Motion and GSAP.', tags: ['Next.js', 'Framer Motion', 'GSAP'], repo: 'https://github.com/rafalciecwierz/Nextjs-page-transition' }
+      ]
+    },
+    contact: {
+      title: 'Contact',
+      calendlyLabel: 'Book a 20-min call',
+      emailLabel: 'Email me', // NEW CONTENT
+      seal: 'Open to frontend roles · remote or hybrid · ', // NEW CONTENT (restates the availability line)
+      wallNote: 'this wall is for stickers, help yourself' // NEW CONTENT
+    },
+    footer: {
+      builtWith: 'Built with React, Three.js and GSAP',
+      repo: 'https://github.com/rafalciecwierz/rafalciecwierz.github.io'
+    },
+    // NEW CONTENT: the stickers the contact wall hands out
+    wallStickers: ['hi!', '★', 'Ł', 'Ć', 'TS', '✓', ':)', 'ship it', 'React', '80%'],
+    // NEW CONTENT: console greeting
+    console: 'Fresh Sketchbook. Peel the name from its corner, then stick a few things on the contact wall.'
+  };
+
+  /* =====================================================================
+     Helpers
+     ===================================================================== */
+  const $ = (s, r = document) => r.querySelector(s);
+  const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+  const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const P = CONTENT.profile;
+  const COLOURS = ['var(--lime)', 'var(--yellow)', 'var(--sky)', 'var(--pink)'];
+  const ICON = {
+    download: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11m0 0-4.5-4.5M12 15l4.5-4.5M5 20h14"/></svg>',
+    mail: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5.5" width="18" height="13" rx="3"/><path d="m4 7 8 6 8-6"/></svg>'
+  };
+  function rng(seed) { // mulberry32: same seed, same drawing on every load
+    return () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
+  }
+
+  /* =====================================================================
+     Pencil (custom): sketchy double-stroke lines, like a quick graphite drawing
+     ===================================================================== */
+  const Pencil = (() => {
+    const f = (n) => n.toFixed(1);
+    function smooth(pts) {
+      let d = `M${f(pts[0][0])} ${f(pts[0][1])}`;
+      for (let i = 1; i < pts.length - 1; i++) d += ` Q${f(pts[i][0])} ${f(pts[i][1])} ${f((pts[i][0] + pts[i + 1][0]) / 2)} ${f((pts[i][1] + pts[i + 1][1]) / 2)}`;
+      const l = pts[pts.length - 1];
+      return d + ` L${f(l[0])} ${f(l[1])}`;
+    }
+    // Each line is drawn twice with a little jitter, the way a pencil goes over a line again
+    function twice(points, seed, j = 1.4) {
+      const r = rng(seed);
+      return [0, 1].map(() => smooth(points.map(([x, y]) => [x + (r() - .5) * j * 2, y + (r() - .5) * j * 2])));
+    }
+    function arrow(x1, y1, x2, y2, bend, seed) {
+      const pts = [], mx = (x1 + x2) / 2, my = (y1 + y2) / 2, dx = x2 - x1, dy = y2 - y1, len = Math.hypot(dx, dy);
+      const cx = mx - dy / len * bend, cy = my + dx / len * bend;
+      for (let i = 0; i <= 10; i++) { const t = i / 10, u = 1 - t; pts.push([u * u * x1 + 2 * u * t * cx + t * t * x2, u * u * y1 + 2 * u * t * cy + t * t * y2]); }
+      const a = Math.atan2(y2 - cy, x2 - cx), h = 11;
+      const head = [[x2 - Math.cos(a - .55) * h, y2 - Math.sin(a - .55) * h], [x2, y2], [x2 - Math.cos(a + .55) * h, y2 - Math.sin(a + .55) * h]];
+      return [...twice(pts, seed), ...twice(head, seed + 1, .8)];
+    }
+    function star(cx, cy, rad, seed) {
+      const pts = [];
+      for (let i = 0; i <= 10; i++) { const a = -Math.PI / 2 + i * Math.PI / 5, rr = i % 2 ? rad * .45 : rad; pts.push([cx + Math.cos(a) * rr, cy + Math.sin(a) * rr]); }
+      const r = rng(seed);
+      return [0, 1].map(() => 'M' + pts.map(([x, y]) => `${f(x + (r() - .5) * 2)} ${f(y + (r() - .5) * 2)}`).join(' L'));
+    }
+    const svg = (paths, vb, cls = '') => `<svg class="pencil ${cls}" viewBox="${vb}" aria-hidden="true" focusable="false">${paths.map((d) => `<path d="${d}"/>`).join('')}</svg>`;
+    return { twice, arrow, star, svg };
+  })();
+
+  const head = (id, title, note, colour, r) => `
+    <div class="sec-head">
+      <h2 class="title slap" id="${id}" style="--c:${colour};--r:${r}deg">${esc(title)}</h2>
+      ${note ? `<p class="note">${esc(note)}</p>` : ''}
+    </div>`;
+
+  /* =====================================================================
+     Rendering (one function per section = one component later)
+     ===================================================================== */
+  function renderNav() {
+    $('#logo').innerHTML = `<span class="dymo" style="--r:-2deg">${esc(P.name)}</span>`;
+    $('#tabs').innerHTML = CONTENT.nav.map((n) => `<a href="#${n.id}" data-nav="${n.id}" style="--c:${n.colour}">${esc(n.label)}</a>`).join('');
+    $('#menu').innerHTML = CONTENT.nav.map((n) => `<li><a href="#${n.id}">${esc(n.label)}</a></li>`).join('');
+  }
+
+  function renderHero() {
+    const H = CONTENT.hero;
+    $('#heroWrap').innerHTML = `
+      <div class="sheet">
+        <div class="peel-wrap" id="peelWrap">
+          <span class="backing-note" aria-hidden="true">${esc(H.backing)}</span>
+          <div class="name-shadow" id="nameShadow" aria-hidden="true"></div>
+          <div class="name-sticker" id="nameSticker">
+            <h1 class="name" id="heroName">${P.nameLines.map((l) => `<span>${esc(l)}</span>`).join('')}</h1>
+          </div>
+          <svg class="flap" id="flap" aria-hidden="true" focusable="false">
+            <defs><linearGradient id="flapGrad" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#E9DFB0"/><stop offset=".25" stop-color="#FFF8DA"/><stop offset="1" stop-color="#FFFFFF"/></linearGradient></defs>
+            <polygon id="flapShadow" fill="rgba(0,0,0,.18)"/>
+            <polygon id="flapPoly" fill="url(#flapGrad)"/>
+          </svg>
+          <div class="peel-handle" id="peelHandle" aria-hidden="true"></div>
+        </div>
+        <div class="hero-row">
+          <div>
+            <p class="role stk kiss">${esc(P.role)}</p>
+            <p class="tagline">${esc(P.tagline)}</p>
+          </div>
+          <div>
+            <div class="ctas">
+              <p class="note cta-note" aria-hidden="true">${esc(H.cvNote)}${Pencil.svg(Pencil.arrow(76, 8, 8, 46, 14, 5), '0 0 80 50')}</p>
+              <a class="btn btn-primary" href="${P.cvFile}" download>${ICON.download}${esc(H.cv)}</a>
+              <a class="btn btn-secondary" href="#contact">${ICON.mail}${esc(H.contact)}</a>
+            </div>
+          </div>
+        </div>
+        <p class="avail">${esc(P.availability)}</p>
+      </div>`;
+  }
+
+  // Pencil portrait (custom SVG): graphite lines drawn twice, hatching for the blazer's shadow
+  function sketchSVG() {
+    const L = (pts, s) => Pencil.twice(pts, s);
+    const ell = (cx, cy, rx, ry, n = 22, a0 = 0, a1 = Math.PI * 2) => Array.from({ length: n + 1 }, (_, i) => { const a = a0 + (a1 - a0) * i / n; return [cx + Math.cos(a) * rx, cy + Math.sin(a) * ry]; });
+    const paths = [
+      ...L(ell(150, 128, 54, 64, 26), 1),                                             // head
+      ...L([[98, 112], [92, 76], [110, 50], [138, 46], [146, 30], [172, 28], [196, 46], [204, 72], [200, 96], [190, 80], [172, 74], [150, 78], [128, 72], [112, 84], [102, 112]], 2), // swept-up hair
+      ...L([[132, 48], [140, 62], [156, 64]], 3), ...L([[164, 36], [176, 50], [192, 54]], 4),
+      ...L([[116, 110], [128, 104], [140, 109]], 5), ...L([[160, 109], [172, 104], [184, 110]], 6), // brows
+      ...L([[118, 126], [128, 119], [138, 126]], 7), ...L([[162, 126], [172, 119], [182, 126]], 8), // smiling eyes
+      ...L([[150, 128], [144, 146], [152, 150]], 9),                                 // nose
+      ...L([[122, 158], [136, 174], [150, 178], [164, 174], [178, 158], [150, 162], [122, 158]], 10), // wide smile
+      ...L([[96, 128], [88, 134], [92, 146], [100, 148]], 11), ...L([[204, 128], [212, 134], [208, 146], [200, 148]], 12), // ears
+      ...L([[134, 190], [132, 214]], 13), ...L([[166, 190], [168, 214]], 14),         // neck
+      ...L([[40, 330], [46, 270], [80, 236], [132, 214], [150, 252], [168, 214], [220, 236], [254, 270], [260, 330]], 15), // shoulders
+      ...L([[132, 214], [144, 290]], 16), ...L([[168, 214], [156, 290]], 17),         // lapels
+      ...L([[50, 300], [110, 282], [200, 280], [252, 296]], 18), ...L([[56, 318], [120, 298], [196, 300], [248, 316]], 19), // crossed arms
+      ...L(ell(64, 300, 13, 11, 14), 20), ...L(ell(236, 304, 13, 11, 14), 21)          // hands
+    ];
+    let hatch = '';
+    for (let i = 0; i < 9; i++) hatch += `M${200 + i * 6} ${246 + i * 2} l-16 ${30 - i}`; // blazer shadow, right side
+    let stubble = '';
+    const r = rng(33);
+    for (let a = .5; a < 2.65; a += .14) stubble += `<circle cx="${(150 + Math.cos(a) * 46 * (.86 + r() * .08)).toFixed(1)}" cy="${(132 + Math.sin(a) * 54 * (.84 + r() * .08)).toFixed(1)}" r="1"/>`;
+    return `
+      <svg viewBox="0 0 300 330" role="img" aria-label="${esc(CONTENT.about.sketchAlt)}">
+        <circle cx="114" cy="262" r="15" fill="var(--lime)" stroke="var(--ink)" stroke-width="2.5"/>
+        <text x="114" y="268" text-anchor="middle" font-family="Gabarito, sans-serif" font-weight="900" font-size="17">R</text>
+        <g fill="none" stroke="var(--pencil)" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" filter="url(#graphite)">
+          ${paths.map((d) => `<path d="${d}"/>`).join('')}
+          <path d="${hatch}" stroke-width="1.2"/>
+        </g>
+        <g fill="var(--pencil)">${stubble}</g>
+      </svg>`;
+  }
+
+  function renderAbout() {
+    const A = CONTENT.about;
+    $('#aboutWrap').innerHTML = `
+      ${head('about-h', A.title, A.note, 'var(--lime)', -2)}
+      <div class="about-grid">
+        <figure class="sketch">${sketchSVG()}<figcaption class="note">${esc(A.sketchCaption)}</figcaption></figure>
+        <div class="about-text">
+          ${A.paragraphs.map((p) => `<p>${esc(p)}</p>`).join('')}
+          <p class="vh">${esc(A.outside)}</p>
+          <ul class="rounds" aria-hidden="true">
+            ${A.rounds.map((r, i) => `<li class="round stk kiss slap" style="--c:${r.colour};--r:${i ? 5 : -6}deg;--delay:${i * .15}s">${r.big ? `<span><strong>${esc(r.big)}</strong>${esc(r.text)}</span>` : `<span>${esc(r.text)}</span>`}</li>`).join('')}
+          </ul>
+        </div>
+      </div>`;
+  }
+
+  function renderStack() {
+    const S = CONTENT.stack;
+    const r = rng(17);
+    $('#stackWrap').innerHTML = `
+      ${head('stack-h', S.title, S.note, 'var(--yellow)', 1.5)}
+      <ul class="legend" aria-label="Legend">
+        ${Object.entries(S.levels).map(([k, v]) => `<li><span class="pill ${k}">${k}</span>${esc(v)}</li>`).join('')}
+      </ul>
+      <div class="sheets">
+        ${S.groups.map((g, gi) => `
+          <section class="group" style="--c:${COLOURS[gi % 4]}" aria-labelledby="g${gi}">
+            <h3 id="g${gi}">${esc(g.name)}</h3>
+            <div class="group-body">
+              ${['strong', 'medium', 'low'].map((lvl) => {
+                const items = g.items.filter((it) => it[1] === lvl);
+                if (!items.length) return '';
+                return `<span class="lvl" aria-hidden="true">${lvl}</span><ul style="display:contents" aria-label="${lvl}">${items.map((it, i) => `<li class="pill ${lvl} slap" style="--r:${((r() - .5) * 5).toFixed(1)}deg;--delay:${(i * .06).toFixed(2)}s">${esc(it[0])}<span class="vh"> (${lvl})</span></li>`).join('')}</ul>`;
+              }).join('')}
+            </div>
+          </section>`).join('')}
+      </div>`;
+  }
+
+  function renderCareer() {
+    const C = CONTENT.career;
+    const jobs = C.jobs.map((j, i) => {
+      const roles = j.roles.length > 1
+        ? `<span>${esc(j.roles[0])}</span><span class="arrow" aria-hidden="true">→</span><span class="promo">${esc(j.roles[1])}<span class="star">${Pencil.svg(Pencil.star(17, 17, 15, 20 + i), '0 0 34 34')}</span><span class="dymo pink" style="--r:3deg;font-size:12px">${esc(C.promoted)}</span></span>`
+        : `<span>${esc(j.roles[0])}</span>`;
+      return `
+        <li class="job" style="--c:${COLOURS[i % 4]}">
+          <div class="job-tape">
+            <span class="dymo slap" style="--r:${i % 2 ? 1.5 : -1.5}deg">${esc(j.company)}</span>
+            <span class="dymo blue slap" style="--r:${i % 2 ? -1 : 1}deg;--delay:.12s">${esc(j.dates)}</span>
+          </div>
+          <article class="card">
+            <h3 class="vh">${esc(j.company)}</h3>
+            <p class="roles">${roles}</p>
+            <ul class="points">${j.points.map((p) => `<li>${esc(p)}</li>`).join('')}</ul>
+            <ul class="tags" aria-label="Stack">${j.stack.map((t) => `<li>${esc(t)}</li>`).join('')}</ul>
+          </article>
+        </li>`;
+    }).join('');
+    const E = C.education;
+    $('#careerWrap').innerHTML = `
+      ${head('career-h', C.title, C.note, 'var(--sky)', -1)}
+      <ol class="jobs">
+        ${jobs}
+        <li class="job edu">
+          <div class="job-tape"><span class="dymo green slap">${esc(E.label)}</span><span class="dymo blue slap" style="--delay:.12s">${esc(E.dates)}</span></div>
+          <div class="card"><p class="roles">${esc(E.school)}</p><p>${esc(E.degree)}</p></div>
+        </li>
+      </ol>`;
+  }
+
+  function renderTeam() {
+    const T = CONTENT.team;
+    $('#teamWrap').innerHTML = `
+      ${head('team-h', T.title, T.note, 'var(--pink)', 1.5)}
+      <div class="badges">
+        ${T.quotes.map((q, i) => `
+          <figure class="badge slap" style="--c:${['var(--pink)', 'var(--sky)', 'var(--lime)'][i % 3]};--r:${[-1.5, 1, -.6][i % 3]}deg;--delay:${i * .12}s">
+            <div class="badge-top" aria-hidden="true"><b>${esc(T.hello)}</b><span>${esc(T.myNameIs)}</span></div>
+            <p class="badge-name" aria-hidden="true">${esc(q.name)}</p>
+            <blockquote>${q.text.map((t) => `<p>${esc(t)}</p>`).join('')}</blockquote>
+            <figcaption>${esc(q.name)}, ${esc(q.role)}, ${esc(T.source)}</figcaption>
+          </figure>`).join('')}
+      </div>`;
+  }
+
+  // Barcode (custom SVG): decorative bars generated from the project name
+  function barcode(name) {
+    let h = 0; for (const ch of name) h = (h * 31 + ch.charCodeAt(0)) | 0;
+    const r = rng(h); let x = 0, bars = '';
+    while (x < 116) { const w = 1 + Math.floor(r() * 3.2); if (r() > .38) bars += `<rect x="${x}" width="${w}" height="44"/>`; x += w + 1 + Math.floor(r() * 2); }
+    return `<svg class="barcode" viewBox="0 0 120 44" aria-hidden="true" focusable="false"><g fill="var(--ink)">${bars}</g></svg>`;
+  }
+
+  function renderProjects() {
+    const PR = CONTENT.projects;
+    const stamp = { live: '#2F7A1F', 'in progress': '#1D5FA8', archived: '#6A6A72' };
+    $('#projectsWrap').innerHTML = `
+      ${head('projects-h', PR.title, PR.note, 'var(--paper)', -1.5)}
+      <ul class="labels">
+        ${PR.items.map((p, i) => `
+          <li class="label slap" style="--c:${COLOURS[(i + 1) % 4]};--r:${[-1, .8, -.5, 1.2][i % 4]}deg;--delay:${(i % 3) * .1}s">
+            <div class="label-head" aria-hidden="true"><span>${esc(PR.fields.project)}</span><span>No. ${String(i + 1).padStart(3, '0')}</span></div>
+            <div class="label-body">
+              <h3>${esc(p.name)}</h3>
+              ${p.note ? `<p class="sub">${esc(p.note)}</p>` : ''}
+              <p class="field" aria-hidden="true">${esc(PR.fields.contents)}</p>
+              <p class="desc">${esc(p.description)}</p>
+              <ul class="tags" aria-label="Tech">${p.tags.map((t) => `<li>${esc(t)}</li>`).join('')}</ul>
+              <div class="label-foot">
+                ${barcode(p.name)}
+                <div class="foot-r">
+                  <span class="stamp" style="--sc:${stamp[p.status]}">${esc(p.status)}</span>
+                  ${p.repo ? `<a href="${p.repo}">${esc(PR.repoLabel)}<span class="vh">: ${esc(p.name)}</span></a>` : ''}
+                </div>
+              </div>
+            </div>
+          </li>`).join('')}
+        <li class="label blank" aria-hidden="true"><span class="note">${esc(PR.blank)}</span></li>
+      </ul>`;
+  }
+
+  function renderContact() {
+    const C = CONTENT.contact;
+    $('#contactWrap').innerHTML = `
+      ${head('contact-h', C.title, '', 'var(--lime)', -2)}
+      <div class="contact-grid">
+        <div>
+          <p class="contact-lead">${esc(P.availability)}</p>
+          <a class="email-stk stk kiss" href="mailto:${P.email}">${esc(P.email)}</a>
+          <div class="contact-actions">
+            <a class="btn btn-primary" href="${P.cvFile}" download>${ICON.download}${esc(CONTENT.hero.cv)}</a>
+            <a class="btn btn-secondary" href="mailto:${P.email}">${ICON.mail}${esc(C.emailLabel)}</a>
+          </div>
+          <ul class="contact-links">
+            <li><a href="${P.github}">GitHub</a></li>
+            <li>${P.linkedin ? `<a href="${P.linkedin}">LinkedIn</a>` : '<span class="todo">LinkedIn (TODO: URL)</span>'}</li>
+            <li>${P.calendly ? `<a href="${P.calendly}">${esc(C.calendlyLabel)}</a>` : `<span class="todo">${esc(C.calendlyLabel)} (TODO: Calendly URL)</span>`}</li>
+          </ul>
+        </div>
+        <div class="seal" aria-hidden="true">
+          <svg viewBox="0 0 200 200" id="seal">
+            <defs><path id="sealPath" d="M100 100 m-74 0 a74 74 0 1 1 148 0 a74 74 0 1 1 -148 0"/></defs>
+            <circle cx="100" cy="100" r="96" fill="var(--yellow)" stroke="var(--ink)" stroke-width="3"/>
+            <g id="sealSpin" style="transform-origin:100px 100px"><text class="seal-text"><textPath href="#sealPath" textLength="462" lengthAdjust="spacing">${esc(C.seal)}</textPath></text></g>
+            <circle cx="100" cy="100" r="48" fill="var(--paper)" stroke="var(--ink)" stroke-width="3"/>
+            <text x="100" y="113" text-anchor="middle" font-family="Gabarito, sans-serif" font-weight="900" font-size="40">RC</text>
+          </svg>
+        </div>
+      </div>
+      <p class="note wall-note" aria-hidden="true">${esc(C.wallNote)}</p>`;
+  }
+
+  function renderFooter() {
+    const F = CONTENT.footer;
+    $('#footerWrap').innerHTML = `<p>${esc(F.builtWith)} · <a href="${F.repo}">Source on GitHub</a></p><p>© ${new Date().getFullYear()} ${esc(P.name)}</p>`;
+  }
+
+  /* =====================================================================
+     Effects (one function per effect = one hook or component later)
+     ===================================================================== */
+
+  // PeelBack (custom): fold the name sticker's corner along a real fold line.
+  // C is the bottom-right corner, T is where the corner tip is pulled to. The fold line is the
+  // perpendicular bisector of C–T. The sticker keeps the half on the far side of the line; the
+  // half near C is mirrored across the line and drawn as the flap (the sticker's back).
+  function PeelBack() {
+    const wrap = $('#peelWrap'), sticker = $('#nameSticker'), shadow = $('#nameShadow');
+    const flap = $('#flap'), poly = $('#flapPoly'), polyShadow = $('#flapShadow'), grad = $('#flapGrad'), handle = $('#peelHandle');
+    let W = 0, H = 0, tip = [0, 0], vel = [0, 0], target = [0, 0], raf = 0, dragging = false;
+    const idle = () => [W - Math.min(70, W * .08), H - Math.min(56, H * .16)];
+    const hover = () => [W - Math.min(150, W * .16), H - Math.min(110, H * .3)];
+
+    function clipHalf(rect, M, n, keepFar) { // Sutherland–Hodgman against one half-plane
+      const side = (p) => ((p[0] - M[0]) * n[0] + (p[1] - M[1]) * n[1]) * (keepFar ? -1 : 1);
+      const out = [];
+      rect.forEach((A, i) => {
+        const B = rect[(i + 1) % rect.length], a = side(A), b = side(B);
+        if (a >= 0) out.push(A);
+        if ((a >= 0) !== (b >= 0)) { const t = a / (a - b); out.push([A[0] + (B[0] - A[0]) * t, A[1] + (B[1] - A[1]) * t]); }
+      });
+      return out;
+    }
+    function draw() {
+      const C = [W, H], d = [C[0] - tip[0], C[1] - tip[1]], len = Math.hypot(d[0], d[1]);
+      if (len < 1) { sticker.style.clipPath = shadow.style.clipPath = ''; poly.setAttribute('points', ''); polyShadow.setAttribute('points', ''); return; }
+      const n = [d[0] / len, d[1] / len], M = [(C[0] + tip[0]) / 2, (C[1] + tip[1]) / 2];
+      const rect = [[0, 0], [W, 0], [W, H], [0, H]];
+      const kept = clipHalf(rect, M, n, true), cut = clipHalf(rect, M, n, false);
+      const mirror = cut.map((p) => { const k = 2 * ((p[0] - M[0]) * n[0] + (p[1] - M[1]) * n[1]); return [p[0] - k * n[0], p[1] - k * n[1]]; });
+      const css = 'polygon(' + kept.map((p) => `${p[0].toFixed(1)}px ${p[1].toFixed(1)}px`).join(',') + ')';
+      sticker.style.clipPath = css;
+      shadow.style.clipPath = css; // same shape, the shadow element is offset by its transform
+      const pts = (arr, dx = 0, dy = 0) => arr.map((p) => `${(p[0] + dx).toFixed(1)},${(p[1] + dy).toFixed(1)}`).join(' ');
+      poly.setAttribute('points', pts(mirror));
+      polyShadow.setAttribute('points', pts(mirror, -n[0] * 8, -n[1] * 8 + 4));
+      grad.setAttribute('x1', M[0]); grad.setAttribute('y1', M[1]); grad.setAttribute('x2', tip[0]); grad.setAttribute('y2', tip[1]);
+    }
+    function step() { // a damped spring towards the target
+      if (reduceMotion) { tip = target.slice(); draw(); raf = 0; return; }
+      vel = vel.map((v, i) => (v + (target[i] - tip[i]) * .16) * .72);
+      tip = tip.map((t, i) => t + vel[i]);
+      draw();
+      raf = Math.hypot(vel[0], vel[1]) + Math.hypot(target[0] - tip[0], target[1] - tip[1]) > .2 ? requestAnimationFrame(step) : 0;
+    }
+    const go = (t) => { target = t; if (!raf) raf = requestAnimationFrame(step); };
+    function measure() {
+      W = sticker.offsetWidth; H = sticker.offsetHeight;
+      flap.setAttribute('width', W); flap.setAttribute('height', H); flap.setAttribute('viewBox', `0 0 ${W} ${H}`);
+      tip = idle(); target = tip.slice(); draw();
+    }
+    new ResizeObserver(measure).observe(sticker);
+
+    handle.addEventListener('pointerenter', () => { if (!dragging) go(hover()); });
+    handle.addEventListener('pointerleave', () => { if (!dragging) go(idle()); });
+    handle.addEventListener('pointerdown', (e) => { dragging = true; try { handle.setPointerCapture(e.pointerId); } catch (_) { /* synthetic events */ } handle.classList.add('is-down'); });
+    handle.addEventListener('pointermove', (e) => {
+      if (!dragging) return;
+      const r = sticker.getBoundingClientRect();
+      let p = [e.clientX - r.left, e.clientY - r.top];
+      const C = [W, H], dx = p[0] - C[0], dy = p[1] - C[1], dist = Math.hypot(dx, dy), max = Math.min(W * .62, H * 1.5);
+      if (dist > max) p = [C[0] + dx / dist * max, C[1] + dy / dist * max]; // never peel more than about half
+      go(p);
+    });
+    const release = () => { if (!dragging) return; dragging = false; handle.classList.remove('is-down'); go(idle()); };
+    handle.addEventListener('pointerup', release);
+    handle.addEventListener('pointercancel', release);
+  }
+
+  // StickerSlap (custom): stickers land on the sheet as they enter the viewport
+  function StickerSlap() {
+    const all = $$('.slap');
+    if (reduceMotion || !('IntersectionObserver' in window)) { all.forEach((el) => el.classList.add('in')); return; }
+    const io = new IntersectionObserver((entries) => entries.forEach((en) => {
+      if (en.isIntersecting) { en.target.classList.add('in'); io.unobserve(en.target); }
+    }), { rootMargin: '0px 0px -8% 0px' });
+    all.forEach((el) => io.observe(el));
+  }
+
+  // SealBadge (inspired by React Bits CircularText): the ring of text turns with scroll
+  function SealBadge() {
+    if (reduceMotion) return;
+    const spin = $('#sealSpin');
+    addEventListener('scroll', () => { spin.style.transform = `rotate(${(scrollY * .12) % 360}deg)`; }, { passive: true });
+  }
+
+  // StickerWall (custom): click or tap empty space in Contact to stick a sticker there
+  function StickerWall() {
+    const section = $('#contact'), area = $('#wallArea'), S = CONTENT.wallStickers;
+    let n = 0;
+    section.addEventListener('click', (e) => {
+      if (e.target.closest('a, button')) return;
+      const r = section.getBoundingClientRect();
+      const s = S[n % S.length], c = COLOURS[n % 4], size = s.length > 3 ? 'auto' : '58px';
+      const el = document.createElement('span');
+      el.className = 'placed stk';
+      el.textContent = s;
+      el.style.cssText = `left:${e.clientX - r.left - 28}px;top:${e.clientY - r.top - 24}px;--c:${c};--r:${((Math.random() - .5) * 30).toFixed(1)}deg;min-width:${size};height:52px;padding:0 14px;border-radius:${s.length > 3 ? '999px' : '50%'};font:900 22px/1 var(--sans)`;
+      area.appendChild(el);
+      if (area.children.length > 30) area.firstElementChild.remove();
+      n++;
+    });
+  }
+
+  function IndexTabs() {
+    const links = $$('#tabs a');
+    const io = new IntersectionObserver((entries) => entries.forEach((en) => {
+      if (!en.isIntersecting) return;
+      links.forEach((a) => (a.dataset.nav === en.target.id ? a.setAttribute('aria-current', 'true') : a.removeAttribute('aria-current')));
+    }), { rootMargin: '-45% 0px -50% 0px' });
+    ['top', ...CONTENT.nav.map((n) => n.id)].forEach((id) => io.observe(document.getElementById(id)));
+  }
+
+  function MobileMenu() {
+    const btn = $('#menuBtn'), menu = $('#menu');
+    const focusables = () => [btn, ...$$('a', menu)];
+    function set(open) {
+      menu.hidden = !open;
+      btn.setAttribute('aria-expanded', String(open));
+      btn.textContent = open ? 'Close' : 'Menu';
+      document.documentElement.style.overflow = open ? 'hidden' : '';
+      if (open) $('a', menu).focus();
+    }
+    btn.addEventListener('click', () => set(menu.hidden));
+    menu.addEventListener('click', (e) => { if (e.target.closest('a')) set(false); });
+    document.addEventListener('keydown', (e) => {
+      if (menu.hidden) return;
+      if (e.key === 'Escape') { set(false); btn.focus(); }
+      if (e.key === 'Tab') {
+        const f = focusables(), i = f.indexOf(document.activeElement);
+        if (e.shiftKey && i <= 0) { e.preventDefault(); f[f.length - 1].focus(); }
+        else if (!e.shiftKey && i === f.length - 1) { e.preventDefault(); f[0].focus(); }
+      }
+    });
+    matchMedia('(min-width: 1100px)').addEventListener('change', () => set(false));
+  }
+
+  function ConsoleHello() {
+    console.log('%c RC %c ' + CONTENT.console, 'background:#FFD52E;color:#000;border:2px solid #000;border-radius:4px;font:900 14px sans-serif', 'font:600 13px sans-serif');
+  }
+
+  /* =====================================================================
+     Boot
+     ===================================================================== */
+  renderNav();
+  renderHero();
+  renderAbout();
+  renderStack();
+  renderCareer();
+  renderTeam();
+  renderProjects();
+  renderContact();
+  renderFooter();
+  PeelBack();
+  StickerSlap();
+  SealBadge();
+  StickerWall();
+  IndexTabs();
+  MobileMenu();
+  ConsoleHello();
+</script>
+</body>
+</html>

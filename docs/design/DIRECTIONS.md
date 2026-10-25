@@ -225,7 +225,9 @@ How the directions spread across the axes from the research. No two directions s
 
 ## 04 — Sticker Sheet (`sticker-sheet`)
 
-**Status:** approved.
+**Status:** built (both variants). **Files:** `design/prototypes/04-sticker-sheet-dark.html`, `design/prototypes/04-sticker-sheet-light.html`.
+
+**Shared by both variants:** only the style: neubrutalism (thick outlines, hard offset shadows, flat bright colour), Ralph's hand-drawn notes and stickers.
 
 **Concept:** The portfolio as Rafał's sketchbook and sticker sheet. It has neubrutalist blocks (thick outlines, hard offset shadows, flat bright colour) arranged as a bento grid, covered in **hand-drawn notes from Ralph himself**: scribbled arrows, circled numbers, and margin comments such as "yes, really: 11% → 80% test coverage". Stickers can be peeled and dragged. It is loud, funny and human, the clearest "anti-AI" direction.
 
@@ -247,7 +249,27 @@ How the directions spread across the axes from the research. No two directions s
 
 **Dark take:** "neon zine at night": a charcoal ground, white outlines, electric blocks (hot pink, electric yellow, cyan) and a risograph-like glow. A night-market energy.
 
+**As built (dark), task 2.4: "Night Zine".** A risograph zine printed at night: neubrutalist bento blocks on charcoal paper with a halftone dot screen, gone over with Ralph's yellow marker, with his sticker collection stuck around the blocks. The concept, hero and sections above belong to this variant.
+- **Palette:** charcoal paper `#1F1E26`, blocks `#2A2933`, white outlines and text `#F5F3FA`, muted `#C5C2D3`; fluorescent inks for fills, shadows and marker: pink `#FF4FA3`, yellow `#FFE83D` (also the marker), cyan `#3DE3FF`; ink on neon `#17161C`; blue `#4A5BFF` in the portrait only.
+- **Type:** Bricolage Grotesque (variable `opsz`/`wdth`/`wght`, condensed 800 for display, also the body) + Caveat Brush for the marker notes.
+- **Layout:** a 12/6/1-column bento grid. The hero is a bento of a name card, a CTA card and four fact tiles. Sections: hero, About (text, portrait, "Outside of code"), Stack (one tile per group), Career (a vertical strip of cards on a hand-drawn line, margin notes beside them on wide screens), "Team notes" (quotes, new, after Career, not in the nav), Projects, Contact (one pink block).
+- **Hero moment:** the name is printed in two riso plates (pink and cyan, blended with `screen`, so the overlap reads near-white); the cyan plate drifts out of register towards the cursor. A "call me Ralph" sticker is stuck on the card, and a marker arrow points at Download CV.
+- **Section forms:** fact tiles (5+ years, 6 developers led, 2 promotions circled, 50+ components); a marker-and-riso-fill portrait; stack chips where the level is the fill (solid, hatched, dashed outline) under handwritten level labels; career cards with "promoted!" circles around the new role and margin comments ("yes, really: 11% → 80% test coverage"); quotes as taped sticky notes; projects as polaroids with a generated two-ink riso print; the email circled in marker.
+- **Effects:** RisoPlates, Scribble (seeded marker paths), DrawOnScroll and FitScribbles (DrawSVG-style `stroke-dashoffset`), CareerLine (scrubbed), StickerPeel (inspired by React Bits StickerPeel: corner curls on hover, drag to move on desktop, tap to peel on touch), StickerBook (the easter egg: 9 stickers to peel into a `<dialog>` book; the full set opens it with the CV), HardPress buttons, RisoPortrait, PolaroidArt, console message. All custom.
+- **Left out on purpose:** GSAP and Draggable (pointer events are enough), WebGL, smooth scroll, and anything from 01–03.
+- **Dependencies:** none. The React build needs nothing beyond React (GSAP Draggable only if inertia is wanted).
+
 **Light take:** "fresh sketchbook": a bright paper-white page with lime, sunshine yellow, sky blue and bubblegum pink blocks, black outlines and pencil-grey doodles. A summer-sticker energy.
+
+**As built (light), task 2.4: "Fresh Sketchbook".** A sheet of die-cut stickers on white sketchbook paper. Every content block is a real sticker type with its own vernacular, and Ralph's notes are in pencil. Nothing from "Night Zine" is reused: no bento grid, no marker, no riso plates, no polaroids, no sticker book, no Bricolage or Caveat Brush.
+- **Palette:** white paper `#FFFFFF` with a dot grid `#DCDCE2`; black `#000000` for outlines, text and hard shadows; pencil `#55555C`; lime `#B8F03C`, sunshine yellow `#FFD52E`, sky `#86CCFF`, bubblegum pink `#FF92CB`; glossy backing paper `#EAF5FF` with a printed grid and print `#3A6E9C`; label tape in black, deep pink, blue and green.
+- **Type:** Gabarito (400–900, display and body) + Caveat (pencil notes) + Rubik Mono One (label-maker tape only).
+- **Layout:** single column, no bento. Notebook divider tabs on the right edge are the navigation on wide screens (a Menu button below 1100 px). Section titles are die-cut label stickers. Sections: hero, About, Stack, Career, "Hello from the team" (quotes, new, after Career, not in the nav), Projects, Contact.
+- **Hero moment:** the name is one big yellow die-cut sticker on glossy backing paper, with its corner already lifted. Dragging the corner peels it back along a real fold line, and the backing underneath has "call me Ralph" pencilled on it; on release it re-sticks with a spring.
+- **Section forms:** a graphite pencil portrait (double strokes, hatching, a lime "R" sticker on the blazer) and round stickers for parkour and climbing; stack as small sticker sheets in columns, where the level is the sticker's size and fill under pencil level labels; career as label-maker tape (company, dates) beside lined index cards, promotions with a pencil star and a "promoted" tape; quotes on "HELLO my name is" badges; projects as numbered shipping labels with a generated barcode and a rubber status stamp; contact with the email as a pink pill sticker, a seal badge whose ring of text turns with scroll, and a wall where a click or tap sticks a sticker.
+- **Effects:** PeelBack (fold-line geometry: clip-path plus a mirrored SVG flap), StickerSlap (stickers land as they scroll in), Pencil (seeded double strokes and an SVG graphite filter), DymoTape (CSS), Barcode, SealBadge (inspired by React Bits CircularText), StickerWall (the easter egg), IndexTabs, MobileMenu, console message. All custom.
+- **Left out on purpose:** everything from "Night Zine" (see above), GSAP, smooth scroll, WebGL.
+- **Dependencies:** none. The React build needs nothing beyond React.
 
 **Typography:** Bricolage Grotesque (chunky, quirky), Caveat for Ralph's handwritten notes.
 

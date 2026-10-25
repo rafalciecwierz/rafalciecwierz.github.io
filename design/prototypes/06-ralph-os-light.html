@@ -1,0 +1,1041 @@
+<!doctype html>
+<!--
+  Prototype 06 — RalphOS (`ralph-os`), LIGHT variant: "Daylight".
+  Direction brief: docs/design/DIRECTIONS.md, section 06.
+
+  Concept: RalphOS in daylight is search-first. The page opens on a large frosted Spotlight panel
+  over a soft pastel wallpaper: the search field is real, and the "Top hit" is Rafał (name, role,
+  tagline, Download CV, Get in touch). Typing searches the whole CV live: every section below is a
+  group of Spotlight results that filters and highlights as you type ("react", "team", "nestjs"),
+  and a few words run actions ("cv", "hire", "update"). The sections are OS surfaces of their own:
+  About as a knowledge card, Stack as result rows with signal-strength levels, Career as a
+  calendar agenda with a "now" line, the team's quotes as a stack of notifications, Projects as
+  files with Quick Look, and Contact as a contact card that can be saved as a .vcf file.
+  It shares only the style (OS metaphor, glass, playful interaction) with the dark variant,
+  "Midnight": no windows, no dock, no terminal, no aurora, no Manrope.
+
+  Effects (each is a named function in the script below):
+  - PastelWallpaper .... custom CSS: blurred pastel blobs drifting slowly, with a little cursor
+                         parallax (no canvas, no WebGL)
+  - SpecularGlass ...... custom: a soft highlight on the Spotlight panel follows the cursor
+  - TypedPlaceholder ... custom: the search field suggests queries, typed letter by letter
+  - LiveSearch ......... custom: filters and highlights every section as you type, counts the
+                         results per group, and runs actions for some words
+  - ResultsArrive ...... custom (IntersectionObserver + CSS stagger): result rows slide in
+  - NowLine ............ custom: the agenda's "now" line travels down the career as you scroll
+                         (the timeline drawing from the brief)
+  - NotificationStack .. custom: the team's notifications fan out when they come into view
+  - QuickLook .......... custom `<dialog>`: a larger preview of a project (Space or click)
+  - ContactCard ........ custom: builds and downloads a vCard (.vcf) from the content
+  - SoftwareUpdate ..... custom easter egg: "RalphOS 7: Full Stack" (type "update", or the
+                         footer button)
+  - NavMenu (mobile, focus trapped), ConsoleHello: custom
+
+  Libraries in this file: none.
+  Fonts: Outfit (display) and Plus Jakarta Sans (UI and text), Google Fonts, latin-ext. Neither
+  is used by any other prototype.
+  React build would need: nothing beyond React.
+
+  Reduced motion: no drift or parallax, a static placeholder, no row stagger, the now line at
+  the end of the agenda, notifications already fanned out, instant dialogs, no smooth scroll.
+
+  Content: all copy lives in the CONTENT object at the top of the script. Additions beyond
+  brief section 5 are marked `NEW CONTENT` there.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rafał Ciećwierz, Frontend Engineer</title>
+<meta name="description" content="Rafał Ciećwierz, Frontend Engineer. React & TypeScript, 5+ years building production apps.">
+<meta name="theme-color" content="#F6F1EC">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300..700&family=Plus+Jakarta+Sans:ital,wght@0,400..800;1,400..600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #F6F1EC;        /* the wallpaper base */
+    --peach: #FFC6A6; --lilac: #CDBFFF; --sky: #B5DCFF; --mint: #BDEFD5; --butter: #FFE59A;
+    --glass: rgba(255, 255, 255, .62);
+    --glass-strong: rgba(255, 255, 255, .8);
+    --edge: rgba(255, 255, 255, .9);
+    --hair: rgba(21, 23, 42, .09);
+    --ink: #15172A;
+    --muted: #50566C;        /* 6.5:1 on the glass */
+    --tangerine: #FF7A3D;    /* fills only, ink text on it (7:1) */
+    --tangerine-ink: #B23F0B;/* small accent text and links (5.5:1 on white) */
+    --highlight: #FFE0CC;
+    --shadow: 0 1px 1px rgba(21, 23, 42, .04), 0 10px 30px -12px rgba(60, 40, 90, .25);
+    --shadow-lg: 0 2px 2px rgba(21, 23, 42, .04), 0 30px 80px -24px rgba(60, 40, 90, .38);
+    --display: 'Outfit', system-ui, sans-serif;
+    --ui: 'Plus Jakarta Sans', system-ui, sans-serif;
+    --r: 22px;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; scroll-padding-top: 84px; }
+  @media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+  body { margin: 0; background: var(--paper); color: var(--ink); font: 400 16px/1.6 var(--ui); -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+  a { color: var(--tangerine-ink); text-underline-offset: 3px; text-decoration-thickness: 1.5px; }
+  a:hover { color: var(--ink); }
+  button, input { font: inherit; color: inherit; }
+  button { cursor: pointer; }
+  :focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; border-radius: 8px; }
+  h1, h2, h3 { margin: 0; font-family: var(--display); letter-spacing: -.01em; }
+  .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+  .todo { color: var(--tangerine-ink); font-weight: 700; }
+  mark { background: var(--highlight); color: inherit; border-radius: 4px; padding: 0 2px; box-shadow: inset 0 -2px 0 var(--tangerine); }
+  [hidden] { display: none !important; }
+  .skip { position: fixed; left: 12px; top: -60px; z-index: 999; padding: 10px 16px; border-radius: 12px; background: var(--ink); color: #fff; font-weight: 700; text-decoration: none; }
+  .skip:focus { top: 12px; color: #fff; }
+
+  /* ---------- PastelWallpaper ---------- */
+  .wall { position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; background: var(--paper); }
+  .blob { position: absolute; border-radius: 50%; filter: blur(70px); opacity: .9; will-change: transform; transform: translate(calc(var(--px, 0) * var(--d)), calc(var(--py, 0) * var(--d))); }
+  .blob i { position: absolute; inset: 0; border-radius: inherit; background: var(--c); animation: drift var(--t) ease-in-out infinite alternate; }
+  .b1 { --c: var(--peach); --d: 18px; --t: 26s; width: 52vmax; height: 46vmax; left: -14vmax; top: -16vmax; }
+  .b2 { --c: var(--lilac); --d: -24px; --t: 31s; width: 50vmax; height: 50vmax; right: -16vmax; top: -10vmax; }
+  .b3 { --c: var(--sky); --d: 30px; --t: 23s; width: 44vmax; height: 40vmax; right: -6vmax; top: 40vh; }
+  .b4 { --c: var(--mint); --d: -16px; --t: 29s; width: 42vmax; height: 42vmax; left: -12vmax; top: 55vh; }
+  .b5 { --c: var(--butter); --d: 36px; --t: 21s; width: 24vmax; height: 22vmax; left: 34vw; top: 30vh; opacity: .7; }
+  @keyframes drift { from { transform: translate(0, 0) scale(1); } to { transform: translate(6vmax, 4vmax) scale(1.12); } }
+  .wall::after { content: ''; position: absolute; inset: 0; opacity: .32; mix-blend-mode: soft-light;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.6'/%3E%3C/svg%3E"); }
+
+  /* ---------- glass ---------- */
+  .glass { background: var(--glass); backdrop-filter: blur(30px) saturate(180%); -webkit-backdrop-filter: blur(30px) saturate(180%);
+    border: 1px solid var(--edge); box-shadow: inset 0 1px 0 #fff, var(--shadow); border-radius: var(--r); }
+
+  /* ---------- header ---------- */
+  .top { position: fixed; z-index: 50; top: 12px; left: 50%; transform: translateX(-50%); width: min(1120px, calc(100% - 24px)); height: 54px;
+    display: flex; align-items: center; gap: 8px; padding: 0 8px 0 14px; border-radius: 18px; }
+  .logo { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--ink); font: 600 17px/1 var(--display); letter-spacing: -.01em; }
+  .logo i { width: 30px; height: 30px; border-radius: 9px; display: grid; place-items: center; font-style: normal; font: 700 16px/1 var(--display); color: var(--ink);
+    background: conic-gradient(from 210deg at 60% 40%, var(--peach), var(--butter), var(--mint), var(--sky), var(--lilac), var(--peach)); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .8), 0 4px 10px -4px rgba(60, 40, 90, .35); }
+  .top nav { margin-left: auto; }
+  .top nav ul { list-style: none; margin: 0; padding: 0; display: flex; gap: 2px; }
+  .top nav a { display: block; padding: 8px 13px; border-radius: 11px; color: var(--ink); text-decoration: none; font-weight: 600; font-size: 14.5px; }
+  .top nav a:hover, .top nav a[aria-current="true"] { background: rgba(255, 255, 255, .85); box-shadow: 0 1px 3px rgba(21, 23, 42, .08); }
+  .kbd-btn { display: inline-flex; align-items: center; gap: 8px; height: 38px; padding: 0 8px 0 12px; border-radius: 12px; border: 1px solid var(--hair); background: rgba(255, 255, 255, .7); font-size: 14px; font-weight: 600; color: var(--muted); }
+  .kbd-btn svg { width: 16px; height: 16px; }
+  kbd { font: 600 12px/1 var(--ui); padding: 4px 6px; border-radius: 6px; background: #fff; border: 1px solid var(--hair); box-shadow: 0 1px 0 var(--hair); color: var(--muted); }
+  .menu-btn { display: none; margin-left: auto; height: 40px; padding: 0 14px; border-radius: 12px; border: 1px solid var(--hair); background: rgba(255, 255, 255, .8); font-weight: 700; font-size: 14px; }
+  .nav-sheet { position: fixed; z-index: 60; top: 74px; left: 12px; right: 12px; padding: 10px; }
+  .nav-sheet ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+  .nav-sheet a { display: flex; justify-content: space-between; align-items: center; padding: 14px 16px; border-radius: 14px; color: var(--ink); text-decoration: none; font: 600 19px/1 var(--display); }
+  .nav-sheet a:hover { background: #fff; }
+  .nav-sheet a span { font: 600 13px/1 var(--ui); color: var(--muted); }
+
+  main { position: relative; z-index: 1; }
+
+  /* ---------- hero: the Spotlight panel ---------- */
+  .hero { min-height: 100vh; min-height: 100svh; display: grid; place-items: center; padding: 96px 16px 48px; }
+  .spot { position: relative; width: min(880px, 100%); border-radius: 30px; overflow: hidden; box-shadow: inset 0 1px 0 #fff, var(--shadow-lg); background: var(--glass-strong); }
+  .spot::before { /* SpecularGlass: a soft light spot that follows the cursor */
+    content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 0;
+    background: radial-gradient(420px circle at var(--sx, 70%) var(--sy, -10%), rgba(255, 255, 255, .95), rgba(255, 255, 255, 0) 60%); opacity: .8; }
+  .spot > * { position: relative; z-index: 1; }
+  .sp-search { display: flex; align-items: center; gap: 14px; padding: 0 22px; height: 76px; border-bottom: 1px solid var(--hair); }
+  .sp-search svg { width: 26px; height: 26px; flex: none; color: var(--muted); }
+  .sp-search input { flex: 1; min-width: 0; height: 100%; border: 0; background: transparent; font: 400 clamp(20px, 2.6vw, 26px)/1 var(--display); color: var(--ink); }
+  .sp-search input::placeholder { color: #7A7F93; }
+  .sp-search input:focus-visible { outline: none; }
+  .sp-search:focus-within { box-shadow: inset 0 -2px 0 var(--tangerine); }
+  .sp-search .clear { border: 0; background: rgba(21, 23, 42, .08); width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; font-size: 16px; line-height: 1; color: var(--muted); }
+  .sp-status { margin: 0; padding: 10px 24px; font-size: 13px; color: var(--muted); border-bottom: 1px solid var(--hair); min-height: 41px; }
+  .sp-label { margin: 0 0 10px; font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+  .sp-actions { list-style: none; margin: 0; padding: 12px 14px 4px; display: grid; gap: 4px; }
+  .sp-actions a, .sp-actions button { width: 100%; display: flex; align-items: center; gap: 14px; padding: 10px 12px; border-radius: 14px; border: 0; background: transparent; text-align: left; color: var(--ink); text-decoration: none; font-weight: 600; }
+  .sp-actions li:first-child a, .sp-actions li:first-child button { background: var(--highlight); }
+  .sp-actions .ai { width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center; background: #fff; box-shadow: 0 1px 3px rgba(21, 23, 42, .1); flex: none; }
+  .sp-actions .ai svg { width: 18px; height: 18px; }
+  .sp-actions small { margin-left: auto; color: var(--muted); font-weight: 600; font-size: 12.5px; display: flex; gap: 6px; align-items: center; }
+  .tophit { padding: 26px 32px 30px; display: grid; grid-template-columns: 1fr auto; gap: 24px; align-items: end; }
+  .tophit-name { font: 600 clamp(46px, 8.4vw, 104px)/.92 var(--display); letter-spacing: -.045em; margin: 0; }
+  .tophit-name .l2 { display: block; }
+  .tophit-name .ac { color: var(--tangerine-ink); }
+  .tophit-role { margin: 18px 0 2px; font: 500 clamp(20px, 2.3vw, 26px)/1.25 var(--display); }
+  .tophit-tag { margin: 0; color: var(--muted); }
+  .tophit-ctas { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 24px; }
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 10px; min-height: 48px; padding: 0 20px; border-radius: 15px; font-weight: 700; font-size: 15.5px; text-decoration: none; border: 1px solid transparent; white-space: nowrap; transition: transform .15s, box-shadow .15s, background .15s; }
+  .btn:active { transform: scale(.97); }
+  .btn-main { background: var(--tangerine); color: var(--ink); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .55), 0 10px 22px -10px rgba(255, 122, 61, .9); }
+  .btn-main:hover { color: var(--ink); background: #FF8B55; }
+  .btn-soft { background: #fff; color: var(--ink); border-color: var(--hair); box-shadow: 0 1px 2px rgba(21, 23, 42, .06); }
+  .btn-soft:hover { color: var(--ink); background: #FBF8F6; }
+  .btn kbd { background: rgba(255, 255, 255, .55); border-color: rgba(21, 23, 42, .12); }
+  .btn svg { width: 18px; height: 18px; }
+  .tophit-side { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; text-align: right; }
+  .focus-pill { display: inline-flex; align-items: center; gap: 8px; padding: 7px 12px 7px 8px; border-radius: 99px; background: #fff; border: 1px solid var(--hair); font-size: 13px; font-weight: 700; }
+  .focus-pill i { width: 22px; height: 22px; border-radius: 50%; background: var(--mint); display: grid; place-items: center; font-style: normal; }
+  .focus-pill i::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: #1E8B5A; }
+  .tophit-side p { margin: 0; font-size: 13px; color: var(--muted); max-width: 220px; }
+  .sp-suggest { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 14px 24px 18px; border-top: 1px solid var(--hair); font-size: 13px; color: var(--muted); font-weight: 600; }
+  .chip { border: 1px solid var(--hair); background: rgba(255, 255, 255, .8); border-radius: 99px; padding: 6px 12px; font-size: 13.5px; font-weight: 600; color: var(--ink); }
+  .chip:hover { background: #fff; border-color: rgba(21, 23, 42, .2); }
+
+  /* ---------- result groups (sections) ---------- */
+  .group { width: min(1080px, calc(100% - 32px)); margin: 0 auto 28px; scroll-margin-top: 84px; }
+  .g-head { display: flex; align-items: center; gap: 14px; margin: 0 4px 14px; }
+  .g-icon { width: 44px; height: 44px; border-radius: 13px; display: grid; place-items: center; flex: none; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .8), 0 6px 14px -8px rgba(60, 40, 90, .5); }
+  .g-icon svg { width: 22px; height: 22px; }
+  .g-head h2 { font-size: clamp(28px, 3.6vw, 40px); font-weight: 600; letter-spacing: -.025em; }
+  .g-count { margin-left: auto; font-size: 13px; font-weight: 700; color: var(--muted); background: rgba(255, 255, 255, .7); border: 1px solid var(--hair); padding: 4px 10px; border-radius: 99px; white-space: nowrap; }
+  .g-empty { margin: 0; padding: 18px 22px; color: var(--muted); font-size: 15px; }
+  .g-lead { margin: -6px 4px 16px; color: var(--muted); max-width: 640px; }
+
+  /* About: a knowledge card */
+  .about-card { display: grid; grid-template-columns: 1.5fr 1fr; overflow: hidden; }
+  .about-card:has(> [hidden]) { grid-template-columns: 1fr; }
+  .about-card > .facts:first-child:not([hidden]), .about-card > [hidden] + .facts { border-left: 0; }
+  .about-text { padding: 30px 32px; }
+  .about-text p { margin: 0 0 14px; font-size: 18px; line-height: 1.6; }
+  .about-text p:first-child { font: 400 clamp(22px, 2.4vw, 27px)/1.4 var(--display); letter-spacing: -.01em; }
+  .about-text p:last-child { margin: 0; }
+  .facts { list-style: none; margin: 0; padding: 18px; background: rgba(255, 255, 255, .55); border-left: 1px solid var(--hair); display: grid; gap: 8px; align-content: start; }
+  .fact { display: grid; grid-template-columns: 40px 1fr; gap: 12px; align-items: center; padding: 10px 12px; border-radius: 14px; background: #fff; box-shadow: 0 1px 2px rgba(21, 23, 42, .05); }
+  .fact i { width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; font: 700 15px/1 var(--display); font-style: normal; }
+  .fact b { display: block; font: 600 17px/1.2 var(--display); }
+  .fact span { font-size: 13px; color: var(--muted); }
+
+  /* Stack: result rows with signal-strength levels */
+  .stack-grid { columns: 3; column-gap: 16px; }
+  .stack-card { padding: 16px 12px 12px; break-inside: avoid; margin-bottom: 16px; }
+  .stack-card h3 { font-size: 20px; font-weight: 600; margin: 0 8px 8px; display: flex; justify-content: space-between; align-items: baseline; }
+  .stack-card h3 small { font: 600 12.5px/1 var(--ui); color: var(--muted); }
+  .rows { list-style: none; margin: 0; padding: 0; }
+  .row { display: grid; grid-template-columns: 32px 1fr auto; gap: 12px; align-items: center; padding: 7px 8px; border-radius: 12px; font-size: 15px; font-weight: 600; }
+  .row:hover { background: rgba(255, 255, 255, .8); }
+  .ticon { width: 32px; height: 32px; border-radius: 9px; display: grid; place-items: center; font: 700 12px/1 var(--display); color: var(--ink); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .7); }
+  .lvl { display: inline-flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--muted); font-weight: 700; }
+  .bars { display: inline-flex; align-items: flex-end; gap: 2px; height: 14px; }
+  .bars i { width: 4px; border-radius: 2px; background: rgba(21, 23, 42, .15); }
+  .bars i:nth-child(1) { height: 6px; } .bars i:nth-child(2) { height: 10px; } .bars i:nth-child(3) { height: 14px; }
+  .bars[data-level="low"] i:nth-child(1), .bars[data-level="medium"] i:nth-child(-n+2), .bars[data-level="strong"] i { background: var(--ink); }
+  .legend { display: flex; flex-wrap: wrap; gap: 8px 22px; margin: 0 4px; font-size: 13.5px; color: var(--muted); }
+  .legend span { display: inline-flex; gap: 8px; align-items: center; }
+
+  /* Career: a calendar agenda */
+  .agenda { position: relative; list-style: none; margin: 0; padding: 26px 26px 26px 0; }
+  .rail { position: absolute; left: 150px; top: 26px; bottom: 26px; width: 2px; background: var(--hair); border-radius: 2px; }
+  .rail-fill { position: absolute; left: 150px; top: 26px; width: 2px; height: calc((100% - 52px) * var(--p, 0)); background: var(--tangerine); border-radius: 2px; }
+  .now { position: absolute; left: 0; right: 26px; top: calc(26px + (100% - 52px) * var(--p, 0)); height: 0; pointer-events: none; }
+  .now::before { content: ''; position: absolute; left: 144px; top: -7px; width: 14px; height: 14px; border-radius: 50%; background: var(--tangerine); box-shadow: 0 0 0 4px rgba(255, 122, 61, .25); }
+  .now::after { content: ''; position: absolute; left: 158px; right: 0; top: -1px; height: 2px; background: linear-gradient(90deg, var(--tangerine), rgba(255, 122, 61, 0)); }
+  .ev { display: grid; grid-template-columns: 150px 1fr; gap: 0; padding: 0 0 22px; }
+  .ev:last-child { padding-bottom: 0; }
+  .ev-when { padding: 6px 22px 0 26px; text-align: right; }
+  .ev-year { display: block; font: 600 30px/1 var(--display); letter-spacing: -.03em; }
+  .ev-range { display: block; margin-top: 6px; font-size: 13px; font-weight: 600; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .ev-body { padding-left: 26px; display: grid; gap: 8px; }
+  .allday { display: inline-flex; align-items: center; gap: 8px; width: fit-content; padding: 5px 12px 5px 6px; border-radius: 10px; background: var(--tangerine); color: var(--ink); font-size: 13.5px; font-weight: 700; }
+  .allday b { background: rgba(255, 255, 255, .55); border-radius: 6px; padding: 1px 7px; font-size: 11.5px; letter-spacing: .04em; text-transform: uppercase; }
+  .ev-card { position: relative; padding: 16px 18px 16px 22px; border-radius: 16px; background: #fff; box-shadow: 0 1px 2px rgba(21, 23, 42, .05), 0 8px 20px -14px rgba(60, 40, 90, .35); overflow: hidden; }
+  .ev-card::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 6px; background: var(--c); }
+  .ev-card h3 { font-size: 23px; font-weight: 600; }
+  .ev-role { margin: 2px 0 8px; font-weight: 700; color: var(--muted); }
+  .ev-role .to { color: var(--tangerine-ink); }
+  .ev-card ul.pts { margin: 0; padding-left: 18px; font-size: 15px; }
+  .ev-card ul.pts li { margin-bottom: 4px; }
+  .tags { list-style: none; margin: 10px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
+  .tags li { font-size: 12.5px; font-weight: 600; padding: 3px 10px; border-radius: 99px; background: rgba(21, 23, 42, .05); }
+  .edu { margin: 0 0 0 176px; padding: 12px 16px; border-radius: 14px; border: 1.5px dashed rgba(21, 23, 42, .18); font-size: 15px; width: fit-content; }
+  .edu b { font-family: var(--display); font-weight: 600; font-size: 17px; }
+
+  /* Team: a notification stack */
+  .notes { list-style: none; margin: 0 auto; padding: 0; display: grid; gap: 12px; max-width: 760px; }
+  .note { padding: 16px 18px; border-radius: 22px; transition: transform .6s cubic-bezier(.2, .9, .25, 1.05), opacity .5s; transform-origin: top center; }
+  .notes.stacked .note:nth-child(2) { transform: translateY(calc(-100% + 2px)) scale(.95); opacity: .7; }
+  .notes.stacked .note:nth-child(3) { transform: translateY(calc(-200% - 2px)) scale(.9); opacity: .45; }
+  .notes.stacked .note:nth-child(n+2) * { visibility: hidden; }
+  .notes .note:nth-child(1) { position: relative; z-index: 3; } .notes .note:nth-child(2) { position: relative; z-index: 2; } .notes .note:nth-child(3) { position: relative; z-index: 1; }
+  .n-head { display: flex; align-items: center; gap: 10px; font-size: 12.5px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); }
+  .n-head i { width: 24px; height: 24px; border-radius: 7px; background: linear-gradient(140deg, var(--butter), var(--tangerine)); display: grid; place-items: center; font-style: normal; }
+  .n-head i svg { width: 14px; height: 14px; }
+  .n-head span { margin-left: auto; text-transform: none; letter-spacing: 0; font-weight: 600; }
+  .note figure { margin: 10px 0 0; }
+  .note blockquote { margin: 0; font-size: 17px; line-height: 1.5; }
+  .note blockquote p { margin: 0 0 6px; }
+  .note figcaption { margin-top: 8px; font-size: 14px; color: var(--muted); }
+  .note figcaption b { color: var(--ink); font-family: var(--display); font-weight: 600; font-size: 16px; }
+
+  /* Projects: files with Quick Look */
+  .files { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px; }
+  .file { display: flex; flex-direction: column; height: 100%; padding: 12px; }
+  .thumb { position: relative; aspect-ratio: 16 / 10; border-radius: 14px; overflow: hidden; background: var(--c1); box-shadow: inset 0 0 0 1px rgba(21, 23, 42, .06); }
+  .thumb svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .ql-btn { position: absolute; right: 10px; bottom: 10px; display: inline-flex; align-items: center; gap: 6px; padding: 6px 10px; border-radius: 10px; border: 0; background: rgba(255, 255, 255, .88); font-size: 12.5px; font-weight: 700; box-shadow: 0 2px 8px -2px rgba(21, 23, 42, .25); }
+  .file h3 { font-size: 20px; font-weight: 600; margin: 14px 4px 6px; }
+  .status { display: inline-flex; align-items: center; gap: 6px; margin: 0 4px; width: fit-content; font-size: 12.5px; font-weight: 700; padding: 3px 10px 3px 8px; border-radius: 99px; background: var(--sc); }
+  .status::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--ink); opacity: .75; }
+  .status[data-status="archived"]::before { background: transparent; box-shadow: inset 0 0 0 1.5px var(--ink); }
+  .file .one { margin: 10px 4px 0; font-size: 15px; color: var(--ink); }
+  .file .tags { margin: 10px 4px 0; }
+  .file .links { margin: auto 4px 2px; padding-top: 12px; font-weight: 700; font-size: 14.5px; }
+  .files-foot { margin: 14px 4px 0; font-size: 14px; color: var(--muted); }
+
+  dialog { border: 0; padding: 0; max-width: min(720px, calc(100% - 24px)); width: 100%; border-radius: 28px; color: var(--ink); background: rgba(255, 255, 255, .92); box-shadow: var(--shadow-lg); }
+  dialog::backdrop { background: rgba(40, 30, 60, .25); backdrop-filter: blur(6px); }
+  dialog[open] { animation: qlIn .32s cubic-bezier(.2, .9, .25, 1.1); }
+  @keyframes qlIn { from { opacity: 0; transform: scale(.92) translateY(10px); } }
+  .dlg-bar { display: flex; align-items: center; gap: 10px; padding: 12px 14px 12px 22px; border-bottom: 1px solid var(--hair); }
+  .dlg-bar h2 { font-size: 18px; font-weight: 600; flex: 1; }
+  .dlg-close { border: 0; width: 36px; height: 36px; border-radius: 50%; background: rgba(21, 23, 42, .07); font-size: 20px; line-height: 1; }
+  .dlg-body { padding: 18px 22px 24px; max-height: calc(100vh - 140px); overflow: auto; }
+  .dlg-body .thumb { aspect-ratio: 16 / 8; }
+  .dlg-body p { margin: 14px 0 0; }
+  .dlg-body .note-line { color: var(--muted); font-size: 14.5px; }
+
+  /* Contact: a contact card */
+  .card { display: grid; grid-template-columns: 300px 1fr; overflow: hidden; }
+  .card-id { padding: 30px 26px; text-align: center; background: rgba(255, 255, 255, .55); border-right: 1px solid var(--hair); display: flex; flex-direction: column; align-items: center; }
+  .mono { width: 120px; height: 120px; border-radius: 50%; display: grid; place-items: center; font: 600 46px/1 var(--display); letter-spacing: -.03em; color: var(--ink);
+    background: radial-gradient(circle at 30% 25%, #fff 0 8%, transparent 30%), conic-gradient(from 200deg, var(--peach), var(--butter), var(--mint), var(--sky), var(--lilac), var(--peach)); box-shadow: inset 0 0 0 3px rgba(255, 255, 255, .9), 0 14px 30px -14px rgba(60, 40, 90, .55); }
+  .card-id h3 { margin-top: 16px; font-size: 26px; font-weight: 600; line-height: 1.1; }
+  .card-id .role { margin: 4px 0 0; color: var(--muted); font-weight: 600; }
+  .card-id .photo-todo { margin: 8px 0 0; font-size: 12.5px; }
+  .acts { list-style: none; margin: 22px 0 0; padding: 0; display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; width: 100%; }
+  .acts a, .acts span.na { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 10px 2px; border-radius: 14px; background: #fff; text-decoration: none; color: var(--ink); font-size: 12px; font-weight: 700; box-shadow: 0 1px 2px rgba(21, 23, 42, .06); }
+  .acts a:hover { background: var(--highlight); color: var(--ink); }
+  .acts span.na { background: transparent; box-shadow: none; border: 1.5px dashed rgba(21, 23, 42, .25); color: var(--muted); }
+  .acts svg { width: 22px; height: 22px; }
+  .card-fields { padding: 18px 26px 22px; }
+  .avail { display: flex; gap: 10px; align-items: center; margin: 4px 0 14px; padding: 12px 14px; border-radius: 14px; background: var(--mint); font-weight: 700; }
+  .avail::before { content: ''; flex: none; width: 10px; height: 10px; border-radius: 50%; background: #1E8B5A; box-shadow: 0 0 0 4px rgba(30, 139, 90, .18); }
+  .fields { margin: 0; }
+  .fields div { display: grid; grid-template-columns: 110px 1fr; gap: 14px; padding: 12px 2px; border-bottom: 1px solid var(--hair); align-items: baseline; }
+  .fields dt { font-size: 13px; font-weight: 700; color: var(--muted); }
+  .fields dd { margin: 0; font-weight: 600; overflow-wrap: anywhere; }
+  .card-ctas { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 18px; }
+
+  footer { position: relative; z-index: 1; width: min(1080px, calc(100% - 32px)); margin: 40px auto 0; padding: 18px 4px 40px; display: flex; flex-wrap: wrap; gap: 10px 20px; align-items: center; justify-content: space-between; font-size: 14px; color: var(--muted); border-top: 1px solid var(--hair); }
+  footer p { margin: 0; }
+  .upd-btn { border: 1px solid var(--hair); background: rgba(255, 255, 255, .8); border-radius: 99px; padding: 7px 14px; font-weight: 700; font-size: 13.5px; display: inline-flex; align-items: center; gap: 8px; }
+  .upd-btn i { width: 8px; height: 8px; border-radius: 50%; background: var(--tangerine); }
+
+  /* Software Update */
+  .upd { padding: 26px 26px 24px; display: grid; grid-template-columns: 96px 1fr; gap: 22px; }
+  .upd-icon { width: 96px; height: 96px; border-radius: 26px; display: grid; place-items: center; font: 700 44px/1 var(--display); background: conic-gradient(from 210deg at 60% 40%, var(--peach), var(--butter), var(--mint), var(--sky), var(--lilac), var(--peach)); box-shadow: inset 0 0 0 2px rgba(255, 255, 255, .9), 0 14px 30px -14px rgba(60, 40, 90, .5); }
+  .upd h3 { font-size: 26px; font-weight: 600; }
+  .upd .ver { margin: 2px 0 10px; color: var(--muted); font-size: 14px; font-weight: 600; }
+  .upd ul { margin: 0 0 14px; padding-left: 18px; }
+  .progress { height: 8px; border-radius: 99px; background: rgba(21, 23, 42, .08); overflow: hidden; margin: 14px 0 8px; }
+  .progress i { display: block; height: 100%; width: var(--v, 0%); background: linear-gradient(90deg, var(--tangerine), #FFB27F); border-radius: inherit; transition: width 2.6s cubic-bezier(.3, .6, .2, 1); }
+  .upd .msg { margin: 0; font-size: 15px; }
+
+  /* ResultsArrive */
+  .js .arrive { opacity: 0; transform: translateY(14px); transition: opacity .55s ease, transform .55s cubic-bezier(.2, .8, .2, 1); transition-delay: calc(var(--i, 0) * 45ms); }
+  .js .arrive.in { opacity: 1; transform: none; }
+
+  /* ---------- responsive ---------- */
+  @media (pointer: coarse) { .sp-search kbd, .kbd-btn kbd { display: none; } }
+  @media (max-width: 980px) {
+    .stack-grid { columns: 2; }
+    .about-card, .card { grid-template-columns: 1fr; }
+    .facts { border-left: 0; border-top: 1px solid var(--hair); grid-template-columns: 1fr 1fr; }
+    .card-id { border-right: 0; border-bottom: 1px solid var(--hair); }
+    .acts { max-width: 420px; }
+  }
+  @media (max-width: 819px) {
+    .top nav, .kbd-btn { display: none; }
+    .menu-btn { display: block; }
+  }
+  @media (max-width: 640px) {
+    :root { --r: 20px; }
+    .hero { min-height: 0; padding: 78px 12px 28px; align-items: start; }
+    .spot { border-radius: 24px; }
+    .sp-search { height: 62px; padding: 0 16px; gap: 10px; }
+    .sp-search svg { width: 22px; height: 22px; }
+    .sp-status { padding: 8px 18px; min-height: 0; font-size: 12.5px; }
+    .tophit { grid-template-columns: 1fr; padding: 18px 18px 20px; gap: 14px; }
+    .tophit-name { font-size: clamp(42px, 13.4vw, 60px); }
+    .tophit-role { margin-top: 12px; }
+    .tophit-ctas { margin-top: 18px; }
+    .tophit-ctas .btn { flex: 1 1 140px; padding: 0 14px; }
+    .tophit-ctas kbd { display: none; }
+    .tophit-side { align-items: flex-start; text-align: left; order: -1; }
+    .tophit-side p { display: none; }
+    .sp-suggest { padding: 12px 18px 16px; }
+    .group { width: calc(100% - 24px); }
+    .stack-grid { columns: 1; }
+    .facts { grid-template-columns: 1fr; }
+    .about-text { padding: 22px 20px; }
+    .about-text p { font-size: 16.5px; }
+    .rail, .rail-fill { left: 18px; }
+    .now::before { left: 12px; } .now::after { left: 26px; }
+    .agenda { padding: 20px 14px 20px 0; }
+    .ev { grid-template-columns: 1fr; padding-left: 40px; }
+    .ev-when { text-align: left; padding: 0 0 8px; display: flex; gap: 10px; align-items: baseline; }
+    .ev-year { font-size: 24px; }
+    .ev-range { margin: 0; }
+    .ev-body { padding-left: 0; }
+    .edu { margin-left: 40px; }
+    .card-fields { padding: 14px 18px 20px; }
+    .fields div { grid-template-columns: 1fr; gap: 2px; }
+    .upd { grid-template-columns: 1fr; }
+    .upd-icon { width: 72px; height: 72px; border-radius: 20px; font-size: 32px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition: none !important; }
+    .blob { transform: none !important; }
+    .js .arrive { opacity: 1; transform: none; }
+  }
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<div class="wall" aria-hidden="true"><div class="blob b1"><i></i></div><div class="blob b2"><i></i></div><div class="blob b3"><i></i></div><div class="blob b4"><i></i></div><div class="blob b5"><i></i></div></div>
+
+<header class="top glass">
+  <a class="logo" href="#hero"><i aria-hidden="true">R</i><span data-c="os"></span></a>
+  <nav aria-label="Sections"><ul></ul></nav>
+  <button class="kbd-btn" type="button" data-focus-search><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="8.5" cy="8.5" r="5.5"/><path d="M13 13l4 4"/></svg><span data-c="searchBtn"></span><kbd>/</kbd></button>
+  <button class="menu-btn" type="button" aria-expanded="false" aria-controls="nav-sheet">Menu</button>
+</header>
+<div class="nav-sheet glass" id="nav-sheet" hidden><ul></ul></div>
+
+<main id="main" tabindex="-1">
+  <section id="hero" class="hero" aria-labelledby="hero-title"></section>
+  <section id="about" class="group" aria-labelledby="about-title" data-group></section>
+  <section id="stack" class="group" aria-labelledby="stack-title" data-group></section>
+  <section id="career" class="group" aria-labelledby="career-title" data-group></section>
+  <section id="team" class="group" aria-labelledby="team-title" data-group></section>
+  <section id="projects" class="group" aria-labelledby="projects-title" data-group></section>
+  <section id="contact" class="group" aria-labelledby="contact-title" data-group></section>
+</main>
+<footer></footer>
+
+<dialog id="quicklook" aria-labelledby="ql-title"></dialog>
+<dialog id="update" aria-labelledby="upd-title"></dialog>
+
+<script>
+  document.documentElement.classList.add('js');
+  /* =====================================================================
+     Content (becomes src/content/ in the React build)
+     ===================================================================== */
+  const CONTENT = {
+    profile: {
+      name: 'Rafał Ciećwierz', first: 'Rafał', last: 'Ciećwierz',
+      role: 'Frontend Engineer',
+      tagline: 'React & TypeScript · 5+ years building production apps',
+      availability: 'Open to frontend roles (React / TypeScript), remote or hybrid.',
+      email: 'rafal.ciecwierz4@gmail.com',
+      github: 'https://github.com/rafalciecwierz',
+      linkedin: null, // TODO: Rafał to provide URL
+      calendly: null, // TODO: Rafał to provide URL
+      cvFile: '/Rafal_Ciecwierz_CV.pdf'
+    },
+    os: 'RalphOS',          // NEW CONTENT
+    searchBtn: 'Search',    // NEW CONTENT
+    nav: [
+      { id: 'about', label: 'About' }, { id: 'stack', label: 'Stack' }, { id: 'career', label: 'Career' },
+      { id: 'projects', label: 'Projects' }, { id: 'contact', label: 'Contact' }
+    ],
+    spotlight: {
+      // NEW CONTENT: the search framing
+      label: 'Search Rafał’s experience', short: 'Search the CV',
+      placeholders: ['react', 'team lead', 'nestjs', 'tests', 'cv'],
+      idle: 'Top hit',
+      results: (n, g) => `${n} ${n === 1 ? 'result' : 'results'} in ${g} ${g === 1 ? 'section' : 'sections'}`,
+      none: q => `No results for “${q}”. Try “react”.`,
+      focus: 'Focus: Open to work',
+      focusNote: 'Frontend roles, React and TypeScript. Remote or hybrid.',
+      suggestLabel: 'Suggestions',
+      suggestions: ['react', 'team', 'testing', 'nestjs', 'hire'],
+      cv: 'Download CV', contact: 'Get in touch',
+      ralph: 'Did you mean Rafał? At work, he is Ralph.'
+    },
+    // NEW CONTENT: actions the search can run
+    actions: [
+      { id: 'cv', words: ['cv', 'resume', 'download', 'pdf'], label: 'Download CV', note: 'PDF' },
+      { id: 'mail', words: ['hire', 'email', 'mail', 'contact', 'touch', 'job', 'role'], label: 'Write to Rafał', note: 'Mail' },
+      { id: 'vcf', words: ['vcard', 'vcf', 'save', 'contact card'], label: 'Save contact card', note: '.vcf' },
+      { id: 'update', words: ['update', 'upgrade', 'full stack', 'fullstack', 'next'], label: 'Software Update: RalphOS 7', note: 'Easter egg' }
+    ],
+    about: {
+      title: 'About',
+      text: [
+        "I'm a frontend engineer with 5+ years of commercial experience in React and TypeScript. I started my career in QA automation, moved into frontend development after three months at my team's request, and later led a team of six developers.",
+        "I care about clean architecture, reusable UI and tests that actually protect the product. Lately I've been going deeper into the backend with NestJS and experimenting with motion and 3D in the browser.",
+        'Outside of code: parkour (for over 22 years) and climbing.'
+      ],
+      // NEW CONTENT: facts as cards (each restates the brief)
+      facts: [
+        { big: '5+ years', small: 'commercial React and TypeScript', icon: '5+', color: 'var(--peach)' },
+        { big: 'Team of 6', small: 'led as Front-end Team Leader', icon: '6', color: 'var(--lilac)' },
+        { big: 'QA → Dev in 3 months', small: 'at the team’s request', icon: 'QA', color: 'var(--mint)' },
+        { big: 'Parkour, 22+ years', small: 'and climbing, more recently', icon: '↗', color: 'var(--sky)' }
+      ]
+    },
+    stack: {
+      title: 'Stack',
+      levels: { strong: 'Strong', medium: 'Medium', low: 'Low' },
+      levelText: { strong: 'strong production experience', medium: 'medium production experience', low: 'low production experience' },
+      groups: [
+        { name: 'Frontend', color: '#FFD3BC', items: [['React', 'strong'], ['TypeScript', 'strong'], ['JavaScript', 'strong'], ['HTML5', 'strong'], ['CSS / SCSS / Styled-components', 'strong'], ['Next.js', 'medium'], ['Gatsby', 'medium'], ['Module Federation', 'medium'], ['React Native', 'low']] },
+        { name: 'Data & UI', color: '#DCD2FF', items: [['TanStack Query', 'strong'], ['Redux', 'strong'], ['Zod', 'strong'], ['React Hook Form', 'strong'], ['Storybook', 'strong'], ['Ant Design', 'strong'], ['Material UI', 'strong'], ['Tailwind CSS', 'medium'], ['WebSockets', 'medium']] },
+        { name: 'Testing', color: '#C8F2DD', items: [['Jest / Vitest', 'strong'], ['React Testing Library', 'strong'], ['Cypress', 'strong']] },
+        { name: 'Backend', color: '#C6E4FF', items: [['Node.js', 'medium'], ['NestJS', 'medium'], ['PostgreSQL', 'medium'], ['Strapi', 'medium']] },
+        { name: 'Tooling', color: '#FFEDB0', items: [['Git', 'strong'], ['Figma', 'strong'], ['Postman', 'strong'], ['Vite', 'strong'], ['Webpack', 'strong'], ['Docker', 'medium'], ['Claude Code', 'medium']] }
+      ]
+    },
+    career: {
+      title: 'Career',
+      lead: 'An agenda, newest first. The orange line is now; scroll to go back in time.', // NEW CONTENT
+      promoted: 'Promoted',
+      colors: ['var(--sky)', 'var(--lilac)', 'var(--peach)', 'var(--mint)'],
+      jobs: [
+        {
+          company: 'MUG Software', roles: ['Front-end Software Engineer'], dates: '04.2025 – 08.2026', year: '2025',
+          points: [
+            'Maintained and extended a white-label React platform: a core repository with client-specific forks, propagating global changes upstream-to-fork while keeping client customizations isolated.',
+            'Developed and maintained a shared Storybook component library (50+ components), improving UI consistency and speeding up feature development.',
+            'Introduced TanStack Query (replacing Redux for server state) and Zod (replacing Yup), adopting them incrementally across the app as part of ongoing feature work.'
+          ],
+          stack: ['React', 'TypeScript', 'Styled Components', 'Jest', 'Redux', 'Storybook', 'Webpack', 'TanStack Query', 'Zod']
+        },
+        {
+          company: 'VML Enterprise Solutions', roles: ['Front-end Software Engineer'], dates: '09.2024 – 04.2025', year: '2024',
+          points: [
+            'Owned a reference-data micro-frontend (countries, currencies and other company-wide dictionaries) integrated into a large enterprise advertising platform via Webpack Module Federation.',
+            "Maintained and developed the module's codebase, increasing unit test coverage from 11% to over 80%.",
+            'Took part in the migration of a subdomain to a standalone microservice.'
+          ],
+          stack: ['React', 'TypeScript', 'SCSS', 'Jest', 'React Hook Form', 'Webpack', 'Vite', 'Module Federation']
+        },
+        {
+          company: 'Mood up', roles: ['React Developer', 'Front-end Team Leader'], dates: '10.2022 – 08.2024', year: '2022', promoted: true,
+          points: [
+            'Built the React/Redux interface for a smart intercom running on an embedded Raspberry Pi device.',
+            'Promoted to Front-end Team Leader; led a team of 6 developers delivering MVPs for international startup clients.',
+            'Delivered projects from requirements gathering and estimation with clients through development, testing (Jest) and deployment.',
+            "Led a headless CMS evaluation (Strapi, Sanity, Contentful, headless WordPress and others), narrowing the shortlist to Strapi and Payload CMS for the company's stack."
+          ],
+          stack: ['React', 'Gatsby', 'Next.js', 'React Native', 'TypeScript', 'SCSS', 'Strapi', 'Material UI', 'Ant Design', 'Webpack', 'Vite', 'Figma']
+        },
+        {
+          company: 'mTab sp. z o.o.', roles: ['QA Automation Engineer', 'JavaScript Developer'], dates: '07.2021 – 09.2022', year: '2021', promoted: true,
+          points: [
+            "Promoted from QA Automation Engineer (Cypress E2E) to front-end developer after 3 months at the product team's request.",
+            'Developed views and features in React for a data visualization platform with dynamic, reactive charts and presentation-style reports.',
+            'Built Node.js scripts run nightly by Jenkins that aggregated test results into reports and posted them to Slack.',
+            'Maintained and extended a legacy Backbone.js codebase.'
+          ],
+          stack: ['React', 'JavaScript', 'TypeScript', 'Redux', 'SCSS', 'Jest', 'Cypress', 'Node.js', 'Backbone.js']
+        }
+      ],
+      education: { school: 'Adam Mickiewicz University', degree: "Engineer's degree in Computer Science", dates: '2015 – 2021' }
+    },
+    team: {
+      title: 'From the team', // NEW CONTENT
+      app: 'Recommendations', when: 'June 2024', source: 'Mood up, 2024',
+      lead: 'LinkedIn recommendations from his team at Mood up, quoted word for word.', // NEW CONTENT
+      quotes: [
+        { name: 'Wiktoria W.', role: 'Marketing & Communication', text: ["Seriously, I've never met a leader as tuned in and supportive as him.", "Whoever snags him next is super lucky - yeah, I'm a bit envious. 😉"] },
+        { name: 'Rafał H.', role: 'Frontend Developer', text: ['His enthusiasm and optimism were contagious, making him a joy to work with.'] },
+        { name: 'Szymon K.', role: 'Frontend Developer', text: ['His technical skills and ability to simplify complex concepts, guiding others through challenges, have been invaluable in enhancing the overall quality and efficiency of our development processes.'] }
+      ]
+    },
+    projects: {
+      title: 'Projects',
+      quickLook: 'Quick Look', repoLabel: 'Repository',
+      foot: n => `${n} files. New ones appear here as projects ship.`, // NEW CONTENT
+      statusLabels: { live: 'Live', 'in progress': 'In progress', archived: 'Archived' },
+      statusColors: { live: 'var(--mint)', 'in progress': 'var(--butter)', archived: '#E6E3EE' },
+      thumbs: [['#FFE2D2', '#FF9D6E'], ['#DCEFFF', '#5CA8F0'], ['#E0F7EA', '#3FBF85'], ['#ECE6FF', '#8C74F0']],
+      items: [
+        { name: 'Ashen Contracts', status: 'in progress', description: 'Browser-based idle/RPG game built as a full-stack showcase: pnpm monorepo with a Next.js app, NestJS API, shared Storybook UI library and shared TypeScript types. Architecture decisions documented in an ADR-style log.', tags: ['Next.js', 'NestJS', 'PostgreSQL', 'Prisma', 'Storybook', 'Docker', 'GitHub Actions'], repo: 'https://github.com/rafalciecwierz/ashen-contracts' },
+        { name: 'Ultimate Frisbee Tournament Platform', status: 'archived', note: 'Engineering thesis (team of 4), built for the Polish Ultimate Players Association', description: 'Owned the entire NestJS + PostgreSQL backend, built live match scoring with Socket.io (scorekeeper tablet view + real-time spectator view), designed the full UI in Figma, deployed to AWS and tested at a live tournament in Szczecin.', tags: ['NestJS', 'PostgreSQL', 'Socket.io', 'Swagger', 'AWS', 'Nuxt', 'Figma'] },
+        { name: 'This website', status: 'live', description: 'Personal site with a procedural 3D hero (React Three Fiber) and scroll-driven animations (GSAP, Lenis), built with a performance and accessibility budget.', tags: ['React', 'TypeScript', 'Three.js', 'GSAP', 'Vite'], repo: 'https://github.com/rafalciecwierz/rafalciecwierz.github.io' },
+        { name: 'Next.js page transitions', status: 'archived', description: 'Comparison of three page-transition approaches in Next.js: custom implementation, Framer Motion and GSAP.', tags: ['Next.js', 'Framer Motion', 'GSAP'], repo: 'https://github.com/rafalciecwierz/Nextjs-page-transition' }
+      ]
+    },
+    contact: {
+      title: 'Contact',
+      acts: { mail: 'Mail', call: 'Book a call', linkedin: 'LinkedIn', github: 'GitHub' },
+      fields: { email: 'Email', github: 'GitHub', linkedin: 'LinkedIn', calendly: 'Book a 20-min call' },
+      cv: 'Download CV', vcf: 'Save contact (.vcf)', // NEW CONTENT: the vCard
+      photoTodo: 'TODO: photo'
+    },
+    update: {
+      // NEW CONTENT: the easter egg (restates the brief's backend skills and levels)
+      button: 'RalphOS 6 · Check for updates',
+      title: 'Software Update',
+      name: 'RalphOS 7: Full Stack',
+      ver: 'In development · size: a few more years of backend',
+      notes: ['NestJS and Node.js, from medium production experience upwards', 'A NestJS API on PostgreSQL, in progress in Ashen Contracts', 'All the frontend you already have, kept as it is'],
+      install: 'Update now',
+      installing: 'Installing… this update ships with experience, not overnight.',
+      done: 'RalphOS 6 stays installed for now: a frontend engineer who is learning the backend in the open.',
+      cv: 'Download the CV for version 6'
+    },
+    footer: {
+      builtWith: 'Built with React, Three.js and GSAP',
+      repo: 'https://github.com/rafalciecwierz/rafalciecwierz.github.io',
+      repoLabel: 'Source on GitHub'
+    },
+    console: 'RalphOS Daylight. Press "/" and search for anything, or try "update".' // NEW CONTENT
+  };
+
+  /* =====================================================================
+     Helpers
+     ===================================================================== */
+  const $ = (s, r = document) => r.querySelector(s);
+  const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+  const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)');
+  const P = CONTENT.profile;
+  const norm = s => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/ł/g, 'l');
+  const abbr = n => { const w = n.replace(/[^A-Za-z0-9 ]/g, ' ').trim().split(/\s+/); return (w.length > 1 ? w[0][0] + w[1][0] : n.replace(/[^A-Za-z0-9]/g, '').slice(0, 2)).replace(/^./, c => c.toUpperCase()); };
+  const ICON = {
+    search: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5L21 21"/></svg>',
+    down: '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 3v10M5.5 8.5L10 13l4.5-4.5M4 16.5h12"/></svg>',
+    mail: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M4 7l8 6 8-6"/></svg>',
+    call: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg>',
+    link: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M10 14a4 4 0 005.7 0l3-3a4 4 0 00-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 00-5.7 0l-3 3a4 4 0 005.7 5.7l1-1"/></svg>',
+    code: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 7l-5 5 5 5M16 7l5 5-5 5"/></svg>',
+    card: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="3"/><circle cx="9" cy="11" r="2.2"/><path d="M5.8 16c.6-1.6 1.8-2.4 3.2-2.4s2.6.8 3.2 2.4M15 10h3M15 13h3"/></svg>',
+    spark: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5L18 18M18 6l-2.5 2.5M8.5 15.5L6 18"/></svg>',
+    person: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4.5 20c1-4 3.8-6 7.5-6s6.5 2 7.5 6"/></svg>',
+    layers: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l9 5-9 5-9-5z"/><path d="M3 13l9 5 9-5"/></svg>',
+    cal: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4M8 14h3"/></svg>',
+    bell: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 16V11a6 6 0 0112 0v5l1.5 2h-15z"/><path d="M10 20.5a2 2 0 004 0"/></svg>',
+    folder: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round" aria-hidden="true"><path d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>',
+    star: '<svg viewBox="0 0 24 24" fill="#15172A" aria-hidden="true"><path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6.1L12 16.8 6.6 19.7l1.1-6.1L3.2 9.4l6.1-.8z"/></svg>'
+  };
+  const bars = l => `<span class="bars" data-level="${l}" aria-hidden="true"><i></i><i></i><i></i></span>`;
+  const groupHead = (id, icon, color, title) => `<div class="g-head"><span class="g-icon" style="background:${color}" aria-hidden="true">${ICON[icon]}</span><h2 id="${id}-title">${esc(title)}</h2><span class="g-count" aria-live="polite"></span></div>`;
+  // `data-hl` marks plain text that search may highlight; `data-item` marks one searchable result
+  const hl = (text, tag = 'span', cls = '') => `<${tag}${cls ? ` class="${cls}"` : ''} data-hl>${esc(text)}</${tag}>`;
+
+  /* Generated project thumbnail (a small abstract "document preview", seeded by name) */
+  function thumbSVG(p, i) {
+    const [bg, fg] = CONTENT.projects.thumbs[i % CONTENT.projects.thumbs.length];
+    let seed = [...p.name].reduce((a, c) => a * 31 + c.charCodeAt(0) >>> 0, 7);
+    const rnd = () => (seed = (seed * 1664525 + 1013904223) >>> 0) / 4294967296;
+    const blocks = Array.from({ length: 5 }, (_, k) => { const h = 16 + rnd() * 40; return `<rect x="${26 + k * 35}" y="${88 - h}" width="24" height="${h}" rx="5" fill="${fg}" opacity="${.35 + k * .12}"/>`; }).join('');
+    return `<svg viewBox="0 0 220 138" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+      <rect width="220" height="138" fill="${bg}"/>
+      <rect x="14" y="12" width="192" height="114" rx="12" fill="#fff" opacity=".85"/>
+      <circle cx="26" cy="23" r="3" fill="${fg}"/><circle cx="36" cy="23" r="3" fill="${fg}" opacity=".5"/><circle cx="46" cy="23" r="3" fill="${fg}" opacity=".3"/>
+      ${blocks}
+      <rect x="24" y="100" width="${70 + rnd() * 60}" height="7" rx="3.5" fill="#15172A" opacity=".75"/>
+      <rect x="24" y="112" width="${40 + rnd() * 50}" height="6" rx="3" fill="#15172A" opacity=".25"/>
+    </svg>`;
+  }
+
+  /* =====================================================================
+     Render
+     ===================================================================== */
+  function renderShell() {
+    $('[data-c="os"]').textContent = CONTENT.os;
+    $('[data-c="searchBtn"]').textContent = CONTENT.searchBtn;
+    const links = CONTENT.nav.map(n => `<li><a href="#${n.id}">${esc(n.label)}</a></li>`).join('');
+    $('.top nav ul').innerHTML = links;
+    $('#nav-sheet ul').innerHTML = CONTENT.nav.map((n, i) => `<li><a href="#${n.id}">${esc(n.label)}<span>0${i + 1}</span></a></li>`).join('');
+    const f = CONTENT.footer;
+    $('footer').innerHTML = `<p>© ${new Date().getFullYear()} ${esc(P.name)} · ${esc(f.builtWith)} · <a href="${f.repo}">${esc(f.repoLabel)}</a></p>
+      <button class="upd-btn" type="button" data-update><i aria-hidden="true"></i>${esc(CONTENT.update.button)}</button>`;
+  }
+
+  function renderHero() {
+    const s = CONTENT.spotlight;
+    $('#hero').innerHTML = `<div class="spot">
+      <div class="sp-search" role="search">
+        ${ICON.search}
+        <label class="sr-only" for="q">${esc(s.label)}</label>
+        <input id="q" type="search" autocomplete="off" spellcheck="false" enterkeyhint="search" aria-describedby="sp-status" aria-controls="main">
+        <button class="clear" type="button" aria-label="Clear search" hidden>×</button>
+        <kbd aria-hidden="true">/</kbd>
+      </div>
+      <p class="sp-status" id="sp-status" aria-live="polite">${esc(s.idle)}</p>
+      <ul class="sp-actions" aria-label="Actions" hidden></ul>
+      <div class="tophit">
+        <div>
+          <h1 class="tophit-name" id="hero-title"><span>${esc(P.first.slice(0, -1))}<span class="ac">${esc(P.first.slice(-1))}</span></span> <span class="l2">${esc(P.last.slice(0, 3))}<span class="ac">${esc(P.last.slice(3, 4))}</span>${esc(P.last.slice(4))}</span></h1>
+          <p class="tophit-role">${esc(P.role)}</p>
+          <p class="tophit-tag">${esc(P.tagline)}</p>
+          <div class="tophit-ctas">
+            <a class="btn btn-main" href="${P.cvFile}" download>${ICON.down}${esc(s.cv)}</a>
+            <a class="btn btn-soft" href="#contact">${esc(s.contact)}</a>
+          </div>
+        </div>
+        <div class="tophit-side">
+          <span class="focus-pill"><i aria-hidden="true"></i>${esc(s.focus)}</span>
+          <p>${esc(s.focusNote)}</p>
+        </div>
+      </div>
+      <div class="sp-suggest"><span>${esc(s.suggestLabel)}</span>${s.suggestions.map(q => `<button class="chip" type="button" data-q="${esc(q)}">${esc(q)}</button>`).join('')}</div>
+    </div>`;
+  }
+
+  function renderAbout() {
+    const a = CONTENT.about;
+    $('#about').innerHTML = groupHead('about', 'person', 'var(--peach)', a.title) + `
+      <div class="about-card glass">
+        <div class="about-text" data-subgroup>${a.text.map(t => `<p data-item>${hl(t)}</p>`).join('')}</div>
+        <ul class="facts" data-subgroup>${a.facts.map((f, i) => `<li class="fact arrive" style="--i:${i}" data-item><i style="background:${f.color}" aria-hidden="true">${esc(f.icon)}</i><span>${hl(f.big, 'b')}${hl(f.small)}</span></li>`).join('')}</ul>
+      </div>`;
+  }
+
+  function renderStack() {
+    const s = CONTENT.stack;
+    $('#stack').innerHTML = groupHead('stack', 'layers', 'var(--lilac)', s.title) + `
+      <div class="stack-grid">${s.groups.map(g => `<div class="stack-card glass" data-subgroup>
+        <h3>${esc(g.name)} <small>${g.items.length}</small></h3>
+        <ul class="rows">${g.items.map(([n, l], i) => `<li class="row arrive" style="--i:${i}" data-item data-extra="${esc(g.name + ' ' + l)}">
+          <span class="ticon" style="background:${g.color}" aria-hidden="true">${esc(abbr(n))}</span>${hl(n)}
+          <span class="lvl">${bars(l)}${esc(s.levels[l])}</span></li>`).join('')}</ul>
+      </div>`).join('')}</div>
+      <p class="legend">${['strong', 'medium', 'low'].map(l => `<span>${bars(l)} ${esc(s.levels[l])}: ${esc(s.levelText[l])}</span>`).join('')}</p>`;
+  }
+
+  function renderCareer() {
+    const c = CONTENT.career;
+    $('#career').innerHTML = groupHead('career', 'cal', 'var(--sky)', c.title) + `<p class="g-lead">${esc(c.lead)}</p>
+      <div class="glass" style="overflow:hidden">
+        <ol class="agenda">
+          <span class="rail" aria-hidden="true"></span><span class="rail-fill" aria-hidden="true"></span><span class="now" aria-hidden="true"></span>
+          ${c.jobs.map((j, i) => `<li class="ev" data-item data-extra="${esc(j.stack.join(' '))}">
+            <div class="ev-when"><span class="ev-year">${esc(j.year)}</span><span class="ev-range">${esc(j.dates)}</span></div>
+            <div class="ev-body">
+              ${j.promoted ? `<span class="allday"><b>${esc(c.promoted)}</b>${hl(j.roles[0])} → ${hl(j.roles[1])}</span>` : ''}
+              <article class="ev-card" style="--c:${c.colors[i % c.colors.length]}">
+                <h3>${hl(j.company)}</h3>
+                <p class="ev-role">${j.roles.map(r => hl(r)).join(' <span class="to" aria-label="then">→</span> ')}</p>
+                <ul class="pts">${j.points.map(p => `<li>${hl(p)}</li>`).join('')}</ul>
+                <ul class="tags" aria-label="Stack">${j.stack.map(t => `<li>${hl(t)}</li>`).join('')}</ul>
+              </article>
+            </div>
+          </li>`).join('')}
+        </ol>
+      </div>
+      <p class="edu" style="margin-top:16px" data-item><b>${hl(c.education.school)}</b> · ${hl(c.education.degree)} · ${esc(c.education.dates)}</p>`;
+  }
+
+  function renderTeam() {
+    const t = CONTENT.team;
+    $('#team').innerHTML = groupHead('team', 'bell', 'var(--butter)', t.title) + `<p class="g-lead">${esc(t.lead)}</p>
+      <ul class="notes ${reduceMotion.matches ? '' : 'stacked'}">${t.quotes.map(q => `<li class="note glass" data-item>
+        <p class="n-head"><i>${ICON.star}</i>${esc(t.app)}<span>${esc(t.when)}</span></p>
+        <figure><blockquote>${q.text.map(x => `<p>${hl(x, 'span')}</p>`).join('')}</blockquote>
+        <figcaption>${hl(q.name, 'b')}, ${hl(q.role)} · ${esc(t.source)}</figcaption></figure>
+      </li>`).join('')}</ul>`;
+  }
+
+  function renderProjects() {
+    const pr = CONTENT.projects;
+    $('#projects').innerHTML = groupHead('projects', 'folder', 'var(--mint)', pr.title) + `
+      <ul class="files">${pr.items.map((p, i) => `<li class="arrive" style="--i:${i}" data-item data-extra="${esc(p.status)}"><article class="file glass">
+        <div class="thumb">${thumbSVG(p, i)}<button class="ql-btn" type="button" data-ql="${i}" aria-haspopup="dialog">${esc(pr.quickLook)}<span class="sr-only">: ${esc(p.name)}</span></button></div>
+        <h3>${hl(p.name)}</h3>
+        <span class="status" data-status="${p.status}" style="--sc:${pr.statusColors[p.status]}">${esc(pr.statusLabels[p.status])}</span>
+        <p class="one">${hl(p.description.split(/(?<=\.)\s/)[0])}</p>
+        <ul class="tags" aria-label="Tech">${p.tags.map(t => `<li>${hl(t)}</li>`).join('')}</ul>
+        ${p.repo ? `<p class="links"><a href="${p.repo}">${esc(pr.repoLabel)} ↗<span class="sr-only">: ${esc(p.name)}</span></a></p>` : ''}
+      </article></li>`).join('')}</ul>
+      <p class="files-foot">${esc(pr.foot(pr.items.length))}</p>`;
+  }
+
+  function renderContact() {
+    const c = CONTENT.contact;
+    const act = (href, icon, label) => href ? `<li><a href="${href}">${ICON[icon]}${esc(label)}</a></li>` : `<li><span class="na" title="TODO: Rafał to provide URL">${ICON[icon]}${esc(label)}<span class="sr-only"> (TODO: Rafał to provide URL)</span></span></li>`;
+    const field = (k, v, href) => `<div data-item><dt>${esc(k)}</dt><dd>${v ? (href ? `<a href="${href}">${hl(v)}</a>` : hl(v)) : '<span class="todo">TODO: Rafał to provide URL</span>'}</dd></div>`;
+    $('#contact').innerHTML = groupHead('contact', 'card', 'var(--peach)', c.title) + `
+      <div class="card glass">
+        <div class="card-id">
+          <span class="mono" aria-hidden="true">RC</span>
+          <h3>${esc(P.name)}</h3>
+          <p class="role">${esc(P.role)}</p>
+          <p class="photo-todo todo">${esc(c.photoTodo)}</p>
+          <ul class="acts" aria-label="Quick actions">
+            ${act('mailto:' + P.email, 'mail', c.acts.mail)}${act(P.calendly, 'call', c.acts.call)}${act(P.linkedin, 'link', c.acts.linkedin)}${act(P.github, 'code', c.acts.github)}
+          </ul>
+        </div>
+        <div class="card-fields">
+          <p class="avail">${esc(P.availability)}</p>
+          <dl class="fields">
+            ${field(c.fields.email, P.email, 'mailto:' + P.email)}
+            ${field(c.fields.github, P.github.replace('https://', ''), P.github)}
+            ${field(c.fields.linkedin, P.linkedin, P.linkedin)}
+            ${field(c.fields.calendly, P.calendly, P.calendly)}
+          </dl>
+          <div class="card-ctas">
+            <a class="btn btn-main" href="${P.cvFile}" download>${ICON.down}${esc(c.cv)}</a>
+            <button class="btn btn-soft" type="button" data-vcf>${ICON.card}${esc(c.vcf)}</button>
+          </div>
+        </div>
+      </div>`;
+  }
+
+  /* =====================================================================
+     LiveSearch (custom). Every `[data-item]` is one result. A query hides
+     the items that do not contain every word, highlights the words in
+     `[data-hl]` text, and counts results per section.
+     ===================================================================== */
+  function LiveSearch() {
+    const input = $('#q'), status = $('#sp-status'), clear = $('.sp-search .clear'), actionsEl = $('.sp-actions');
+    const S = CONTENT.spotlight;
+    const items = $$('[data-item]').map(el => {
+      const hls = $$('[data-hl]', el).concat(el.matches('[data-hl]') ? [el] : []);
+      hls.forEach(h => { h.dataset.orig = h.textContent; });
+      return { el: el.closest('li.arrive') || el, root: el, hls, text: norm(el.textContent + ' ' + (el.dataset.extra || '')) };
+    });
+    const groups = $$('[data-group]');
+    const markText = (text, words) => {
+      if (!words.length) return esc(text);
+      const n = norm(text); const marks = new Array(text.length).fill(false);
+      words.forEach(w => { let i = n.indexOf(w); while (i > -1 && w) { for (let k = i; k < i + w.length; k++) marks[k] = true; i = n.indexOf(w, i + w.length); } });
+      let out = '', open = false;
+      [...text].forEach((ch, i) => { if (marks[i] && !open) { out += '<mark>'; open = true; } if (!marks[i] && open) { out += '</mark>'; open = false; } out += esc(ch); });
+      return out + (open ? '</mark>' : '');
+    };
+    function renderActions(q) {
+      const nq = norm(q.trim());
+      const acts = nq.length < 2 ? [] : CONTENT.actions.filter(a => a.words.some(w => w.startsWith(nq) || nq.startsWith(w)));
+      actionsEl.hidden = !acts.length;
+      actionsEl.innerHTML = acts.map(a => {
+        const inner = `<span class="ai" aria-hidden="true">${ICON[{ cv: 'down', mail: 'mail', vcf: 'card', update: 'spark' }[a.id]]}</span>${esc(a.label)}<small>${esc(a.note)}</small>`;
+        return `<li>${a.id === 'cv' ? `<a href="${P.cvFile}" download data-act="cv">${inner}</a>` : `<button type="button" data-act="${a.id}">${inner}</button>`}</li>`;
+      }).join('');
+      return acts;
+    }
+    let acts = [];
+    function run(q) {
+      const words = norm(q).split(/\s+/).filter(Boolean);
+      clear.hidden = !q;
+      acts = renderActions(q);
+      let total = 0, gcount = 0;
+      items.forEach(it => {
+        const match = !words.length || words.every(w => it.text.includes(w));
+        it.el.hidden = !match;
+        it.match = match;
+        it.hls.forEach(h => { h.innerHTML = match ? markText(h.dataset.orig, words) : esc(h.dataset.orig); });
+      });
+      $$('[data-subgroup]').forEach(sg => { sg.hidden = words.length > 0 && !$$('[data-item]', sg).some(i => !i.closest('li.arrive, [data-item]').hidden); });
+      groups.forEach(g => {
+        const its = items.filter(i => g.contains(i.el));
+        const n = its.filter(i => i.match).length;
+        const countEl = $('.g-count', g);
+        countEl.textContent = words.length ? `${n} ${n === 1 ? 'result' : 'results'}` : `${its.length}`;
+        countEl.hidden = !words.length;
+        let empty = $('.g-empty', g);
+        if (words.length && !n) {
+          if (!empty) { empty = document.createElement('p'); empty.className = 'g-empty glass'; $('.g-head', g).after(empty); }
+          empty.textContent = `No matches in ${$('h2', g).textContent}.`;
+        } else if (empty) empty.remove();
+        // a group without matches keeps only its heading and the "no matches" line
+        $$(':scope > *:not(.g-head):not(.g-empty)', g).forEach(ch => {
+          if (words.length && !n) { ch.setAttribute('data-hide', ''); ch.hidden = true; }
+          else if (ch.hasAttribute('data-hide')) { ch.hidden = false; ch.removeAttribute('data-hide'); }
+        });
+        total += n; if (n) gcount++;
+      });
+      const isRalph = words.length === 1 && words[0] === 'ralph';
+      status.textContent = !words.length ? S.idle : isRalph ? S.ralph : total ? S.results(total, gcount) : (acts.length ? acts.length + ' action' + (acts.length > 1 ? 's' : '') : S.none(q.trim()));
+      if (!reduceMotion.matches) $$('.arrive').forEach(a => a.classList.add('in'));
+    }
+    input.addEventListener('input', () => run(input.value));
+    input.addEventListener('keydown', e => {
+      if (e.key === 'Escape' && input.value) { e.preventDefault(); input.value = ''; run(''); }
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        if (acts.length) { $('.sp-actions [data-act]').click(); return; }
+        const first = items.find(i => i.match && input.value.trim());
+        if (first) { first.el.scrollIntoView({ block: 'center', behavior: reduceMotion.matches ? 'auto' : 'smooth' }); }
+      }
+    });
+    clear.addEventListener('click', () => { input.value = ''; run(''); input.focus(); });
+    actionsEl.addEventListener('click', e => {
+      const b = e.target.closest('[data-act]'); if (!b) return;
+      ({ mail: () => { location.href = `mailto:${P.email}?subject=${encodeURIComponent('Frontend role')}`; }, vcf: ContactCard.download, update: SoftwareUpdate.open, cv: () => {} })[b.dataset.act]();
+    });
+    $$('[data-q]').forEach(b => b.addEventListener('click', () => { input.value = b.dataset.q; run(b.dataset.q); input.focus(); }));
+    // "/" or Ctrl/Cmd + K focuses the search from anywhere
+    addEventListener('keydown', e => {
+      const typing = /INPUT|TEXTAREA/.test(document.activeElement.tagName);
+      if ((e.key === '/' && !typing) || ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k')) {
+        e.preventDefault(); input.focus({ preventScroll: true }); input.select();
+        $('#hero').scrollIntoView({ behavior: reduceMotion.matches ? 'auto' : 'smooth' });
+      }
+    });
+    $('[data-focus-search]').addEventListener('click', () => { input.focus({ preventScroll: true }); $('#hero').scrollIntoView({ behavior: reduceMotion.matches ? 'auto' : 'smooth' }); });
+    run('');
+  }
+
+  /* TypedPlaceholder (custom): suggests queries letter by letter while the field is empty */
+  function TypedPlaceholder() {
+    const input = $('#q'), words = CONTENT.spotlight.placeholders, base = innerWidth < 480 ? CONTENT.spotlight.short : CONTENT.spotlight.label;
+    if (reduceMotion.matches) { input.placeholder = base; return; }
+    let w = 0, i = 0, dir = 1;
+    input.placeholder = base;
+    const step = () => {
+      if (document.activeElement === input || input.value) { input.placeholder = base; return setTimeout(step, 1200); }
+      const word = words[w];
+      i += dir;
+      input.placeholder = 'Search “' + word.slice(0, i) + (dir > 0 && i < word.length ? '' : '') + '”';
+      if (i === word.length) { dir = -1; return setTimeout(step, 1600); }
+      if (i === 0) { dir = 1; w = (w + 1) % words.length; input.placeholder = base; return setTimeout(step, 1400); }
+      setTimeout(step, dir > 0 ? 110 : 45);
+    };
+    setTimeout(step, 2200);
+  }
+
+  /* PastelWallpaper + SpecularGlass (custom): pointer parallax and a light spot */
+  function PastelWallpaper() {
+    if (reduceMotion.matches) return;
+    const wall = $('.wall'), spot = $('.spot');
+    let raf = 0, x = 0, y = 0;
+    addEventListener('pointermove', e => {
+      x = e.clientX / innerWidth - .5; y = e.clientY / innerHeight - .5;
+      if (raf) return;
+      raf = requestAnimationFrame(() => {
+        raf = 0;
+        wall.style.setProperty('--px', x.toFixed(3)); wall.style.setProperty('--py', y.toFixed(3));
+        const r = spot.getBoundingClientRect();
+        spot.style.setProperty('--sx', ((e.clientX - r.left) / r.width * 100).toFixed(1) + '%');
+        spot.style.setProperty('--sy', ((e.clientY - r.top) / r.height * 100).toFixed(1) + '%');
+      });
+    }, { passive: true });
+  }
+
+  /* ResultsArrive (custom): rows slide in when their group scrolls into view */
+  function ResultsArrive() {
+    const els = $$('.arrive');
+    if (reduceMotion.matches || !('IntersectionObserver' in window)) { els.forEach(e => e.classList.add('in')); return; }
+    const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } }), { rootMargin: '0px 0px -8% 0px' });
+    els.forEach(e => io.observe(e));
+  }
+
+  /* NowLine (custom): the agenda's "now" line travels back through the career as you scroll */
+  function NowLine() {
+    const ag = $('.agenda');
+    if (reduceMotion.matches) { ag.style.setProperty('--p', 1); return; }
+    let raf = 0;
+    const update = () => {
+      raf = 0;
+      const r = ag.getBoundingClientRect();
+      const p = Math.min(1, Math.max(0, (innerHeight * .55 - r.top) / r.height));
+      ag.style.setProperty('--p', p.toFixed(3));
+    };
+    addEventListener('scroll', () => { if (!raf) raf = requestAnimationFrame(update); }, { passive: true });
+    update();
+  }
+
+  /* NotificationStack (custom): the stack fans out when it comes into view */
+  function NotificationStack() {
+    const list = $('.notes'); if (!list.classList.contains('stacked')) return;
+    const io = new IntersectionObserver(es => { if (es[0].isIntersecting) { setTimeout(() => list.classList.remove('stacked'), 250); io.disconnect(); } }, { threshold: .6 });
+    io.observe(list);
+    list.addEventListener('focusin', () => list.classList.remove('stacked'));
+  }
+
+  /* QuickLook (custom <dialog>) */
+  function QuickLook() {
+    const dlg = $('#quicklook'), pr = CONTENT.projects;
+    let opener = null;
+    document.addEventListener('click', e => {
+      const b = e.target.closest('[data-ql]'); if (!b) return;
+      opener = b; const i = +b.dataset.ql, p = pr.items[i];
+      dlg.innerHTML = `<div class="dlg-bar"><h2 id="ql-title">${esc(p.name)}</h2><button class="dlg-close" type="button" aria-label="Close">×</button></div>
+        <div class="dlg-body">
+          <div class="thumb">${thumbSVG(p, i)}</div>
+          <p><span class="status" data-status="${p.status}" style="--sc:${pr.statusColors[p.status]};margin:0">${esc(pr.statusLabels[p.status])}</span></p>
+          ${p.note ? `<p class="note-line">${esc(p.note)}</p>` : ''}
+          <p>${esc(p.description)}</p>
+          <ul class="tags">${p.tags.map(t => `<li>${esc(t)}</li>`).join('')}</ul>
+          ${p.repo ? `<p><a href="${p.repo}">${esc(pr.repoLabel)} ↗</a></p>` : ''}
+        </div>`;
+      dlg.showModal();
+      $('.dlg-close', dlg).addEventListener('click', () => dlg.close());
+    });
+    dlg.addEventListener('click', e => { if (e.target === dlg) dlg.close(); });
+    dlg.addEventListener('close', () => opener && opener.focus());
+    // Space on a focused file card opens Quick Look, as in a file manager
+    $$('.file').forEach((f, i) => f.addEventListener('keydown', e => { if (e.key === ' ' && e.target.tagName === 'A') { e.preventDefault(); $(`[data-ql="${i}"]`).click(); } }));
+  }
+
+  /* ContactCard (custom): a vCard 3.0 built from the content. No phone number. */
+  const ContactCard = {
+    download() {
+      const v = ['BEGIN:VCARD', 'VERSION:3.0', `N:${P.last};${P.first};;;`, `FN:${P.name}`, `TITLE:${P.role}`, `EMAIL;TYPE=INTERNET:${P.email}`, `URL:${P.github}`, `NOTE:${P.availability}`, 'END:VCARD'].join('\r\n');
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(new Blob([v], { type: 'text/vcard;charset=utf-8' }));
+      a.download = 'Rafal_Ciecwierz.vcf'; document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+    }
+  };
+
+  /* SoftwareUpdate (custom easter egg) */
+  const SoftwareUpdate = (() => {
+    const dlg = $('#update'), U = CONTENT.update;
+    let opener = null;
+    function open() {
+      opener = document.activeElement;
+      dlg.innerHTML = `<div class="dlg-bar"><h2 id="upd-title">${esc(U.title)}</h2><button class="dlg-close" type="button" aria-label="Close">×</button></div>
+        <div class="upd"><span class="upd-icon" aria-hidden="true">7</span><div>
+          <h3>${esc(U.name)}</h3><p class="ver">${esc(U.ver)}</p>
+          <ul>${U.notes.map(n => `<li>${esc(n)}</li>`).join('')}</ul>
+          <div class="progress" aria-hidden="true"><i></i></div>
+          <p class="msg" role="status"></p>
+          <div class="card-ctas"><button class="btn btn-main" type="button" data-install>${esc(U.install)}</button></div>
+        </div></div>`;
+      dlg.showModal();
+      $('.dlg-close', dlg).addEventListener('click', () => dlg.close());
+      $('[data-install]', dlg).addEventListener('click', e => {
+        const btn = e.currentTarget; btn.disabled = true;
+        $('.progress i', dlg).style.setProperty('--v', '63%');
+        $('.msg', dlg).textContent = U.installing;
+        setTimeout(() => {
+          $('.msg', dlg).textContent = U.done;
+          btn.outerHTML = `<a class="btn btn-main" href="${P.cvFile}" download>${ICON.down}${esc(U.cv)}</a>`;
+        }, reduceMotion.matches ? 0 : 2800);
+      });
+    }
+    dlg.addEventListener('click', e => { if (e.target === dlg) dlg.close(); });
+    dlg.addEventListener('close', () => opener && opener.focus && opener.focus());
+    return { open };
+  })();
+
+  /* NavMenu (custom): the mobile menu, with focus kept inside while open */
+  function NavMenu() {
+    const btn = $('.menu-btn'), sheet = $('#nav-sheet');
+    const set = open => {
+      sheet.hidden = !open; btn.setAttribute('aria-expanded', String(open)); btn.textContent = open ? 'Close' : 'Menu';
+      if (open) $('a', sheet).focus();
+    };
+    btn.addEventListener('click', () => set(sheet.hidden));
+    sheet.addEventListener('click', e => { if (e.target.closest('a')) set(false); });
+    addEventListener('keydown', e => {
+      if (sheet.hidden) return;
+      if (e.key === 'Escape') { set(false); btn.focus(); }
+      if (e.key === 'Tab') {
+        const f = [btn, ...$$('a', sheet)], i = f.indexOf(document.activeElement);
+        if (e.shiftKey && i <= 0) { e.preventDefault(); f[f.length - 1].focus(); }
+        else if (!e.shiftKey && i === f.length - 1) { e.preventDefault(); f[0].focus(); }
+      }
+    });
+  }
+
+  /* NavCurrent: marks the section in view in the header */
+  function NavCurrent() {
+    const links = $$('.top nav a');
+    const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) links.forEach(a => a.setAttribute('aria-current', String(a.hash === '#' + e.target.id))); }), { rootMargin: '-45% 0px -50% 0px' });
+    $$('[data-group]').forEach(s => io.observe(s));
+  }
+
+  function ConsoleHello() {
+    console.log('%c RalphOS %c ' + CONTENT.console, 'background:conic-gradient(from 210deg,#FFC6A6,#FFE59A,#BDEFD5,#B5DCFF,#CDBFFF);color:#15172A;font:700 12px Outfit,sans-serif;padding:3px 8px;border-radius:6px', 'font:600 13px "Plus Jakarta Sans",sans-serif;color:#B23F0B');
+  }
+
+  /* =====================================================================
+     Boot
+     ===================================================================== */
+  renderShell(); renderHero(); renderAbout(); renderStack(); renderCareer(); renderTeam(); renderProjects(); renderContact();
+  LiveSearch(); TypedPlaceholder(); PastelWallpaper(); ResultsArrive(); NowLine(); NotificationStack(); QuickLook(); NavMenu(); NavCurrent(); ConsoleHello();
+  $('[data-vcf]').addEventListener('click', ContactCard.download);
+  $('[data-update]').addEventListener('click', SoftwareUpdate.open);
+</script>
+</body>
+</html>

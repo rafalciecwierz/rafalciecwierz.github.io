@@ -56,5 +56,5 @@ Work is planned task by task in `docs/ROADMAP.md`, in three phases: documentatio
 ## Current status (keep this updated)
 
 - Phase: 2, design exploration
-- Last completed: 2.4 prototype 02 light (`design/prototypes/02-swiss-signal-light.html`, "Plakat"); both variants of 02 are built
-- Next step: 2.4 prototype 03 (Clay Studio), branch `feat/design-prototype-03-clay-studio`
+- Last completed: 2.4 prototype 03, both variants (`design/prototypes/03-clay-studio-dark.html` "After Hours", `03-clay-studio-light.html` "Morning Claymation")
+- Next step: 2.4 prototype 04 (Sticker Sheet), branch `feat/design-prototype-04-sticker-sheet`

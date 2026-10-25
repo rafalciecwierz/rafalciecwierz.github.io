@@ -1,0 +1,1228 @@
+<!doctype html>
+<!--
+  Prototype 03 — Clay Studio (`clay-studio`), DARK variant: "After Hours".
+  Direction brief: docs/design/DIRECTIONS.md, section 03.
+
+  Concept: a photo studio after hours. Rafał is presented as a handmade designer collectible:
+  a clay figure built from simple shapes in Three.js, standing on a turntable pedestal against
+  a seamless plum backdrop, lit by one warm key light that follows the cursor. The page around
+  him is calm and grown-up (clear type, readable panels); the clay softness lives in the
+  surfaces and buttons, and the humour lives in small details (he waves, and he still has a
+  backflip in him).
+  It shares only the style (claymorphism, soft 3D) with the light variant.
+
+  Effects (each is a named function in the script below):
+  - ClayFigure ........ custom Three.js: procedural figure (spheres, capsules, a lathe pedestal)
+                        with a clay material (soft sheen + a generated fingerprint bump map).
+                        Head follows the cursor, blinks, waves when clicked; 10 clicks make him
+                        do a parkour backflip. Rendering pauses off-screen.
+  - KeyLight .......... custom: the warm spotlight follows the cursor (part of ClayFigure)
+  - SpeechBubble ...... custom: short lines when the figure waves or flips
+  - Ballpit ........... inspired by React Bits <Ballpit /> (which uses three.js), rewritten here
+                        as a 2D canvas with simple circle physics; the cursor stirs the balls
+  - CareerTrack ....... custom: the timeline groove fills with light as you scroll
+  - ClayCards ......... inspired by React Bits <BounceCards />: tilted project cards that
+                        straighten with a springy bounce on hover/focus
+  - SquishButton ...... custom CSS: chunky clay buttons that squash on press
+  - ClayCrumbs ........ inspired by React Bits <ClickSpark />: clicks throw small clay crumbs
+  - NavPill, MobileMenu, ConsoleHello: custom
+
+  Libraries in this file: three@0.160.0 (jsDelivr, ES module, loaded with dynamic import() so the
+  text never waits for it).
+  Fonts: Fredoka (display, rounded) and Nunito (body), Google Fonts, latin-ext.
+  React build would need: three (or @react-three/fiber + @react-three/drei), lazy-loaded after
+  first paint. Physics stays custom (no physics engine).
+
+  Reduced motion: one static frame of the figure, no head tracking, no turntable, no waving;
+  the ballpit is pre-settled and drawn once; the career groove is fully lit; no crumbs; native
+  anchor jumps. If WebGL or the module fails, a flat SVG figure is shown instead (canvas is
+  aria-hidden either way). On small or touch screens the figure renders on demand only
+  (a still pose that animates when tapped), and the ballpit is a static cluster.
+
+  Content: all copy lives in the CONTENT object at the top of the script. Additions beyond
+  brief section 5 are marked `NEW CONTENT` there.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rafał Ciećwierz, Frontend Engineer</title>
+<meta name="description" content="Rafał Ciećwierz, Frontend Engineer. React & TypeScript, 5+ years building production apps.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400..700&family=Nunito:ital,wght@0,400..800;1,400..800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --plum: #1C1030;        /* backdrop */
+    --plum-2: #2A1D47;      /* clay panels */
+    --plum-3: #3A2A60;      /* raised clay */
+    --lamp: #FFC98A;        /* warm key light: buttons, highlights */
+    --pink: #FF9EC0;
+    --mint: #8CE8CB;
+    --lilac: #B9A4FF;
+    --sky: #93CBFF;
+    --text: #F7F0FF;        /* 16:1 on plum */
+    --muted: #CBBDE6;       /* 10:1 on plum, 8:1 on plum-2 */
+    --ink: #2A1640;         /* text on pastel clay */
+    --gut: 16px;
+    --spring: cubic-bezier(.34, 1.56, .64, 1);
+    --clay-shadow:
+      inset 5px 6px 10px rgba(255, 255, 255, .07),
+      inset -7px -9px 16px rgba(0, 0, 0, .32),
+      14px 20px 36px rgba(6, 0, 18, .45);
+  }
+  @media (min-width: 768px) { :root { --gut: 32px; } }
+  @media (min-width: 1280px) { :root { --gut: 56px; } }
+
+  *, *::before, *::after { box-sizing: border-box; }
+  html { scroll-behavior: smooth; scroll-padding-top: 88px; }
+  body {
+    margin: 0; background: var(--plum); color: var(--text);
+    font: 400 1.0625rem/1.65 Nunito, system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased; overflow-x: hidden;
+  }
+  img, svg, canvas { display: block; max-width: 100%; }
+  a { color: inherit; }
+  h1, h2, h3 { font-family: Fredoka, Nunito, sans-serif; margin: 0; line-height: 1; letter-spacing: -.01em; }
+  p { margin: 0; }
+  :focus-visible { outline: 3px solid var(--lamp); outline-offset: 3px; border-radius: 8px; }
+  .skip {
+    position: fixed; left: 12px; top: -80px; z-index: 100; background: var(--lamp); color: var(--ink);
+    padding: 12px 18px; border-radius: 999px; font-weight: 800; text-decoration: none; transition: top .2s;
+  }
+  .skip:focus { top: 12px; }
+  .wrap { width: 100%; max-width: 1440px; margin: 0 auto; padding: 0 var(--gut); }
+  .vh { position: absolute !important; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+  /* ---------- Clay primitives ---------- */
+  .clay {
+    background: linear-gradient(150deg, #33255A 0%, var(--plum-2) 55%, #241840 100%);
+    border-radius: 32px; box-shadow: var(--clay-shadow);
+  }
+  /* SquishButton (custom CSS) */
+  .btn {
+    --bg1: #FFE0B5; --bg2: #FFB867; --fg: var(--ink); --glow: rgba(255, 184, 103, .28);
+    display: inline-flex; align-items: center; gap: 10px; min-height: 54px; padding: 0 28px;
+    border-radius: 999px; border: 0; cursor: pointer; text-decoration: none;
+    font: 600 1.125rem/1 Fredoka, sans-serif; color: var(--fg);
+    background: linear-gradient(180deg, var(--bg1), var(--bg2));
+    box-shadow: inset 0 -6px 0 rgba(60, 20, 0, .16), inset 0 4px 8px rgba(255, 255, 255, .55), 0 12px 26px var(--glow);
+    transition: transform .35s var(--spring), box-shadow .2s;
+  }
+  .btn:hover { transform: translateY(-3px); }
+  .btn:active { transform: translateY(2px) scale(1.05, .88); box-shadow: inset 0 -2px 0 rgba(60, 20, 0, .16), inset 0 3px 6px rgba(255, 255, 255, .5), 0 4px 10px var(--glow); transition-duration: .08s; }
+  .btn--ghost { --bg1: #4A3878; --bg2: #35265C; --fg: var(--text); --glow: rgba(0, 0, 0, .35); box-shadow: inset 0 -6px 0 rgba(0, 0, 0, .25), inset 0 3px 6px rgba(255, 255, 255, .14), 0 12px 26px var(--glow); }
+  .btn svg { width: 20px; height: 20px; flex: none; }
+
+  .chip {
+    display: inline-block; padding: 4px 12px; border-radius: 999px; font-size: .875rem; font-weight: 700;
+    background: var(--plum-3); color: var(--muted);
+    box-shadow: inset 2px 2px 4px rgba(255, 255, 255, .06), inset -2px -3px 5px rgba(0, 0, 0, .3);
+  }
+
+  /* ---------- Header / NavPill ---------- */
+  .header { position: fixed; inset: 0 0 auto; z-index: 50; padding: 14px 0; transition: background .3s; }
+  .header.is-scrolled { background: rgba(28, 16, 48, .82); backdrop-filter: blur(12px); }
+  .header .wrap { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+  .logo { font: 600 1.25rem/1 Fredoka, sans-serif; text-decoration: none; display: flex; align-items: center; gap: 10px; }
+  .logo-dot { width: 26px; height: 26px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #FFE6C7, var(--lamp) 45%, #D98B4B); box-shadow: 0 0 18px rgba(255, 201, 138, .5); }
+  .nav ul { list-style: none; margin: 0; padding: 6px; display: none; gap: 4px; border-radius: 999px; }
+  .nav a { display: block; padding: 10px 18px; border-radius: 999px; text-decoration: none; font-weight: 700; color: var(--muted); transition: color .2s, background .3s, box-shadow .3s; }
+  .nav a:hover { color: var(--text); }
+  .nav a.is-active { color: var(--ink); background: linear-gradient(180deg, #FFE0B5, #FFB867); box-shadow: inset 0 -3px 0 rgba(60, 20, 0, .15), inset 0 2px 4px rgba(255, 255, 255, .5); }
+  .menu-btn { min-height: 46px; padding: 0 20px; font-size: 1rem; }
+  .menu {
+    position: fixed; inset: 74px 12px auto; z-index: 49; padding: 12px; list-style: none; margin: 0;
+  }
+  .menu a { display: block; padding: 16px 18px; font: 600 1.5rem/1 Fredoka, sans-serif; text-decoration: none; border-radius: 20px; }
+  .menu a:hover { background: var(--plum-3); }
+  @media (min-width: 900px) {
+    .nav ul { display: flex; }
+    .menu-btn, .menu { display: none !important; }
+  }
+
+  /* ---------- Hero ---------- */
+  .hero {
+    position: relative; min-height: 100svh; padding: 104px 0 40px; overflow: hidden;
+    background:
+      radial-gradient(60% 50% at 72% 46%, rgba(255, 201, 138, .16), transparent 70%),
+      radial-gradient(40% 30% at 18% 10%, rgba(185, 164, 255, .12), transparent 70%),
+      linear-gradient(180deg, #1C1030 0%, #241540 62%, #2E1B4E 100%);
+  }
+  /* the seamless backdrop sweep (floor curve) */
+  .hero::after {
+    content: ""; position: absolute; left: -10%; right: -10%; bottom: -38vh; height: 70vh; border-radius: 50%;
+    background: radial-gradient(50% 40% at 50% 30%, rgba(255, 201, 138, .10), transparent 70%), #2B1A4A;
+    box-shadow: 0 -30px 80px rgba(10, 0, 30, .55) inset; z-index: 0;
+  }
+  /* fade the studio floor into the page below */
+  .hero::before { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 140px; z-index: 1; background: linear-gradient(transparent, var(--plum)); pointer-events: none; }
+  .hero .wrap { position: relative; z-index: 2; display: grid; gap: 8px; align-items: center; }
+  .hero-text { padding-top: 8px; }
+  .h1 {
+    font-weight: 700; font-size: clamp(3.1rem, 16vw, 8.6rem); line-height: .9; letter-spacing: -.02em;
+    color: var(--text);
+    text-shadow: 0 1px 0 #DCCBFF, 0 2px 0 #C3AEF4, 0 3px 0 #A891E3, 0 4px 0 #8E77CF, 0 10px 22px rgba(5, 0, 20, .55);
+  }
+  .h1 span { display: block; }
+  .role { margin-top: 22px; font: 500 clamp(1.4rem, 4.6vw, 2rem)/1.1 Fredoka, sans-serif; color: var(--lamp); }
+  .tagline { margin-top: 8px; color: var(--muted); font-size: 1.0625rem; }
+  .ctas { margin-top: 26px; display: flex; flex-wrap: wrap; gap: 12px; }
+
+  .stage { position: relative; height: 380px; margin: 8px calc(var(--gut) * -1) 0; }
+  .stage canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .stage .fallback { position: absolute; inset: 0; display: none; place-items: center; }
+  .stage.no-webgl .fallback { display: grid; }
+  .stage.no-webgl canvas { display: none; }
+  .stage .fallback svg { height: 92%; width: auto; }
+  .stage.is-hover { cursor: pointer; }
+  .caption {
+    position: absolute; left: 50%; bottom: 6px; transform: translateX(-50%); z-index: 2;
+    display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 8px 10px;
+    width: calc(100% - 32px); text-align: center; font-size: .875rem; color: var(--muted);
+  }
+  .caption button { min-height: 36px; padding: 0 16px; font-size: .9375rem; }
+  .bubble {
+    position: absolute; z-index: 3; left: 58%; top: 12%; max-width: 220px; padding: 12px 16px;
+    background: #FFF6EC; color: var(--ink); border-radius: 22px 22px 22px 6px;
+    font: 500 1rem/1.3 Fredoka, sans-serif; box-shadow: 0 12px 26px rgba(0, 0, 0, .35);
+    opacity: 0; transform: scale(.6) translateY(10px); transform-origin: 0 100%; pointer-events: none;
+    transition: opacity .2s, transform .45s var(--spring);
+  }
+  .bubble.is-on { opacity: 1; transform: none; }
+  @media (min-width: 640px) { .stage { height: 460px; } }
+  @media (min-width: 1000px) {
+    .hero { display: flex; align-items: center; }
+    .hero .wrap { grid-template-columns: 1.1fr 1fr; gap: 24px; }
+    .h1 { font-size: clamp(5rem, 8.4vw, 9.4rem); }
+    .stage { height: min(78vh, 760px); margin: 0; }
+  }
+
+  /* ---------- Sections ---------- */
+  section { position: relative; }
+  .sec { padding: 96px 0; }
+  @media (min-width: 1000px) { .sec { padding: 140px 0; } }
+  .sec-head { display: grid; gap: 14px; margin-bottom: 44px; max-width: 760px; }
+  .h2 { font-weight: 600; font-size: clamp(2.6rem, 8vw, 5.2rem); }
+  .intro { color: var(--muted); font-size: 1.1875rem; max-width: 56ch; }
+
+  /* About */
+  .about-grid { display: grid; gap: 40px; }
+  .about-text { display: grid; gap: 20px; max-width: 62ch; font-size: 1.1875rem; }
+  .about-text p:first-child { font: 500 clamp(1.4rem, 3vw, 1.8rem)/1.35 Fredoka, sans-serif; }
+  .facts { display: grid; gap: 18px; align-content: start; list-style: none; padding: 0; margin: 0; }
+  .fact { padding: 22px 26px; display: grid; gap: 4px; transition: transform .45s var(--spring); }
+  .fact:nth-child(1) { transform: rotate(-1.4deg); }
+  .fact:nth-child(2) { transform: rotate(1deg); margin-left: 8%; }
+  .fact:nth-child(3) { transform: rotate(-.6deg); margin-left: 3%; }
+  .fact:hover { transform: rotate(0) scale(1.02); }
+  .fact b { font: 600 1.6rem/1.1 Fredoka, sans-serif; color: var(--lamp); }
+  .fact span { color: var(--muted); }
+  @media (min-width: 1000px) { .about-grid { grid-template-columns: 1.4fr 1fr; gap: 80px; } }
+
+  /* Stack */
+  .stack-grid { display: grid; gap: 32px; }
+  .pit { position: relative; height: 340px; border-radius: 40px; overflow: hidden; }
+  .pit canvas { width: 100%; height: 100%; touch-action: pan-y; }
+  .legend { display: flex; flex-wrap: wrap; gap: 18px; margin-top: 18px; color: var(--muted); font-size: .9375rem; list-style: none; padding: 0; }
+  .legend li { display: flex; align-items: center; gap: 8px; }
+  .legend i { border-radius: 50%; background: radial-gradient(circle at 35% 30%, #fff, var(--lilac) 50%, #7D66C9); }
+  .groups { display: grid; gap: 14px; }
+  .group { padding: 20px 24px; }
+  .group h3 { font-size: 1.375rem; font-weight: 600; display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .group h3 i { width: 14px; height: 14px; border-radius: 50%; background: var(--c); box-shadow: inset -2px -2px 3px rgba(0, 0, 0, .25); }
+  .group dl { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; }
+  .group dt { font-size: .8125rem; font-weight: 800; color: var(--muted); padding-top: 3px; }
+  .group dd { margin: 0; }
+  @media (min-width: 1000px) {
+    .stack-grid { grid-template-columns: 1.25fr 1fr; gap: 48px; align-items: start; }
+    .pit { height: 640px; position: sticky; top: 100px; }
+  }
+
+  /* Career */
+  .track { position: relative; display: grid; gap: 28px; padding-left: 30px; }
+  .groove {
+    position: absolute; left: 4px; top: 0; bottom: 0; width: 12px; border-radius: 999px; background: #140A26;
+    box-shadow: inset 2px 3px 6px rgba(0, 0, 0, .6), inset -1px -1px 2px rgba(255, 255, 255, .06);
+  }
+  .groove i {
+    position: absolute; left: 2px; right: 2px; top: 2px; height: calc((100% - 4px) * var(--p, 0)); border-radius: 999px;
+    background: linear-gradient(180deg, var(--lamp), var(--pink)); box-shadow: 0 0 16px rgba(255, 201, 138, .6);
+  }
+  .job { position: relative; padding: 24px 18px; }
+  .job::before {
+    content: ""; position: absolute; left: -36px; top: 30px; width: 22px; height: 22px; border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #fff, var(--lilac) 55%, #6D57B8); box-shadow: 0 4px 10px rgba(0, 0, 0, .4);
+  }
+  .job-top { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 6px 16px; }
+  .job h3 { font-size: clamp(1.6rem, 4vw, 2.2rem); font-weight: 600; }
+  .dates { color: var(--muted); font-weight: 700; font-variant-numeric: tabular-nums; }
+  .roles { margin-top: 8px; font: 500 1.1875rem/1.35 Fredoka, sans-serif; color: var(--lamp); }
+  .levelup {
+    display: inline-flex; align-items: center; gap: 10px; margin-top: 14px; padding: 8px 16px 8px 8px; border-radius: 999px;
+    background: linear-gradient(180deg, #A9F2DA, #6FD8B6); color: var(--ink); font-weight: 800; font-size: .9375rem;
+    box-shadow: inset 0 -4px 0 rgba(0, 60, 40, .18), inset 0 3px 5px rgba(255, 255, 255, .55), 0 8px 18px rgba(111, 216, 182, .22);
+  }
+  .levelup svg { width: 30px; height: 30px; }
+  .job .points { margin: 16px 0 0; padding-left: 20px; display: grid; gap: 8px; max-width: 74ch; }
+  .job .points li::marker { color: var(--pink); }
+  .tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 16px; list-style: none; padding: 0; }
+  .edu { padding: 20px 24px; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px 16px; }
+  .edu b { font: 600 1.25rem/1.2 Fredoka, sans-serif; }
+  @media (min-width: 1000px) {
+    .track { padding-left: 80px; max-width: 1060px; }
+    .groove { left: 18px; width: 14px; }
+    .job::before { left: -73px; top: 38px; width: 24px; height: 24px; }
+    .job { padding: 34px 40px; }
+  }
+
+  /* Team */
+  .team { display: grid; gap: 40px; list-style: none; padding: 0; margin: 0; }
+  .quote { display: grid; gap: 18px; }
+  .say {
+    position: relative; padding: 24px 26px; border-radius: 30px; background: #FFF4E8; color: var(--ink);
+    font: 500 1.1875rem/1.45 Fredoka, sans-serif;
+    box-shadow: inset 0 -6px 0 rgba(120, 60, 20, .1), inset 0 4px 8px rgba(255, 255, 255, .8), 0 16px 30px rgba(5, 0, 20, .4);
+    transition: transform .45s var(--spring);
+  }
+  .say::after {
+    content: ""; position: absolute; left: 44px; bottom: -16px; width: 32px; height: 32px; background: #FFF4E8;
+    border-radius: 0 0 0 28px; transform: skewX(-18deg); box-shadow: 4px 6px 8px rgba(5, 0, 20, .15);
+  }
+  .quote:hover .say { transform: scale(1.02) rotate(-.6deg); }
+  .say p + p { margin-top: 10px; }
+  .who { display: flex; align-items: center; gap: 14px; padding-left: 20px; }
+  .mini { width: 64px; height: 72px; flex: none; }
+  .who b { display: block; font: 600 1.125rem/1.2 Fredoka, sans-serif; }
+  .who span { color: var(--muted); font-size: .9375rem; }
+  @media (min-width: 1000px) { .team { grid-template-columns: repeat(3, 1fr); align-items: end; gap: 32px; } }
+
+  /* Projects (ClayCards) */
+  .cards { display: grid; gap: 28px; list-style: none; padding: 0; margin: 0; grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); }
+  .card { display: flex; flex-direction: column; padding: 18px 18px 24px; transform: rotate(var(--r, 0deg)); transition: transform .5s var(--spring); }
+  .card:hover, .card:focus-within { transform: rotate(0) translateY(-8px) scale(1.015); }
+  .thumb { height: 150px; border-radius: 22px; margin-bottom: 20px; background: #160C2A; box-shadow: inset 3px 4px 10px rgba(0, 0, 0, .55); overflow: hidden; }
+  .thumb svg { width: 100%; height: 100%; }
+  .card h3 { font-size: 1.5rem; font-weight: 600; }
+  .status { align-self: flex-start; margin-bottom: 12px; padding: 4px 12px; border-radius: 999px; font-weight: 800; font-size: .8125rem; color: var(--ink); }
+  .status--live { background: var(--mint); }
+  .status--in-progress { background: var(--lamp); }
+  .status--archived { background: var(--lilac); }
+  .card .note { margin-top: 6px; color: var(--muted); font-size: .9375rem; font-style: italic; }
+  .card p.desc { margin-top: 10px; color: var(--muted); font-size: 1rem; }
+  .card .links { margin-top: auto; padding-top: 18px; }
+  .card .links a { font-weight: 800; color: var(--lamp); text-underline-offset: 4px; }
+
+  /* Contact */
+  .contact { overflow: hidden; background: radial-gradient(50% 50% at 75% 55%, rgba(255, 201, 138, .12), transparent 70%); }
+  .contact-grid { display: grid; gap: 24px; align-items: center; }
+  .avail { font: 500 clamp(1.5rem, 3.4vw, 2.2rem)/1.3 Fredoka, sans-serif; max-width: 26ch; }
+  .email { display: inline-block; margin-top: 28px; font: 600 clamp(1.2rem, 4.4vw, 2.4rem)/1.2 Fredoka, sans-serif; color: var(--lamp); text-underline-offset: 8px; text-decoration-thickness: 3px; overflow-wrap: anywhere; }
+  .socials { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 28px; list-style: none; padding: 0; }
+  .socials a, .socials span { display: inline-flex; align-items: center; min-height: 46px; padding: 0 20px; border-radius: 999px; text-decoration: none; font-weight: 800; background: var(--plum-3); box-shadow: inset 2px 3px 5px rgba(255, 255, 255, .08), inset -3px -4px 8px rgba(0, 0, 0, .35); }
+  .socials span { color: var(--muted); font-weight: 700; }
+  .contact .ctas { margin-top: 30px; }
+  .stage--contact { height: 380px; margin: 0 calc(var(--gut) * -1); }
+  @media (min-width: 1000px) {
+    .contact-grid { grid-template-columns: 1.1fr 1fr; gap: 40px; }
+    .stage--contact { height: 620px; margin: 0; }
+  }
+
+  /* Footer */
+  .footer { padding: 40px 0 48px; color: var(--muted); font-size: .9375rem; }
+  .footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; }
+
+  /* ClayCrumbs overlay */
+  #crumbs { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 60; }
+
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    *, *::before, *::after { transition-duration: .01ms !important; animation-duration: .01ms !important; }
+    .fact, .card { transform: none !important; }
+  }
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="header" id="header">
+  <div class="wrap">
+    <a class="logo" href="#top"><span class="logo-dot" aria-hidden="true"></span><span id="logoName"></span></a>
+    <nav class="nav" aria-label="Main">
+      <ul class="clay" id="navList"></ul>
+      <button class="btn btn--ghost menu-btn" id="menuBtn" aria-expanded="false" aria-controls="menu">Menu</button>
+    </nav>
+  </div>
+</header>
+<ul class="menu clay" id="menu" hidden></ul>
+
+<main id="main">
+  <section class="hero" id="top" aria-labelledby="heroName">
+    <div class="wrap">
+      <div class="hero-text" id="heroText"></div>
+      <div class="stage" id="heroStage">
+        <canvas id="heroCanvas" aria-hidden="true"></canvas>
+        <div class="fallback" aria-hidden="true" id="heroFallback"></div>
+        <div class="bubble" id="bubble" aria-hidden="true"></div>
+        <div class="caption" id="caption"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec" id="about" aria-labelledby="about-h"><div class="wrap" id="aboutWrap"></div></section>
+  <section class="sec" id="stack" aria-labelledby="stack-h"><div class="wrap" id="stackWrap"></div></section>
+  <section class="sec" id="career" aria-labelledby="career-h"><div class="wrap" id="careerWrap"></div></section>
+  <section class="sec" id="team" aria-labelledby="team-h"><div class="wrap" id="teamWrap"></div></section>
+  <section class="sec" id="projects" aria-labelledby="projects-h"><div class="wrap" id="projectsWrap"></div></section>
+  <section class="sec contact" id="contact" aria-labelledby="contact-h"><div class="wrap" id="contactWrap"></div></section>
+</main>
+
+<footer class="footer"><div class="wrap" id="footerWrap"></div></footer>
+<canvas id="crumbs" aria-hidden="true"></canvas>
+
+<script type="module">
+  /* =====================================================================
+     Content (becomes src/content/ in the React build)
+     ===================================================================== */
+  const CONTENT = {
+    profile: {
+      name: 'Rafał Ciećwierz',
+      nameLines: ['Rafał', 'Ciećwierz'],
+      nickname: 'Ralph',
+      role: 'Frontend Engineer',
+      tagline: 'React & TypeScript · 5+ years building production apps',
+      availability: 'Open to frontend roles (React / TypeScript), remote or hybrid.',
+      email: 'rafal.ciecwierz4@gmail.com',
+      github: 'https://github.com/rafalciecwierz',
+      linkedin: null, // TODO: Rafał to provide URL
+      calendly: null, // TODO: Rafał to provide URL
+      cvFile: '/Rafal_Ciecwierz_CV.pdf'
+    },
+    nav: [
+      { id: 'about', label: 'About' },
+      { id: 'stack', label: 'Stack' },
+      { id: 'career', label: 'Career' },
+      { id: 'projects', label: 'Projects' },
+      { id: 'contact', label: 'Contact' }
+    ],
+    hero: {
+      cv: 'Download CV',
+      contact: 'Get in touch',
+      // NEW CONTENT: the figure's caption ({n} = number of shapes, counted at runtime) and button
+      caption: 'Ralph, 1:12. {n} clay shapes, no model files.',
+      wave: 'Say hi',
+      // NEW CONTENT: speech bubbles
+      hello: ['Hi! Scroll down, the CV is the good part.', 'Hey there. Still here, still smiling.', 'Careful, I bruise like clay.'],
+      flip: '22 years of parkour. Knees permitting.'
+    },
+    about: {
+      title: 'About',
+      paragraphs: [
+        "I'm a frontend engineer with 5+ years of commercial experience in React and TypeScript. I started my career in QA automation, moved into frontend development after three months at my team's request, and later led a team of six developers.",
+        "I care about clean architecture, reusable UI and tests that actually protect the product. Lately I've been going deeper into the backend with NestJS and experimenting with motion and 3D in the browser.",
+        'Outside of code: parkour (for over 22 years) and climbing.'
+      ],
+      // NEW CONTENT: three fact tokens (facts from brief section 5)
+      facts: [
+        { big: '5+ years', small: 'of React and TypeScript in production' },
+        { big: 'Team of 6', small: 'led as Front-end Team Leader at Mood up' },
+        { big: '2 promotions', small: 'QA to developer, developer to team lead' }
+      ]
+    },
+    stack: {
+      title: 'Stack',
+      intro: 'Bigger ball, more production miles. Give them a stir.', // NEW CONTENT
+      levels: { strong: 'strong production experience', medium: 'medium production experience', low: 'low production experience' },
+      // `ball` is a short label for the ballpit; the full name is always in the list
+      groups: [
+        { name: 'Frontend', color: '#FF9EC0', items: [['React', 'strong'], ['TypeScript', 'strong'], ['JavaScript', 'strong'], ['HTML5', 'strong'], ['CSS / SCSS / Styled-components', 'strong', 'CSS'], ['Next.js', 'medium'], ['Gatsby', 'medium'], ['Module Federation', 'medium', 'MF'], ['React Native', 'low', 'RN']] },
+        { name: 'Data & UI', color: '#B9A4FF', items: [['TanStack Query', 'strong', 'TanStack'], ['Redux', 'strong'], ['Zod', 'strong'], ['React Hook Form', 'strong', 'RHF'], ['Storybook', 'strong'], ['Ant Design', 'strong', 'AntD'], ['Material UI', 'strong', 'MUI'], ['Tailwind CSS', 'medium', 'Tailwind'], ['WebSockets', 'medium', 'WS']] },
+        { name: 'Testing', color: '#8CE8CB', items: [['Jest / Vitest', 'strong', 'Jest'], ['React Testing Library', 'strong', 'RTL'], ['Cypress', 'strong']] },
+        { name: 'Backend', color: '#FFC98A', items: [['Node.js', 'medium', 'Node'], ['NestJS', 'medium', 'Nest'], ['PostgreSQL', 'medium', 'Postgres'], ['Strapi', 'medium']] },
+        { name: 'Tooling', color: '#93CBFF', items: [['Git', 'strong'], ['Figma', 'strong'], ['Postman', 'strong'], ['Vite', 'strong'], ['Webpack', 'strong'], ['Docker', 'medium'], ['Claude Code', 'medium', 'Claude']] }
+      ]
+    },
+    career: {
+      title: 'Career',
+      intro: 'Four companies, two level-ups, newest first.', // NEW CONTENT
+      levelUp: 'Level up', // NEW CONTENT
+      jobs: [
+        {
+          company: 'MUG Software', roles: ['Front-end Software Engineer'], dates: '04.2025 – 08.2026',
+          points: [
+            'Maintained and extended a white-label React platform: a core repository with client-specific forks, propagating global changes upstream-to-fork while keeping client customizations isolated.',
+            'Developed and maintained a shared Storybook component library (50+ components), improving UI consistency and speeding up feature development.',
+            'Introduced TanStack Query (replacing Redux for server state) and Zod (replacing Yup), adopting them incrementally across the app as part of ongoing feature work.'
+          ],
+          stack: ['React', 'TypeScript', 'Styled Components', 'Jest', 'Redux', 'Storybook', 'Webpack', 'TanStack Query', 'Zod']
+        },
+        {
+          company: 'VML Enterprise Solutions', roles: ['Front-end Software Engineer'], dates: '09.2024 – 04.2025',
+          points: [
+            'Owned a reference-data micro-frontend (countries, currencies and other company-wide dictionaries) integrated into a large enterprise advertising platform via Webpack Module Federation.',
+            "Maintained and developed the module's codebase, increasing unit test coverage from 11% to over 80%.",
+            'Took part in the migration of a subdomain to a standalone microservice.'
+          ],
+          stack: ['React', 'TypeScript', 'SCSS', 'Jest', 'React Hook Form', 'Webpack', 'Vite', 'Module Federation']
+        },
+        {
+          company: 'Mood up', roles: ['React Developer', 'Front-end Team Leader'], dates: '10.2022 – 08.2024',
+          points: [
+            'Built the React/Redux interface for a smart intercom running on an embedded Raspberry Pi device.',
+            'Promoted to Front-end Team Leader; led a team of 6 developers delivering MVPs for international startup clients.',
+            'Delivered projects from requirements gathering and estimation with clients through development, testing (Jest) and deployment.',
+            "Led a headless CMS evaluation (Strapi, Sanity, Contentful, headless WordPress and others), narrowing the shortlist to Strapi and Payload CMS for the company's stack."
+          ],
+          stack: ['React', 'Gatsby', 'Next.js', 'React Native', 'TypeScript', 'SCSS', 'Strapi', 'Material UI', 'Ant Design', 'Webpack', 'Vite', 'Figma']
+        },
+        {
+          company: 'mTab sp. z o.o.', roles: ['QA Automation Engineer', 'JavaScript Developer'], dates: '07.2021 – 09.2022',
+          points: [
+            "Promoted from QA Automation Engineer (Cypress E2E) to front-end developer after 3 months at the product team's request.",
+            'Developed views and features in React for a data visualization platform with dynamic, reactive charts and presentation-style reports.',
+            'Built Node.js scripts run nightly by Jenkins that aggregated test results into reports and posted them to Slack.',
+            'Maintained and extended a legacy Backbone.js codebase.'
+          ],
+          stack: ['React', 'JavaScript', 'TypeScript', 'Redux', 'SCSS', 'Jest', 'Cypress', 'Node.js', 'Backbone.js']
+        }
+      ],
+      education: { school: 'Adam Mickiewicz University', degree: "Engineer's degree in Computer Science", dates: '2015 – 2021' }
+    },
+    team: {
+      title: 'What the team said',                                   // NEW CONTENT
+      intro: 'LinkedIn recommendations from my team at Mood up, June 2024.', // NEW CONTENT
+      quotes: [
+        { name: 'Wiktoria W.', role: 'Marketing & Communication', look: { hair: '#5A3A2A', shirt: '#FF9EC0', long: true }, text: ["Seriously, I've never met a leader as tuned in and supportive as him.", "Whoever snags him next is super lucky - yeah, I'm a bit envious. 😉"] },
+        { name: 'Rafał H.', role: 'Frontend Developer', look: { hair: '#2E2230', shirt: '#8CE8CB' }, text: ['His enthusiasm and optimism were contagious, making him a joy to work with.'] },
+        { name: 'Szymon K.', role: 'Frontend Developer', look: { hair: '#C9884F', shirt: '#93CBFF' }, text: ['His technical skills and ability to simplify complex concepts, guiding others through challenges, have been invaluable in enhancing the overall quality and efficiency of our development processes.'] }
+      ],
+      source: 'Mood up, 2024'
+    },
+    projects: {
+      title: 'Projects',
+      intro: 'Side projects and the thesis. More on the way.', // NEW CONTENT
+      repoLabel: 'Repository',
+      items: [
+        { name: 'Ashen Contracts', status: 'in progress', description: 'Browser-based idle/RPG game built as a full-stack showcase: pnpm monorepo with a Next.js app, NestJS API, shared Storybook UI library and shared TypeScript types. Architecture decisions documented in an ADR-style log.', tags: ['Next.js', 'NestJS', 'PostgreSQL', 'Prisma', 'Storybook', 'Docker', 'GitHub Actions'], repo: 'https://github.com/rafalciecwierz/ashen-contracts' },
+        { name: 'Ultimate Frisbee Tournament Platform', status: 'archived', note: 'Engineering thesis (team of 4), built for the Polish Ultimate Players Association', description: 'Owned the entire NestJS + PostgreSQL backend, built live match scoring with Socket.io (scorekeeper tablet view + real-time spectator view), designed the full UI in Figma, deployed to AWS and tested at a live tournament in Szczecin.', tags: ['NestJS', 'PostgreSQL', 'Socket.io', 'Swagger', 'AWS', 'Nuxt', 'Figma'] },
+        { name: 'This website', status: 'live', description: 'Personal site with a procedural 3D hero (React Three Fiber) and scroll-driven animations (GSAP, Lenis), built with a performance and accessibility budget.', tags: ['React', 'TypeScript', 'Three.js', 'GSAP', 'Vite'], repo: 'https://github.com/rafalciecwierz/rafalciecwierz.github.io' },
+        { name: 'Next.js page transitions', status: 'archived', description: 'Comparison of three page-transition approaches in Next.js: custom implementation, Framer Motion and GSAP.', tags: ['Next.js', 'Framer Motion', 'GSAP'], repo: 'https://github.com/rafalciecwierz/Nextjs-page-transition' }
+      ]
+    },
+    contact: {
+      title: 'Contact',
+      calendlyLabel: 'Book a 20-min call',
+      // NEW CONTENT: the figure in Contact holds an envelope
+      envelopeBubble: 'Got mail? I read all of it.'
+    },
+    footer: {
+      builtWith: 'Built with React, Three.js and GSAP',
+      repo: 'https://github.com/rafalciecwierz/rafalciecwierz.github.io'
+    },
+    // NEW CONTENT: console greeting
+    console: "Hi, I'm Ralph's clay twin. Click me 10 times in the hero and I'll show you what 22 years of parkour looks like."
+  };
+
+  /* =====================================================================
+     Helpers
+     ===================================================================== */
+  const $ = (s, r = document) => r.querySelector(s);
+  const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const smallScreen = matchMedia('(max-width: 899px), (pointer: coarse)').matches;
+  const P = CONTENT.profile;
+  const head = (id, title, intro) => `
+    <div class="sec-head">
+      <h2 class="h2" id="${id}">${esc(title)}</h2>
+      ${intro ? `<p class="intro">${esc(intro)}</p>` : ''}
+    </div>`;
+  const ICON = {
+    download: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11m0 0-4.5-4.5M12 15l4.5-4.5M5 20h14"/></svg>',
+    mail: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5.5" width="18" height="13" rx="3.5"/><path d="m4 7.5 8 6 8-6"/></svg>'
+  };
+
+  /* =====================================================================
+     Rendering (one function per section = one component later)
+     ===================================================================== */
+  function renderHeader() {
+    $('#logoName').textContent = P.name;
+    const items = CONTENT.nav.map((n) => `<li><a href="#${n.id}" data-nav="${n.id}">${esc(n.label)}</a></li>`).join('');
+    $('#navList').innerHTML = items;
+    $('#menu').innerHTML = items;
+  }
+
+  function renderHero() {
+    const H = CONTENT.hero;
+    $('#heroText').innerHTML = `
+      <h1 class="h1" id="heroName"><span class="vh">${esc(P.name)}</span>${P.nameLines.map((l) => `<span aria-hidden="true">${esc(l)}</span>`).join('')}</h1>
+      <p class="role">${esc(P.role)}</p>
+      <p class="tagline">${esc(P.tagline)}</p>
+      <div class="ctas">
+        <a class="btn" href="${P.cvFile}" download>${ICON.download}${esc(H.cv)}</a>
+        <a class="btn btn--ghost" href="#contact">${ICON.mail}${esc(H.contact)}</a>
+      </div>`;
+    $('#heroFallback').innerHTML = fallbackFigureSVG(false);
+  }
+
+  function renderAbout() {
+    const A = CONTENT.about;
+    $('#aboutWrap').innerHTML = `
+      ${head('about-h', A.title)}
+      <div class="about-grid">
+        <div class="about-text">${A.paragraphs.map((p) => `<p>${esc(p)}</p>`).join('')}</div>
+        <ul class="facts">${A.facts.map((f) => `<li class="fact clay"><b>${esc(f.big)}</b><span>${esc(f.small)}</span></li>`).join('')}</ul>
+      </div>`;
+  }
+
+  function renderStack() {
+    const S = CONTENT.stack;
+    const sizes = { strong: 22, medium: 16, low: 11 };
+    $('#stackWrap').innerHTML = `
+      ${head('stack-h', S.title, S.intro)}
+      <div class="stack-grid">
+        <div>
+          <div class="pit clay"><canvas id="pit" aria-hidden="true"></canvas></div>
+          <ul class="legend">${Object.entries(S.levels).map(([k, v]) => `<li><i style="width:${sizes[k]}px;height:${sizes[k]}px"></i>${esc(v)}</li>`).join('')}</ul>
+        </div>
+        <div class="groups">
+          ${S.groups.map((g) => `
+            <div class="group clay" style="--c:${g.color}">
+              <h3><i aria-hidden="true"></i>${esc(g.name)}</h3>
+              <dl>${['strong', 'medium', 'low'].map((lvl) => {
+                const items = g.items.filter((i) => i[1] === lvl);
+                return items.length ? `<dt>${lvl}</dt><dd>${items.map((i) => esc(i[0])).join(', ')}</dd>` : '';
+              }).join('')}</dl>
+            </div>`).join('')}
+        </div>
+      </div>`;
+  }
+
+  function levelUpSVG() {
+    // a puffy clay star
+    return `<svg viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="19" fill="#2A1640"/><path d="M20 8.5l3.4 7 7.6 1-5.5 5.3 1.4 7.6L20 25.8l-6.9 3.6 1.4-7.6L9 16.5l7.6-1z" fill="#FFC98A" stroke="#FFC98A" stroke-width="2.5" stroke-linejoin="round"/></svg>`;
+  }
+
+  function renderCareer() {
+    const C = CONTENT.career;
+    $('#careerWrap').innerHTML = `
+      ${head('career-h', C.title, C.intro)}
+      <div class="track" id="track">
+        <div class="groove" aria-hidden="true"><i></i></div>
+        ${C.jobs.map((j) => `
+          <article class="job clay">
+            <div class="job-top"><h3>${esc(j.company)}</h3><span class="dates">${esc(j.dates)}</span></div>
+            <p class="roles">${j.roles.map(esc).join(' → ')}</p>
+            ${j.roles.length > 1 ? `<p class="levelup">${levelUpSVG()}${esc(C.levelUp)}: ${esc(j.roles[j.roles.length - 1])}</p>` : ''}
+            <ul class="points">${j.points.map((p) => `<li>${esc(p)}</li>`).join('')}</ul>
+            <ul class="tags" aria-label="Stack">${j.stack.map((t) => `<li class="chip">${esc(t)}</li>`).join('')}</ul>
+          </article>`).join('')}
+        <div class="edu clay"><div><b>${esc(C.education.school)}</b><br>${esc(C.education.degree)}</div><span class="dates">${esc(C.education.dates)}</span></div>
+      </div>`;
+  }
+
+  function miniFigureSVG(look) {
+    // a small clay colleague: head, hair, shoulders (CSS-free SVG with soft gradients)
+    const id = Math.random().toString(36).slice(2, 7);
+    return `<svg class="mini" viewBox="0 0 64 72" aria-hidden="true">
+      <defs>
+        <radialGradient id="s${id}" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#FFE3CC"/><stop offset=".6" stop-color="#F1C29C"/><stop offset="1" stop-color="#C98F68"/></radialGradient>
+        <radialGradient id="b${id}" cx=".35" cy=".2" r=".9"><stop offset="0" stop-color="#fff" stop-opacity=".55"/><stop offset=".35" stop-color="${look.shirt}"/><stop offset="1" stop-color="${look.shirt}" stop-opacity=".75"/></radialGradient>
+      </defs>
+      ${look.long ? `<rect x="14" y="22" width="9" height="30" rx="4.5" fill="${look.hair}"/><rect x="41" y="22" width="9" height="30" rx="4.5" fill="${look.hair}"/>` : ''}
+      <path d="M6 72c0-16 11-24 26-24s26 8 26 24z" fill="url(#b${id})"/>
+      <circle cx="32" cy="28" r="15" fill="url(#s${id})"/>
+      <path d="M17 26c0-10 7-15 15-15s15 5 15 13c-5-4-11-6-17-5-5 1-9 4-13 7z" fill="${look.hair}"/>
+      <circle cx="26.5" cy="30" r="1.8" fill="#2A1640"/><circle cx="37.5" cy="30" r="1.8" fill="#2A1640"/>
+      <path d="M27 35.5q5 4 10 0" stroke="#7A2E3A" stroke-width="2" fill="none" stroke-linecap="round"/>
+      <circle cx="22" cy="34" r="2.6" fill="#F29C9C" opacity=".7"/><circle cx="42" cy="34" r="2.6" fill="#F29C9C" opacity=".7"/>
+    </svg>`;
+  }
+
+  function renderTeam() {
+    const T = CONTENT.team;
+    $('#teamWrap').innerHTML = `
+      ${head('team-h', T.title, T.intro)}
+      <ul class="team">
+        ${T.quotes.map((q) => `
+          <li><figure class="quote" style="margin:0">
+            <blockquote class="say" style="margin:0">${q.text.map((t) => `<p>“${esc(t)}”</p>`).join('')}</blockquote>
+            <figcaption class="who">${miniFigureSVG(q.look)}<div><b>${esc(q.name)}</b><span>${esc(q.role)}, ${esc(T.source)}</span></div></figcaption>
+          </figure></li>`).join('')}
+      </ul>`;
+  }
+
+  function thumbSVG(name, i) {
+    // a generated clay composition per project: same input, same picture
+    let h = 0; for (const c of name) h = (h * 31 + c.charCodeAt(0)) >>> 0;
+    const rnd = () => ((h = (h * 1103515245 + 12345) >>> 0) / 2 ** 32);
+    const cols = ['#FF9EC0', '#B9A4FF', '#8CE8CB', '#FFC98A', '#93CBFF'];
+    let shapes = '';
+    for (let k = 0; k < 4; k++) {
+      const c = cols[(i + k) % cols.length], x = 30 + rnd() * 240, y = 30 + rnd() * 90, r = 18 + rnd() * 34;
+      shapes += k % 2
+        ? `<rect x="${x - r}" y="${y - r * .6}" width="${r * 2}" height="${r * 1.2}" rx="${r * .6}" fill="url(#g${i}${k})" transform="rotate(${(rnd() - .5) * 50} ${x} ${y})"/>`
+        : `<circle cx="${x}" cy="${y}" r="${r}" fill="url(#g${i}${k})"/>`;
+      shapes = `<defs><radialGradient id="g${i}${k}" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="${shade(c, .4)}"/><stop offset=".45" stop-color="${c}"/><stop offset="1" stop-color="${shade(c, -.35)}"/></radialGradient></defs>` + shapes;
+    }
+    return `<svg viewBox="0 0 300 150" preserveAspectRatio="xMidYMid slice" aria-hidden="true">${shapes}</svg>`;
+  }
+
+  function renderProjects() {
+    const Pr = CONTENT.projects;
+    const tilt = ['-1.6deg', '1.2deg', '-.6deg', '1.8deg'];
+    $('#projectsWrap').innerHTML = `
+      ${head('projects-h', Pr.title, Pr.intro)}
+      <ul class="cards">
+        ${Pr.items.map((p, i) => `
+          <li class="card clay" style="--r:${tilt[i % tilt.length]}">
+            <div class="thumb">${thumbSVG(p.name, i)}</div>
+            <span class="status status--${p.status.replace(/\s/g, '-')}">${esc(p.status)}</span>
+            <h3>${esc(p.name)}</h3>
+            ${p.note ? `<p class="note">${esc(p.note)}</p>` : ''}
+            <p class="desc">${esc(p.description)}</p>
+            <ul class="tags" aria-label="Tags">${p.tags.map((t) => `<li class="chip">${esc(t)}</li>`).join('')}</ul>
+            ${p.repo ? `<p class="links"><a href="${p.repo}">${esc(Pr.repoLabel)}<span class="vh">: ${esc(p.name)}</span></a></p>` : ''}
+          </li>`).join('')}
+      </ul>`;
+  }
+
+  function renderContact() {
+    const C = CONTENT.contact;
+    const social = (label, url, todo) => url ? `<li><a href="${url}">${esc(label)}</a></li>` : `<li><span>${esc(label)}: TODO</span></li>`;
+    $('#contactWrap').innerHTML = `
+      <div class="contact-grid">
+        <div>
+          ${head('contact-h', C.title)}
+          <p class="avail">${esc(P.availability)}</p>
+          <a class="email" href="mailto:${P.email}">${esc(P.email)}</a>
+          <ul class="socials">
+            ${social('LinkedIn', P.linkedin)}
+            ${social('GitHub', P.github)}
+            ${social(C.calendlyLabel, P.calendly)}
+          </ul>
+          <div class="ctas"><a class="btn" href="${P.cvFile}" download>${ICON.download}${esc(CONTENT.hero.cv)}</a></div>
+        </div>
+        <div class="stage stage--contact" id="contactStage">
+          <canvas id="contactCanvas" aria-hidden="true"></canvas>
+          <div class="fallback" aria-hidden="true">${fallbackFigureSVG(true)}</div>
+          <div class="bubble" id="bubble2" aria-hidden="true"></div>
+        </div>
+      </div>`;
+  }
+
+  function renderFooter() {
+    const F = CONTENT.footer;
+    $('#footerWrap').innerHTML = `<p>${esc(F.builtWith)}. <a href="${F.repo}">Source on GitHub</a></p><p>© ${new Date().getFullYear()} ${esc(P.name)}</p>`;
+  }
+
+  /* Flat SVG figure shown when WebGL is unavailable (custom) */
+  function fallbackFigureSVG(envelope) {
+    return `<svg viewBox="0 0 300 420">
+      <ellipse cx="150" cy="392" rx="120" ry="22" fill="#4A3577"/>
+      <ellipse cx="150" cy="380" rx="120" ry="22" fill="#5B4291"/>
+      <rect x="118" y="300" width="26" height="80" rx="13" fill="#3A4A78"/><rect x="156" y="300" width="26" height="80" rx="13" fill="#3A4A78"/>
+      <rect x="92" y="170" width="116" height="150" rx="52" fill="#24345F"/>
+      <path d="M134 172l16 50 16-50z" fill="#F5F2EC"/>
+      ${envelope
+        ? `<rect x="104" y="230" width="92" height="58" rx="10" fill="#FFC98A"/><path d="M106 234l44 30 44-30" stroke="#D98B4B" stroke-width="5" fill="none" stroke-linejoin="round"/>`
+        : `<rect x="94" y="236" width="112" height="30" rx="15" fill="#2C3E70"/><rect x="100" y="252" width="100" height="30" rx="15" fill="#24345F"/>`}
+      <rect x="138" y="146" width="24" height="30" rx="10" fill="#E9B892"/>
+      <circle cx="150" cy="112" r="50" fill="#F2C4A0"/>
+      <path d="M104 104c-4-34 22-56 50-52 22 2 42 18 40 46-10-14-24-22-42-22-20 0-36 12-48 28z" fill="#9C6B43"/>
+      <path d="M118 66c6-16 26-26 46-20" stroke="#B5845A" stroke-width="10" stroke-linecap="round" fill="none"/>
+      <circle cx="133" cy="114" r="5" fill="#2A1D2E"/><circle cx="167" cy="114" r="5" fill="#2A1D2E"/>
+      <path d="M130 132q20 16 40 0" stroke="#7A2E3A" stroke-width="5" fill="none" stroke-linecap="round"/>
+    </svg>`;
+  }
+
+  /* =====================================================================
+     ClayFigure (custom, Three.js) — includes KeyLight and SpeechBubble
+     ===================================================================== */
+  const THREE_URL = 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
+  let threePromise;
+  const loadThree = () => (threePromise ||= import(THREE_URL));
+
+  // A grey bump map with grain and a few fingerprint whorls, so the clay looks hand-pressed.
+  function clayBumpTexture(THREE) {
+    const c = document.createElement('canvas'); c.width = c.height = 256;
+    const g = c.getContext('2d');
+    g.fillStyle = '#808080'; g.fillRect(0, 0, 256, 256);
+    for (let i = 0; i < 1600; i++) {
+      const v = Math.random() < .5 ? 0 : 255;
+      g.fillStyle = `rgba(${v},${v},${v},${.05 + Math.random() * .06})`;
+      g.beginPath(); g.arc(Math.random() * 256, Math.random() * 256, .6 + Math.random() * 2.6, 0, 7); g.fill();
+    }
+    g.lineWidth = 1.4;
+    for (let f = 0; f < 3; f++) {
+      const cx = 40 + Math.random() * 176, cy = 40 + Math.random() * 176, rot = Math.random() * 3;
+      for (let r = 4; r < 34; r += 3.2) {
+        g.strokeStyle = `rgba(0,0,0,${.14 - r * .003})`;
+        g.beginPath(); g.ellipse(cx, cy, r, r * .72, rot, .3, 5.6); g.stroke();
+      }
+    }
+    const tex = new THREE.CanvasTexture(c);
+    tex.wrapS = tex.wrapT = THREE.RepeatWrapping; tex.repeat.set(2, 2);
+    return tex;
+  }
+
+  // Poses: shoulder and elbow rotations (radians) for each arm. Left arm mirrors z and y.
+  const POSES = {
+    crossed: { r: { sx: -.6, sy: 0, sz: -.08, ex: -.053, ey: .489, ez: -1.255 }, l: { sx: -.75, sy: 0, sz: .08, ex: -.082, ey: -.596, ez: 1.197 } },
+    wave:    { r: { sx: -.2, sy: 0, sz: 2.55, ex: 0, ey: 0, ez: .55 },      l: { sx: -1.05, sy: -.2, sz: -.3, ex: -.35, ey: 0, ez: 1.58 } },
+    envelope:{ r: { sx: -.3, sy: 0, sz: .04, ex: -1.322, ey: .577, ez: -.521 }, l: { sx: -.3, sy: 0, sz: -.04, ex: -1.322, ey: -.577, ez: .521 } }
+  };
+
+  function buildFigure(THREE, { envelope }) {
+    const bump = clayBumpTexture(THREE);
+    const clay = (color, extra = {}) => new THREE.MeshPhysicalMaterial({
+      color, roughness: .78, metalness: 0, sheen: .25, sheenRoughness: .7, sheenColor: new THREE.Color(color).lerp(new THREE.Color('#ffffff'), .5),
+      bumpMap: bump, bumpScale: 1.2, ...extra
+    });
+    const M = {
+      skin: clay('#F2C4A0'), stubble: clay('#DEAC8A'), hair: clay('#86603F'), hairHi: clay('#9E7650'),
+      blazer: clay('#24345F'), lapel: clay('#1C2A50'), shirt: clay('#F5F2EC'), jeans: clay('#3A4A78'),
+      shoe: clay('#F5F2EC'), dark: clay('#2A1D2E', { roughness: .4, sheen: 0 }), lip: clay('#8A3442'),
+      cheek: clay('#F2A0A0'), plinth: clay('#5B4291'), plinthTop: clay('#6B52A6'),
+      env: clay('#FFC98A'), envFlap: clay('#FFB16B'), seal: clay('#FF7FA8')
+    };
+    const meshes = [];
+    const add = (parent, geo, mat, p = [0, 0, 0], s = [1, 1, 1], r = [0, 0, 0]) => {
+      const m = new THREE.Mesh(geo, mat);
+      m.position.set(...p); m.scale.set(...s); m.rotation.set(...r);
+      m.castShadow = true; m.receiveShadow = true;
+      parent.add(m); meshes.push(m); return m;
+    };
+    const sphere = (r, w = 32, h = 20) => new THREE.SphereGeometry(r, w, h);
+    const capsule = (r, len) => new THREE.CapsuleGeometry(r, len, 8, 20);
+
+    const root = new THREE.Group();           // turntable
+    const flip = new THREE.Group();           // pivot for the backflip, at hip height
+    flip.position.y = 1.2; root.add(flip);
+    const body = new THREE.Group(); body.position.y = -1.2; flip.add(body);
+
+    // Pedestal: a lathe with rounded edges (not part of the flip)
+    const prof = [];
+    for (let i = 0; i <= 10; i++) { const a = -Math.PI / 2 + (i / 10) * Math.PI / 2; prof.push(new THREE.Vector2(1.05 + Math.cos(a) * .14, -.2 + Math.sin(a) * .14)); }
+    for (let i = 0; i <= 10; i++) { const a = (i / 10) * Math.PI / 2; prof.push(new THREE.Vector2(1.05 + Math.cos(a) * .14, -.08 + Math.sin(a) * .14)); }
+    prof.unshift(new THREE.Vector2(0, -.34)); prof.push(new THREE.Vector2(0, .06));
+    const plinth = add(root, new THREE.LatheGeometry(prof, 64), M.plinth, [0, -.06, 0]);
+    plinth.castShadow = false;
+
+    // Legs and shoes
+    for (const sx of [-1, 1]) {
+      add(body, capsule(.15, .5), M.jeans, [sx * .16, .52, 0]);
+      add(body, sphere(.17), M.shoe, [sx * .17, .1, .06], [1, .62, 1.45]);
+    }
+    // Torso: blazer, shirt, lapels
+    const torso = new THREE.Group(); body.add(torso);
+    add(torso, capsule(.41, .36), M.blazer, [0, 1.4, 0], [1.04, 1, .72]);
+    // the white T-shirt shows as a rounded V between the lapels
+    const vee = new THREE.Shape([new THREE.Vector2(-.17, 0), new THREE.Vector2(.17, 0), new THREE.Vector2(0, -.4)]);
+    add(torso, new THREE.ExtrudeGeometry(vee, { depth: .02, bevelEnabled: true, bevelThickness: .035, bevelSize: .035, bevelSegments: 4 }), M.shirt, [0, 1.95, .2], [1, 1, 1], [-.32, 0, 0]);
+    for (const sx of [-1, 1]) add(torso, capsule(.05, .36), M.lapel, [sx * .1, 1.75, .27], [1, 1, .7], [-.3, 0, -sx * .42]);
+    add(torso, new THREE.CylinderGeometry(.12, .13, .22, 20), M.skin, [0, 1.98, 0]);
+
+    // Arms (shoulder → upper arm → elbow → forearm → hand)
+    const arm = (side) => {
+      const shoulder = new THREE.Group(); shoulder.position.set(side * .44, 1.76, 0); torso.add(shoulder);
+      add(shoulder, sphere(.15), M.blazer, [0, 0, 0]);
+      add(shoulder, capsule(.13, .3), M.blazer, [0, -.22, 0]);
+      const elbow = new THREE.Group(); elbow.position.y = -.44; shoulder.add(elbow);
+      add(elbow, capsule(.12, .3), M.blazer, [0, -.2, 0]);
+      add(elbow, sphere(.1), M.skin, [0, -.44, 0], [1, 1.1, .9]);
+      return { shoulder, elbow };
+    };
+    const armR = arm(1), armL = arm(-1);
+
+    // Head
+    const head = new THREE.Group(); head.position.y = 2.42; body.add(head);
+    add(head, sphere(.42, 40, 28), M.skin, [0, 0, 0], [1, 1.04, .96]);
+    add(head, new THREE.SphereGeometry(.424, 40, 12, Math.PI * .1, Math.PI * .8, Math.PI * .67, Math.PI * .22), M.stubble, [0, 0, 0], [1, 1.04, .96]);
+    for (const sx of [-1, 1]) {
+      add(head, sphere(.085), M.skin, [sx * .4, -.02, -.02], [.5, 1, .8]);
+      add(head, sphere(.07), M.cheek, [sx * .25, -.1, .31], [1, .7, .4]);
+      add(head, capsule(.025, .09), M.hair, [sx * .14, .17, .38], [1, 1, .6], [0, 0, Math.PI / 2 + sx * .15]);
+    }
+    const eyes = new THREE.Group(); head.add(eyes);
+    for (const sx of [-1, 1]) add(eyes, sphere(.045), M.dark, [sx * .14, .06, .38], [1, 1.15, .6]);
+    add(head, sphere(.06), M.skin, [0, -.02, .42], [1, .9, 1]);
+    add(head, new THREE.TorusGeometry(.115, .022, 10, 28, Math.PI), M.lip, [0, -.13, .38], [1, .8, 1], [.15, 0, Math.PI]);
+    // Hair: a short cap, a soft mass on top and strands swept up and back from the forehead
+    add(head, new THREE.SphereGeometry(.44, 40, 16, 0, Math.PI * 2, 0, Math.PI * .3), M.hair, [0, .06, -.06], [1, 1.04, 1]);
+    add(head, sphere(.26), M.hair, [0, .4, -.04], [1.25, .6, 1.1], [-.3, 0, 0]);
+    const strands = [[-.2, .33, .19, -1.05, .45, M.hair], [-.1, .38, .22, -1.1, .2, M.hairHi], [0, .4, .23, -1.15, 0, M.hair], [.1, .39, .22, -1.1, -.18, M.hairHi], [.2, .34, .19, -1.05, -.42, M.hair], [-.06, .47, .06, -1.35, .08, M.hairHi], [.08, .47, .05, -1.35, -.1, M.hair]];
+    strands.forEach(([x, y, z, rx, rz, mat]) => add(head, capsule(.09, .24), mat, [x, y, z], [1, 1, .7], [rx, 0, rz]));
+
+    let env = null;
+    if (envelope) {
+      env = new THREE.Group(); env.position.set(0, 1.44, .47); env.rotation.x = -.2; body.add(env);
+      add(env, new THREE.BoxGeometry(.62, .42, .06), M.env);
+      // flap: a flattened triangle on the front face
+      const flapShape = new THREE.Shape([new THREE.Vector2(-.29, .19), new THREE.Vector2(.29, .19), new THREE.Vector2(0, -.04)]);
+      add(env, new THREE.ExtrudeGeometry(flapShape, { depth: .01, bevelEnabled: true, bevelThickness: .015, bevelSize: .015, bevelSegments: 3 }), M.envFlap, [0, 0, .035]);
+      add(env, sphere(.055), M.seal, [0, -.02, .065], [1, 1, .45]);
+    }
+    return { root, flip, body, torso, head, eyes, armR, armL, meshes, count: meshes.length - 1, env };
+  }
+
+  async function ClayFigure(stage, canvas, { pose = 'crossed', interactive = true, bubble = null, onReady = () => {} } = {}) {
+    let THREE;
+    try {
+      THREE = await loadThree();
+    } catch (e) { stage.classList.add('no-webgl'); return; }
+    let renderer;
+    try {
+      renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, powerPreference: 'low-power' });
+    } catch (e) { stage.classList.add('no-webgl'); return; }
+
+    const onDemand = smallScreen || reduceMotion;  // still pose; animate only on interaction
+    renderer.setPixelRatio(Math.min(devicePixelRatio, smallScreen ? 1.5 : 1.75));
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.15;
+    renderer.shadowMap.enabled = !smallScreen;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(26, 1, .1, 50);
+    const F = buildFigure(THREE, { envelope: pose === 'envelope' });
+    scene.add(F.root);
+
+    // Lights: plum ambient, warm key (follows the cursor), pink rim, mint fill
+    scene.add(new THREE.HemisphereLight('#C9B6FF', '#1C1030', 1.1));
+    const key = new THREE.SpotLight('#FFD2A0', 60, 0, .55, .7, 1.6);
+    key.position.set(2.6, 5.2, 4.2); key.target.position.set(0, 1.2, 0);
+    key.castShadow = true; key.shadow.mapSize.set(1024, 1024); key.shadow.bias = -.0004; key.shadow.normalBias = .02;
+    scene.add(key, key.target);
+    const rim = new THREE.DirectionalLight('#FF8FB8', 2.2); rim.position.set(-4, 3.5, -3.5); scene.add(rim);
+    const fill = new THREE.DirectionalLight('#8CE8CB', .55); fill.position.set(4, .5, 2); scene.add(fill);
+
+    // Pose state (lerped every frame)
+    const cur = structuredClone(POSES[pose]);
+    let target = POSES[pose];
+    const applyPose = (k) => {
+      for (const side of ['r', 'l']) {
+        const c = cur[side], t = target[side], A = side === 'r' ? F.armR : F.armL;
+        for (const key of Object.keys(c)) c[key] += (t[key] - c[key]) * k;
+        A.shoulder.rotation.set(c.sx, c.sy, c.sz); A.elbow.rotation.set(c.ex, c.ey, c.ez);
+      }
+    };
+    applyPose(1);
+
+    function resize() {
+      const w = stage.clientWidth, h = stage.clientHeight;
+      renderer.setSize(w, h, false);
+      camera.aspect = w / h;
+      // Frame the figure: pull the camera back on narrow stages so he always fits
+      const fit = Math.max(1, 1.05 / camera.aspect);
+      camera.position.set(0, 1.7, 8.1 * Math.min(fit, 1.6));
+      camera.lookAt(0, 1.3, 0);
+      camera.updateProjectionMatrix();
+      render();
+    }
+
+    // Pointer: normalized over the window (head + key light), raycast over the stage
+    const ptr = { x: 0, y: 0 }, look = { x: 0, y: 0 };
+    const ray = new THREE.Raycaster(), ndc = new THREE.Vector2();
+    const hit = (e) => {
+      const r = canvas.getBoundingClientRect();
+      ndc.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
+      ray.setFromCamera(ndc, camera);
+      return ray.intersectObject(F.flip, true).length > 0;
+    };
+
+    // Actions
+    let waveT = -1, flipT = -1, clicks = 0, clickTimer, bubbleTimer;
+    const say = (text) => {
+      if (!bubble) return;
+      bubble.textContent = text; bubble.classList.add('is-on');
+      clearTimeout(bubbleTimer); bubbleTimer = setTimeout(() => bubble.classList.remove('is-on'), 2600);
+    };
+    let helloIdx = 0;
+    const wave = () => {
+      if (reduceMotion) { say(CONTENT.hero.hello[helloIdx++ % CONTENT.hero.hello.length]); return; }
+      clicks++; clearTimeout(clickTimer); clickTimer = setTimeout(() => (clicks = 0), 2500);
+      if (clicks >= 10 && flipT < 0) { clicks = 0; flipT = 0; say(CONTENT.hero.flip); wake(); return; }
+      if (waveT < 0) say(CONTENT.hero.hello[helloIdx++ % CONTENT.hero.hello.length]);
+      waveT = 0; wake();
+    };
+
+    if (interactive) {
+      addEventListener('pointermove', (e) => {
+        ptr.x = (e.clientX / innerWidth) * 2 - 1; ptr.y = (e.clientY / innerHeight) * 2 - 1;
+        if (!onDemand) stage.classList.toggle('is-hover', hit(e));
+      }, { passive: true });
+      canvas.addEventListener('click', (e) => { if (hit(e)) wave(); });
+    } else {
+      addEventListener('pointermove', (e) => { ptr.x = (e.clientX / innerWidth) * 2 - 1; ptr.y = (e.clientY / innerHeight) * 2 - 1; }, { passive: true });
+    }
+
+    // Loop: runs while visible; on demand it runs only while an action plays
+    let raf = 0, visible = false, last = 0, time = 0, blinkAt = 2;
+    function render() { renderer.render(scene, camera); }
+    function tick(now) {
+      raf = 0;
+      const dt = Math.min(.05, (now - last) / 1000); last = now; time += dt;
+      const k = 1 - Math.pow(.001, dt);           // frame-rate independent smoothing
+
+      if (!onDemand) {
+        look.x += (ptr.x - look.x) * k * .6; look.y += (ptr.y - look.y) * k * .6;
+        F.head.rotation.y = look.x * .55; F.head.rotation.x = look.y * .28;
+        F.torso.rotation.y = look.x * .12;
+        F.root.rotation.y = Math.sin(time * .35) * .22;            // turntable sway
+        F.torso.scale.y = 1 + Math.sin(time * 2.2) * .008;           // breathing
+        key.position.x = 2.6 + look.x * 2.4; key.position.y = 5.2 - look.y * 1.4;  // KeyLight
+        if (time > blinkAt) { F.eyes.scale.y = .12; if (time > blinkAt + .12) { F.eyes.scale.y = 1; blinkAt = time + 2.5 + Math.random() * 3; } }
+      }
+      // Wave: raise the right arm, wag the forearm, put it back
+      if (waveT >= 0) {
+        waveT += dt;
+        target = waveT < 1.5 ? POSES.wave : POSES[pose];
+        if (waveT < 1.5) target = { ...POSES.wave, r: { ...POSES.wave.r, ez: .55 + Math.sin(waveT * 14) * .45 } };
+        if (waveT > 2.2) waveT = -1;
+      }
+      applyPose(1 - Math.pow(.0005, dt));
+      // Backflip: jump, rotate backwards around the hips, land with a squash
+      if (flipT >= 0) {
+        flipT += dt;
+        const d = 1.1, t = Math.min(flipT / d, 1);
+        const ease = t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+        F.flip.position.y = 1.2 + Math.sin(t * Math.PI) * .85;
+        F.flip.rotation.x = -ease * Math.PI * 2;
+        const land = flipT - d;
+        const sq = land > 0 && land < .4 ? Math.sin((land / .4) * Math.PI) * .14 : 0;
+        F.flip.scale.set(1 + sq * .6, 1 - sq, 1 + sq * .6);
+        if (flipT > d + .45) { flipT = -1; F.flip.rotation.x = 0; F.flip.scale.set(1, 1, 1); F.flip.position.y = 1.2; }
+      }
+      render();
+      const busy = waveT >= 0 || flipT >= 0;
+      if (visible && (!onDemand || busy)) raf = requestAnimationFrame(tick);
+    }
+    function wake() { if (!raf && visible) { last = performance.now(); raf = requestAnimationFrame(tick); } }
+
+    new IntersectionObserver(([e]) => { visible = e.isIntersecting; if (visible) wake(); }, { rootMargin: '100px' }).observe(stage);
+    document.addEventListener('visibilitychange', () => { if (document.hidden) { cancelAnimationFrame(raf); raf = 0; } else wake(); });
+    new ResizeObserver(resize).observe(stage);
+    resize();
+    onReady({ count: F.count, wave });
+  }
+
+  /* =====================================================================
+     Ballpit (inspired by React Bits <Ballpit />, rewritten as 2D canvas)
+     ===================================================================== */
+  function Ballpit(canvas) {
+    const ctx = canvas.getContext('2d');
+    const R = { strong: 50, medium: 38, low: 29 };
+    const items = CONTENT.stack.groups.flatMap((g) => g.items.map(([name, lvl, short]) => ({ label: short || name, lvl, color: g.color })));
+    let W = 0, H = 0, scale = 1, balls = [], raf = 0, visible = false, started = false;
+    const ptr = { x: -999, y: -999, vx: 0, vy: 0, on: false };
+    const isStatic = reduceMotion || smallScreen;
+
+    function size() {
+      const dpr = Math.min(devicePixelRatio, 2);
+      W = canvas.clientWidth; H = canvas.clientHeight;
+      canvas.width = W * dpr; canvas.height = H * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      // fit total ball area to ~52% of the box
+      const area = items.reduce((s, i) => s + Math.PI * R[i.lvl] ** 2, 0);
+      scale = Math.min(1.25, Math.sqrt((W * H * .58) / area));
+    }
+    function spawn() {
+      balls = items.map((it, i) => {
+        const r = R[it.lvl] * scale;
+        return { ...it, r, x: r + Math.random() * (W - 2 * r), y: -r - Math.random() * H * 1.4 - i * 4, vx: (Math.random() - .5) * 2, vy: 0 };
+      });
+    }
+    function step() {
+      const g = .35, damp = .995;
+      for (const b of balls) {
+        b.vy += g; b.vx *= damp; b.vy *= damp;
+        if (ptr.on) {  // stir: push away from the cursor, plus a share of its motion
+          const dx = b.x - ptr.x, dy = b.y - ptr.y, d = Math.hypot(dx, dy), reach = b.r + 70;
+          if (d < reach && d > .01) {
+            const f = (1 - d / reach) * 1.6;
+            b.vx += (dx / d) * f + ptr.vx * .08; b.vy += (dy / d) * f + ptr.vy * .08;
+          }
+        }
+        b.x += b.vx; b.y += b.vy;
+        if (b.x < b.r) { b.x = b.r; b.vx *= -.5; }
+        if (b.x > W - b.r) { b.x = W - b.r; b.vx *= -.5; }
+        if (b.y > H - b.r) { b.y = H - b.r; b.vy *= -.45; b.vx *= .96; }
+      }
+      for (let i = 0; i < balls.length; i++) for (let j = i + 1; j < balls.length; j++) {
+        const a = balls[i], b = balls[j], dx = b.x - a.x, dy = b.y - a.y, min = a.r + b.r, d2 = dx * dx + dy * dy;
+        if (d2 < min * min && d2 > .0001) {
+          const d = Math.sqrt(d2), nx = dx / d, ny = dy / d, over = (min - d) / 2;
+          a.x -= nx * over; a.y -= ny * over; b.x += nx * over; b.y += ny * over;
+          const rv = (b.vx - a.vx) * nx + (b.vy - a.vy) * ny;
+          if (rv < 0) { const imp = -rv * .75; a.vx -= nx * imp; a.vy -= ny * imp; b.vx += nx * imp; b.vy += ny * imp; }
+        }
+      }
+      ptr.vx *= .8; ptr.vy *= .8;
+    }
+    function draw() {
+      ctx.clearRect(0, 0, W, H);
+      for (const b of balls) {
+        ctx.fillStyle = 'rgba(8,0,24,.35)';
+        ctx.beginPath(); ctx.ellipse(b.x + b.r * .12, b.y + b.r * .2, b.r, b.r * .96, 0, 0, 7); ctx.fill();
+        const gr = ctx.createRadialGradient(b.x - b.r * .35, b.y - b.r * .4, b.r * .08, b.x, b.y, b.r);
+        gr.addColorStop(0, shade(b.color, .45)); gr.addColorStop(.45, b.color); gr.addColorStop(1, shade(b.color, -.3));
+        ctx.fillStyle = gr; ctx.beginPath(); ctx.arc(b.x, b.y, b.r, 0, 7); ctx.fill();
+        let fs = Math.max(11, b.r * .42);
+        ctx.font = `600 ${fs}px Fredoka, sans-serif`;
+        const w = ctx.measureText(b.label).width;
+        if (w > b.r * 1.62) { fs *= (b.r * 1.62) / w; ctx.font = `600 ${fs}px Fredoka, sans-serif`; }
+        ctx.fillStyle = '#2A1640'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.fillText(b.label, b.x, b.y + fs * .05);
+      }
+    }
+    function tick() { raf = 0; step(); step(); draw(); if (visible) raf = requestAnimationFrame(tick); }
+    function start() {
+      size(); spawn();
+      if (isStatic) { for (let i = 0; i < 900; i++) step(); draw(); return; }
+      if (!raf) raf = requestAnimationFrame(tick);
+    }
+    canvas.addEventListener('pointermove', (e) => {
+      const r = canvas.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top;
+      if (ptr.on) { ptr.vx = x - ptr.x; ptr.vy = y - ptr.y; }
+      ptr.x = x; ptr.y = y; ptr.on = true;
+    });
+    canvas.addEventListener('pointerleave', () => { ptr.on = false; });
+    new IntersectionObserver(([e]) => {
+      visible = e.isIntersecting;
+      if (visible && !started) { started = true; document.fonts.ready.then(start); }
+      else if (visible && !isStatic && !raf) raf = requestAnimationFrame(tick);
+    }, { threshold: .15 }).observe(canvas);
+    new ResizeObserver(() => { if (!started) return; const oldW = W, oldH = H; size(); for (const b of balls) { b.r = R[b.lvl] * scale; b.x *= W / oldW; b.y = Math.min(b.y * (H / oldH), H - b.r); } if (isStatic) { for (let i = 0; i < 300; i++) step(); } draw(); }).observe(canvas);
+  }
+  function shade(hex, amt) {
+    const n = parseInt(hex.slice(1), 16), f = (c) => Math.max(0, Math.min(255, Math.round(c + c * amt)));
+    return `rgb(${f(n >> 16)},${f((n >> 8) & 255)},${f(n & 255)})`;
+  }
+
+  /* =====================================================================
+     CareerTrack (custom): the groove fills with light as you scroll
+     ===================================================================== */
+  function CareerTrack() {
+    const track = $('#track'), fillEl = $('.groove', track);
+    if (reduceMotion) { fillEl.style.setProperty('--p', 1); return; }
+    let ticking = false;
+    const update = () => {
+      ticking = false;
+      const r = track.getBoundingClientRect(), mid = innerHeight * .6;
+      const p = Math.max(0, Math.min(1, (mid - r.top) / r.height));
+      fillEl.style.setProperty('--p', p.toFixed(4));
+    };
+    addEventListener('scroll', () => { if (!ticking) { ticking = true; requestAnimationFrame(update); } }, { passive: true });
+    update();
+  }
+
+  /* =====================================================================
+     ClayCrumbs (inspired by React Bits <ClickSpark />): clicks throw clay crumbs
+     ===================================================================== */
+  function ClayCrumbs() {
+    if (reduceMotion) return;
+    const c = $('#crumbs'), ctx = c.getContext('2d');
+    const cols = ['#FF9EC0', '#B9A4FF', '#8CE8CB', '#FFC98A', '#93CBFF'];
+    let parts = [], raf = 0;
+    const size = () => { const d = Math.min(devicePixelRatio, 2); c.width = innerWidth * d; c.height = innerHeight * d; ctx.setTransform(d, 0, 0, d, 0, 0); };
+    size(); addEventListener('resize', size);
+    function tick() {
+      ctx.clearRect(0, 0, innerWidth, innerHeight);
+      parts = parts.filter((p) => (p.life -= .016) > 0);
+      for (const p of parts) {
+        p.vy += .35; p.x += p.vx; p.y += p.vy;
+        ctx.globalAlpha = Math.min(1, p.life * 2.5);
+        const g = ctx.createRadialGradient(p.x - p.r * .3, p.y - p.r * .3, 0, p.x, p.y, p.r);
+        g.addColorStop(0, '#fff'); g.addColorStop(.35, p.c); g.addColorStop(1, shade(p.c, -.3));
+        ctx.fillStyle = g; ctx.beginPath(); ctx.ellipse(p.x, p.y, p.r, p.r * .8, p.rot, 0, 7); ctx.fill();
+      }
+      ctx.globalAlpha = 1;
+      raf = parts.length ? requestAnimationFrame(tick) : 0;
+    }
+    addEventListener('pointerdown', (e) => {
+      if (e.pointerType !== 'mouse' && e.pointerType !== 'pen') return;
+      for (let i = 0; i < 9; i++) {
+        const a = -Math.PI / 2 + (Math.random() - .5) * 2.6, v = 3 + Math.random() * 4;
+        parts.push({ x: e.clientX, y: e.clientY, vx: Math.cos(a) * v, vy: Math.sin(a) * v, r: 3 + Math.random() * 4, rot: Math.random() * 3, c: cols[i % cols.length], life: .9 });
+      }
+      if (!raf) raf = requestAnimationFrame(tick);
+    });
+  }
+
+  /* =====================================================================
+     NavPill, header state and MobileMenu (custom)
+     ===================================================================== */
+  function NavPill() {
+    const links = $$('[data-nav]');
+    const io = new IntersectionObserver((entries) => {
+      for (const e of entries) if (e.isIntersecting) {
+        links.forEach((a) => a.classList.toggle('is-active', a.dataset.nav === e.target.id));
+      }
+    }, { rootMargin: '-45% 0px -50% 0px' });
+    ['top', ...CONTENT.nav.map((n) => n.id)].forEach((id) => io.observe(document.getElementById(id))); // hero clears the pill
+    const header = $('#header');
+    const onScroll = () => header.classList.toggle('is-scrolled', scrollY > 30);
+    addEventListener('scroll', onScroll, { passive: true }); onScroll();
+  }
+
+  function MobileMenu() {
+    const btn = $('#menuBtn'), menu = $('#menu');
+    const focusables = () => [btn, ...$$('a', menu)];
+    function set(open) {
+      menu.hidden = !open;
+      btn.setAttribute('aria-expanded', String(open));
+      btn.textContent = open ? 'Close' : 'Menu';
+      document.documentElement.style.overflow = open ? 'hidden' : '';
+      if (open) $('a', menu).focus();
+    }
+    btn.addEventListener('click', () => set(menu.hidden));
+    menu.addEventListener('click', (e) => { if (e.target.closest('a')) set(false); });
+    document.addEventListener('keydown', (e) => {
+      if (menu.hidden) return;
+      if (e.key === 'Escape') { set(false); btn.focus(); }
+      if (e.key === 'Tab') {
+        const f = focusables(), i = f.indexOf(document.activeElement);
+        if (e.shiftKey && i <= 0) { e.preventDefault(); f[f.length - 1].focus(); }
+        else if (!e.shiftKey && i === f.length - 1) { e.preventDefault(); f[0].focus(); }
+      }
+    });
+    matchMedia('(min-width: 900px)').addEventListener('change', () => set(false));
+  }
+
+  function ConsoleHello() {
+    console.log('%c● %c' + CONTENT.console, 'color:#FFC98A;font-size:20px', 'font:600 13px sans-serif');
+  }
+
+  /* =====================================================================
+     Boot
+     ===================================================================== */
+  renderHeader();
+  renderHero();
+  renderAbout();
+  renderStack();
+  renderCareer();
+  renderTeam();
+  renderProjects();
+  renderContact();
+  renderFooter();
+  NavPill();
+  MobileMenu();
+  CareerTrack();
+  ClayCrumbs();
+  ConsoleHello();
+  Ballpit($('#pit'));
+
+  ClayFigure($('#heroStage'), $('#heroCanvas'), {
+    pose: 'crossed', bubble: $('#bubble'),
+    onReady: ({ count, wave }) => {
+      $('#caption').innerHTML = `<span>${esc(CONTENT.hero.caption.replace('{n}', count))}</span><button class="btn btn--ghost" type="button">${esc(CONTENT.hero.wave)}</button>`;
+      $('#caption button').addEventListener('click', wave);
+    }
+  });
+  ClayFigure($('#contactStage'), $('#contactCanvas'), {
+    pose: 'envelope', interactive: false, bubble: $('#bubble2'),
+    onReady: ({ wave }) => { $('#contactCanvas').addEventListener('click', () => { $('#bubble2').textContent = CONTENT.contact.envelopeBubble; $('#bubble2').classList.add('is-on'); setTimeout(() => $('#bubble2').classList.remove('is-on'), 2400); }); }
+  });
+</script>
+</body>
+</html>

@@ -21,6 +21,8 @@ On arrival, it is obvious this is a **professional** who is also **creative and 
 
 Use this as the test for every direction and both of its variants. If a prototype is professional but boring, or fun but not credible, it fails.
 
+**Professional comes first.** Humour is a touch, not the concept: the setting and the copy must read as a professional's site, with the wink in details (Rafał, task 2.4, prototype 03, where a "toy shelf" concept was replaced for this reason).
+
 ## 3. Audiences
 
 Recruiters, tech leads and creative studios matter **equally** (brief section 1). No audience wins ties by default. A direction has to give each of them something:

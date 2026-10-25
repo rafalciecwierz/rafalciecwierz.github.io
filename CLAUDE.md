@@ -56,5 +56,5 @@ Work is planned task by task in `docs/ROADMAP.md`, in three phases: documentatio
 ## Current status (keep this updated)
 
 - Phase: 2, design exploration
-- Last completed: 2.4 prototype 04, both variants (`design/prototypes/04-sticker-sheet-dark.html` "Night Zine", `04-sticker-sheet-light.html` "Fresh Sketchbook")
-- Next step: 2.4 prototype 05 (The Issue), branch `feat/design-prototype-05-the-issue`
+- Last completed: 2.4 prototype 05, both variants (`design/prototypes/05-the-issue-dark.html` "The Night Edition", `05-the-issue-light.html` "The Weekend Edition")
+- Next step: 2.4 prototype 06 (RalphOS), branch `feat/design-prototype-06-ralph-os`

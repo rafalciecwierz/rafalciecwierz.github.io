@@ -1,0 +1,916 @@
+<!doctype html>
+<!--
+  Prototype 05 — The Issue (`the-issue`), LIGHT variant: "The Weekend Edition".
+  Direction brief: docs/design/DIRECTIONS.md, section 05.
+
+  Concept: a weekend arts supplement with a gallery's calm, given over to one person. The cover
+  lies on a cool grey desk: the name is the masthead and the cover art is an ultramarine
+  monochrome (a nod to Yves Klein's blue) with a gallery wall label. Scrolling turns the cover
+  like a real page and opens the contents. Inside: About as an interview, the stack as the
+  magazine's back index, the career as a retrospective exhibition (newest work first), the team's
+  words as "the reviews", the projects as works on view with museum labels, and the contact as
+  visiting information with a subscription box. Cool paper grey, ink black, one ultramarine,
+  lots of white space, Matisse-like cut paper for the pictures.
+  It shares only the style (editorial, quiet luxury, scrollytelling) with the dark variant,
+  "The Night Edition": no Didone, no engraving, no masthead overlap, no chapters, no credits.
+
+  Effects (each is a named function in the script below):
+  - PageTurn ........... GSAP ScrollTrigger (scrub): the cover turns around its spine in 3D and
+                         reveals the contents page underneath (CSS 3D transforms, two faces)
+  - IssueSeal .......... inspired by React Bits CircularText, rebuilt as an SVG textPath that
+                         turns slowly
+  - PigmentSheen ....... custom: the ultramarine field has a pigment grain, and a soft sheen
+                         follows the cursor across it (fine pointers only)
+  - CutPaper ........... custom SVG: seeded, slightly irregular cut-paper shapes; used for the
+                         portrait (pieces shift on hover) and for each project's artwork
+  - RetrospectiveLine .. GSAP ScrollTrigger (scrub): the gallery route line draws itself
+  - Arrive ............. custom (IntersectionObserver + CSS): index groups, rooms and reviews
+                         arrive with a stagger
+  - Subscribe .......... custom easter egg: a subscription box with a joke confirmation and
+                         the CV download
+  - NavCurrent, MobileMenu, ConsoleHello: custom
+
+  Libraries in this file: GSAP 3.13.0 core and ScrollTrigger (jsDelivr, pinned).
+  Fonts: Instrument Serif (display, regular and italic) and Instrument Sans (text, variable
+  wdth/wght), Google Fonts, latin-ext. This is the pair the direction names; the dark variant
+  uses Bodoni Moda and Newsreader instead.
+  React build would need: gsap + @gsap/react.
+
+  Reduced motion: no page turn (the cover and the contents page sit one after the other), the
+  seal does not turn, no sheen, the route line is drawn, everything is already in place,
+  native anchor jumps. No WebGL. If GSAP fails to load, the page is the same as reduced motion.
+
+  Content: all copy lives in the CONTENT object at the top of the script. Additions beyond
+  brief section 5 are marked `NEW CONTENT` there.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rafał Ciećwierz, Frontend Engineer</title>
+<meta name="description" content="Rafał Ciećwierz, Frontend Engineer. React & TypeScript, 5+ years building production apps.">
+<meta name="theme-color" content="#E6E8EB">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wdth,wght@0,75..100,400..700;1,75..100,400..700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --desk: #E6E8EB;       /* cool paper grey: the desk and most pages */
+    --sheet: #F8F9FB;      /* white sheets: the cover, labels, mats */
+    --ink: #0E0F12;
+    --grey: #575C66;       /* secondary text, 5.4:1 on desk */
+    --ultra: #2329C8;      /* ultramarine: the one accent (white on it 9.5:1, on desk 7.4:1) */
+    --ultra-soft: #CDD0F3; /* ultramarine tint for quiet fills */
+    --rule: rgba(14, 15, 18, .14);
+    --serif: 'Instrument Serif', 'Times New Roman', serif;
+    --sans: 'Instrument Sans', system-ui, sans-serif;
+    --gutter: clamp(16px, 4vw, 64px);
+    --header: 56px;
+  }
+  *, *::before, *::after { box-sizing: border-box; }
+  html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+  body { margin: 0; background: var(--desk); color: var(--ink); font-family: var(--sans); font-size: clamp(16px, .3vw + 15px, 18px); line-height: 1.6; overflow-x: hidden; -webkit-font-smoothing: antialiased; }
+  a { color: inherit; }
+  img, svg { display: block; }
+  h1, h2, h3, h4, p, ul, ol, blockquote, figure, dl, dd { margin: 0; }
+  ul, ol { padding: 0; list-style: none; }
+  ::selection { background: var(--ultra); color: #fff; }
+  :focus-visible { outline: 2px solid var(--ultra); outline-offset: 3px; }
+  [hidden] { display: none !important; }
+  .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .skip { position: absolute; left: 12px; top: -80px; z-index: 500; padding: 10px 16px; background: var(--ultra); color: #fff; font-weight: 600; text-decoration: none; }
+  .skip:focus { top: 10px; }
+  .wrap { max-width: 1240px; margin: 0 auto; padding: 0 var(--gutter); }
+  .todo { background: #FFE27A; color: var(--ink); padding: 0 .35em; font: 600 .8em/1.5 var(--sans); }
+
+  .eyebrow { font: 600 .74rem/1.3 var(--sans); letter-spacing: .14em; text-transform: uppercase; color: var(--ultra); }
+  .title { font: 400 clamp(3rem, 8vw, 7.5rem)/.92 var(--serif); letter-spacing: -.02em; text-wrap: balance; }
+  .title em { color: var(--ultra); }
+  .intro { font-size: clamp(1.1rem, .6vw + .95rem, 1.35rem); line-height: 1.45; color: var(--grey); max-width: 40ch; text-wrap: pretty; }
+  .section { padding: clamp(80px, 11vw, 160px) 0; }
+  .section-head { display: grid; gap: 16px; margin-bottom: clamp(40px, 6vw, 80px); }
+
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 10px; min-height: 50px; padding: 12px 22px; border-radius: 999px; text-decoration: none; font: 600 1rem/1.1 var(--sans); border: 1.5px solid currentColor; transition: background-color .2s, color .2s, transform .2s; cursor: pointer; }
+  .btn svg { width: 18px; height: 18px; }
+  .btn-solid { background: var(--ultra); color: #fff; border-color: var(--ultra); }
+  .btn-solid:hover { background: var(--ink); border-color: var(--ink); }
+  .btn-line { background: transparent; color: var(--ink); }
+  .btn-line:hover { background: var(--ink); color: var(--sheet); }
+
+  /* ---------- header ---------- */
+  .top { position: fixed; inset: 0 0 auto; z-index: 100; height: var(--header); background: rgba(230, 232, 235, .92); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+  .top .wrap { max-width: none; height: 100%; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+  .brand { font: 400 1.5rem/1 var(--serif); text-decoration: none; white-space: nowrap; }
+  .brand i { color: var(--ultra); }
+  .nav { display: none; }
+  .nav ul { display: flex; gap: 6px; }
+  .nav a { display: block; padding: 8px 14px; border-radius: 999px; font: 500 .92rem/1 var(--sans); text-decoration: none; color: var(--grey); transition: background-color .2s, color .2s; }
+  .nav a:hover { color: var(--ink); background: var(--sheet); }
+  .nav a[aria-current="true"] { color: #fff; background: var(--ultra); }
+  .menu-btn { font: 600 .92rem/1 var(--sans); background: var(--ink); color: var(--sheet); border: 0; border-radius: 999px; padding: 11px 18px; cursor: pointer; }
+  @media (min-width: 900px) { .nav { display: block; } .menu-btn { display: none; } }
+  .menu { position: fixed; inset: 0; z-index: 90; background: var(--sheet); padding: calc(var(--header) + 24px) var(--gutter) 32px; overflow-y: auto; }
+  .menu[hidden] { display: none; }
+  .menu a { display: flex; align-items: baseline; gap: 14px; padding: 14px 0; border-bottom: 1px solid var(--rule); text-decoration: none; font: 400 2.4rem/1 var(--serif); }
+  .menu a span { font: 600 .8rem/1 var(--sans); color: var(--ultra); min-width: 2em; }
+
+  /* ---------- the issue: cover + contents (hero) ---------- */
+  .issue { position: relative; }
+  .stage { display: grid; gap: 24px; padding: calc(var(--header) + 12px) var(--gutter) 32px; }
+  .sheet-page { width: min(1160px, 100%); margin: 0 auto; background: var(--sheet); box-shadow: 0 1px 2px rgba(14, 15, 18, .06), 0 24px 60px -24px rgba(14, 15, 18, .28); }
+
+  .cover { position: relative; z-index: 2; transform-origin: 0 50%; transform-style: preserve-3d; }
+  .cover-front, .cover-back { backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+  .cover-front { position: relative; display: grid; grid-template-rows: auto auto 1fr; height: 100%; padding: clamp(14px, 2.2vw, 28px); gap: clamp(10px, 1.6vw, 20px); }
+  .cover-back { position: absolute; inset: 0; transform: rotateY(180deg); background: var(--ultra); color: #fff; display: grid; place-content: center; text-align: center; padding: 40px; gap: 14px; }
+  .cover-back p { max-width: 26ch; margin: 0 auto; }
+  .cover-back .ad { font: 400 clamp(2rem, 4vw, 3.4rem)/1 var(--serif); }
+  .cover-back small { font: 600 .72rem/1.3 var(--sans); letter-spacing: .16em; text-transform: uppercase; opacity: .8; }
+
+  .folio-line { display: flex; justify-content: space-between; gap: 12px; font: 600 .7rem/1.3 var(--sans); letter-spacing: .14em; text-transform: uppercase; color: var(--grey); border-bottom: 1px solid var(--ink); padding-bottom: 8px; }
+  .folio-line b { color: var(--ink); }
+  .mast-row { display: grid; gap: 14px; }
+  .cover-lines { display: none; }
+  .cover-lines a { display: grid; gap: 2px; padding: 10px 0; border-top: 1px solid var(--rule); text-decoration: none; font: 400 1.25rem/1.2 var(--serif); }
+  .cover-lines b { font: 600 .7rem/1.3 var(--sans); letter-spacing: .14em; text-transform: uppercase; color: var(--ultra); }
+  .cover-lines span { font: 500 .78rem/1 var(--sans); color: var(--grey); }
+  .cover-lines a:hover { color: var(--ultra); }
+  @media (min-width: 900px) { .mast-row { grid-template-columns: 1fr minmax(220px, 300px); align-items: end; column-gap: 40px; } .cover-lines { display: block; } }
+  .masthead { font: 400 clamp(4rem, 10.6vw, 10.4rem)/.84 var(--serif); letter-spacing: -.035em; }
+  .masthead .l2 { display: block; font-style: italic; padding-left: .55em; }
+  .masthead .dia { color: var(--ultra); }
+
+  .field { position: relative; overflow: hidden; background: var(--ultra); color: #fff; display: grid; align-content: end; gap: 12px; padding: clamp(16px, 2.6vw, 36px); min-height: 280px; isolation: isolate; }
+  /* pigment grain: a fixed noise tile, multiplied in */
+  .field::before { content: ""; position: absolute; inset: 0; z-index: -1; opacity: .35; mix-blend-mode: multiply; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.2' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .1 0 0 0 0 .1 0 0 0 0 .5 0 0 0 .9 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
+  .field::after { content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none; opacity: var(--sheen, 0); transition: opacity .5s; background: radial-gradient(circle 260px at var(--sx, 70%) var(--sy, 30%), rgba(255, 255, 255, .22), transparent 70%); }
+  .role { font: italic 400 clamp(2.1rem, 4.6vw, 4.4rem)/1 var(--serif); }
+  .tagline { font: 500 clamp(.98rem, .4vw + .88rem, 1.15rem)/1.4 var(--sans); max-width: 34ch; opacity: .92; }
+  .coverline { font: 400 clamp(1.3rem, 1.6vw, 1.8rem)/1.15 var(--serif); max-width: 22ch; padding-top: 12px; border-top: 1px solid rgba(255, 255, 255, .35); }
+  .field .ctas { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 6px; }
+  .field .btn-solid { background: var(--sheet); color: var(--ultra); border-color: var(--sheet); }
+  .field .btn-solid:hover { background: var(--ink); color: #fff; border-color: var(--ink); }
+  .field .btn-line { color: #fff; }
+  .field .btn-line:hover { background: #fff; color: var(--ultra); }
+  .label-card { position: absolute; z-index: 1; right: clamp(14px, 2.4vw, 32px); top: clamp(14px, 2.4vw, 32px); width: min(240px, 46%); background: var(--sheet); color: var(--ink); padding: 12px 14px; font-size: .78rem; line-height: 1.4; box-shadow: 0 6px 18px -8px rgba(0, 0, 0, .4); }
+  .label-card b { display: block; font-size: .86rem; }
+  .label-card i { font-family: var(--serif); font-size: 1.05rem; }
+  .label-card span { color: var(--grey); display: block; margin-top: 4px; }
+  .seal { position: absolute; z-index: 1; width: clamp(96px, 11vw, 150px); aspect-ratio: 1; right: clamp(14px, 3vw, 40px); bottom: clamp(14px, 3vw, 40px); color: #fff; }
+  .seal svg { width: 100%; height: 100%; overflow: visible; }
+  .seal .ring { transform-box: view-box; transform-origin: 60px 60px; }
+  .seal text { font: 600 9.2px var(--sans); letter-spacing: .18em; text-transform: uppercase; fill: currentColor; }
+  .seal .num { font: 400 38px var(--serif); letter-spacing: 0; text-transform: none; }
+  @media (max-width: 699px) {
+    .label-card { display: none; }
+    .seal { width: 96px; top: 16px; bottom: auto; right: 16px; }
+    .folio-line span:last-child { display: none; }
+    .field { min-height: 0; }
+    .field .btn { flex: 1 1 140px; padding: 12px 14px; }
+  }
+
+  .contents-page { padding: clamp(20px, 4vw, 56px); display: grid; gap: 24px; align-content: start; }
+  .contents-page h2 { font: 400 clamp(3.4rem, 9vw, 8rem)/.9 var(--serif); letter-spacing: -.03em; }
+  .contents-page h2 em { color: var(--ultra); }
+  .contents-note { color: var(--grey); max-width: 36ch; }
+  .toc a { display: grid; grid-template-columns: 3.4rem 1fr; gap: 14px; align-items: baseline; padding: 14px 0; border-top: 1px solid var(--rule); text-decoration: none; }
+  .toc b { font: 400 2.2rem/1 var(--serif); color: var(--ultra); }
+  .toc span { font: 400 1.6rem/1.1 var(--serif); }
+  .toc small { display: block; font: 400 .95rem/1.4 var(--sans); color: var(--grey); margin-top: 3px; }
+  .toc a:hover span { color: var(--ultra); }
+  @media (min-width: 900px) { .contents-page { grid-template-columns: 5fr 7fr; column-gap: 56px; } .contents-page header { display: grid; gap: 20px; align-content: start; } }
+
+  /* page-turn mode (set by JS when motion is allowed) */
+  html.turning .issue { height: 230svh; }
+  html.turning .stage { position: sticky; top: 0; height: 100svh; min-height: 560px; grid-template-areas: "page"; perspective: 2400px; perspective-origin: 30% 50%; }
+  html.turning .sheet-page { grid-area: page; height: 100%; }
+  html.turning .contents-page { overflow: hidden; position: relative; }
+  html.turning .contents-page::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(90deg, rgba(14, 15, 18, .28), rgba(14, 15, 18, .05) 60%); opacity: var(--shade, 1); }
+  html.turning .cover-front { min-height: 0; }
+
+  /* ---------- About: the interview ---------- */
+  .interview .grid { display: grid; gap: 40px; }
+  .portrait-card { background: var(--sheet); padding: 16px 16px 12px; box-shadow: 0 18px 40px -24px rgba(14, 15, 18, .35); max-width: 420px; }
+  .portrait-card svg { width: 100%; height: auto; }
+  .portrait-card figcaption { font-size: .82rem; color: var(--grey); margin-top: 10px; display: flex; justify-content: space-between; gap: 10px; }
+  .cut path { transition: transform .6s cubic-bezier(.2, .8, .2, 1.2); filter: drop-shadow(1px 2px 0 rgba(14, 15, 18, .16)); }
+  .portrait-card:hover .cut path { transform: translate(var(--dx, 0), var(--dy, 0)) rotate(var(--dr, 0)); }
+  .interview .title { font-size: clamp(2.8rem, 5.2vw, 5rem); }
+  .interview .portrait-card { max-width: 340px; }
+  .qa { display: grid; gap: 34px; }
+  .qa dt { font: 600 .95rem/1.4 var(--sans); color: var(--ultra); margin-bottom: 8px; }
+  .qa dt::before { content: "Q. "; }
+  .qa dd { font: 400 clamp(1.5rem, 1.6vw + .9rem, 2.1rem)/1.22 var(--serif); text-wrap: pretty; }
+  .qa dd::before { content: "R. "; font: 600 .95rem/1 var(--sans); color: var(--grey); vertical-align: .35em; }
+  @media (min-width: 960px) {
+    .interview .grid { grid-template-columns: 5fr 7fr; column-gap: 72px; }
+    .interview .aside { position: sticky; top: calc(var(--header) + 32px); align-self: start; display: grid; gap: 28px; }
+  }
+
+  /* ---------- Stack: the index ---------- */
+  .index-cols { columns: 1; column-gap: 48px; }
+  .ix-group { break-inside: avoid; margin-bottom: 36px; }
+  .ix-group h3 { font: italic 400 2rem/1 var(--serif); padding-bottom: 8px; border-bottom: 1.5px solid var(--ink); margin-bottom: 4px; }
+  .ix-group li { display: flex; align-items: baseline; gap: 8px; padding: 6px 0; }
+  .ix-group .nm { font-weight: 500; }
+  .ix-group .lead { flex: 1; border-bottom: 1.5px dotted rgba(14, 15, 18, .3); transform: translateY(-4px); min-width: 20px; }
+  .lvl { font: 600 .72rem/1 var(--sans); letter-spacing: .08em; text-transform: uppercase; padding: 5px 9px; border-radius: 999px; white-space: nowrap; }
+  .lvl.strong { background: var(--ultra); color: #fff; }
+  .lvl.medium { border: 1.5px solid var(--ultra); color: var(--ultra); padding: 3.5px 7.5px; }
+  .lvl.low { color: var(--grey); font-style: italic; text-transform: none; letter-spacing: 0; font-size: .85rem; font-weight: 500; padding-right: 0; }
+  .legend { display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: center; color: var(--grey); font-size: .92rem; }
+  .legend span { display: inline-flex; align-items: center; gap: 8px; }
+  @media (min-width: 720px) { .index-cols { columns: 2; } }
+  @media (min-width: 1100px) { .index-cols { columns: 3; } }
+
+  /* ---------- Career: the retrospective ---------- */
+  .retro { background: var(--sheet); }
+  .rooms { position: relative; display: grid; gap: clamp(56px, 8vw, 110px); padding-left: 28px; }
+  .route, .route-fill { position: absolute; left: 4px; top: 8px; bottom: 8px; width: 2px; background: var(--rule); }
+  .route-fill { background: var(--ultra); transform-origin: top; }
+  .room { position: relative; display: grid; gap: 18px; }
+  .room::before { content: ""; position: absolute; left: -31px; top: .55em; width: 10px; height: 10px; border-radius: 50%; background: var(--sheet); border: 2px solid var(--ultra); }
+  .room .years { font: 400 clamp(3rem, 7vw, 6.2rem)/.9 var(--serif); letter-spacing: -.03em; }
+  .room .years em { color: var(--ultra); }
+  .room .room-no { font: 600 .74rem/1.3 var(--sans); letter-spacing: .14em; text-transform: uppercase; color: var(--grey); }
+  .wall-label { background: var(--desk); padding: 18px 20px; display: grid; gap: 6px; align-self: start; }
+  .wall-label h3 { font: 600 1.25rem/1.25 var(--sans); }
+  .wall-label .roles { font: italic 400 1.35rem/1.25 var(--serif); }
+  .wall-label .roles i { font-style: normal; color: var(--ultra); padding: 0 .15em; }
+  .wall-label .dates { font-size: .92rem; color: var(--grey); }
+  .wall-label .materials { font-size: .88rem; color: var(--grey); padding-top: 8px; margin-top: 6px; border-top: 1px solid var(--rule); }
+  .wall-label .materials b { color: var(--ink); font-weight: 600; }
+  .turning-point { justify-self: start; display: inline-flex; align-items: center; gap: 8px; margin-top: 6px; background: var(--ultra); color: #fff; border-radius: 999px; padding: 6px 12px; font: 600 .8rem/1.2 var(--sans); }
+  .wall-text li { padding: 10px 0; border-top: 1px solid var(--rule); }
+  .wall-text li:first-child { border-top: 0; padding-top: 0; }
+  .foyer { font-size: .95rem; color: var(--grey); }
+  .foyer b { color: var(--ink); }
+  @media (min-width: 900px) {
+    .rooms { padding-left: 48px; }
+    .room::before { left: -51px; }
+    .room { grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: 32px; }
+    .room .head { grid-column: 1 / -1; display: flex; align-items: baseline; justify-content: space-between; gap: 20px; }
+    .wall-label { grid-column: 1 / span 4; position: sticky; top: calc(var(--header) + 24px); }
+    .wall-text { grid-column: 6 / span 7; }
+  }
+
+  /* ---------- the reviews (testimonials) ---------- */
+  .reviews-grid { display: grid; gap: 20px; }
+  .review { background: var(--sheet); padding: clamp(22px, 3vw, 36px); display: grid; gap: 18px; align-content: start; }
+  .review .blurb { font: italic 400 clamp(2rem, 3.2vw, 3.2rem)/1.02 var(--serif); color: var(--ultra); text-wrap: balance; }
+  .review blockquote { font-size: 1rem; line-height: 1.55; }
+  .review blockquote p + p { margin-top: .5em; }
+  .review figcaption { font-size: .88rem; color: var(--grey); padding-top: 14px; border-top: 1px solid var(--rule); }
+  .review figcaption b { display: block; color: var(--ink); font-weight: 600; }
+  .reviews-note { color: var(--grey); font-size: .92rem; margin-top: 18px; }
+  @media (min-width: 900px) { .reviews-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+
+  /* ---------- Projects: on view ---------- */
+  .wall { display: grid; gap: clamp(40px, 5vw, 64px) 32px; }
+  .work { display: grid; gap: 16px; align-content: start; }
+  .work .frame { background: var(--sheet); padding: clamp(14px, 2vw, 26px); box-shadow: 0 2px 4px rgba(14, 15, 18, .05), 0 26px 50px -30px rgba(14, 15, 18, .45); transition: transform .5s cubic-bezier(.2, .8, .2, 1), box-shadow .5s; }
+  .work .frame svg { width: 100%; height: auto; aspect-ratio: var(--ratio, 4 / 3); }
+  .work:hover .frame { transform: translateY(-6px); box-shadow: 0 2px 4px rgba(14, 15, 18, .05), 0 40px 60px -30px rgba(14, 15, 18, .5); }
+  .museum-label { display: grid; gap: 6px; max-width: 46ch; }
+  .museum-label h3 { font: italic 400 clamp(1.7rem, 2.2vw, 2.3rem)/1.05 var(--serif); }
+  .museum-label h3 a { text-decoration: none; }
+  .museum-label h3 a:hover { color: var(--ultra); }
+  .museum-label .status { display: inline-flex; align-items: center; gap: 8px; font: 600 .78rem/1.2 var(--sans); }
+  .museum-label .status::before { content: ""; width: 9px; height: 9px; border-radius: 50%; border: 2px solid var(--ultra); }
+  .museum-label .status.live::before { background: var(--ultra); }
+  .museum-label .status.progress::before { background: linear-gradient(90deg, var(--ultra) 50%, transparent 50%); }
+  .museum-label .status.archived { color: var(--grey); } .museum-label .status.archived::before { border-color: var(--grey); }
+  .museum-label .status small { font-size: 1em; font-weight: 400; color: var(--grey); }
+  .museum-label .note { font-size: .92rem; color: var(--grey); font-style: italic; }
+  .museum-label .medium { font-size: .9rem; color: var(--grey); }
+  .museum-label .medium b { color: var(--ink); font-weight: 600; }
+  .museum-label .repo { justify-self: start; font-weight: 600; color: var(--ultra); text-decoration: none; border-bottom: 1.5px solid currentColor; }
+  @media (min-width: 900px) {
+    .wall { grid-template-columns: repeat(12, minmax(0, 1fr)); align-items: start; }
+    .work { grid-column: span var(--span, 6); margin-top: var(--drop, 0); }
+  }
+
+  /* ---------- Contact: visiting information ---------- */
+  .visit { background: var(--sheet); }
+  .visit-grid { display: grid; gap: 0; border-top: 1.5px solid var(--ink); }
+  .visit-row { display: grid; gap: 6px; padding: 20px 0; border-bottom: 1px solid var(--rule); }
+  .visit-row dt { font: 600 .74rem/1.3 var(--sans); letter-spacing: .14em; text-transform: uppercase; color: var(--grey); }
+  .visit-row dd { font: 400 clamp(1.4rem, 1.4vw + 1rem, 2.1rem)/1.2 var(--serif); }
+  .visit-row dd a:not(.btn) { text-decoration: none; background: linear-gradient(var(--ultra), var(--ultra)) 0 100% / 100% 1.5px no-repeat; overflow-wrap: anywhere; }
+  .visit-row dd a:not(.btn):hover { color: var(--ultra); }
+  .visit-row .todo { font-size: .8rem; vertical-align: middle; }
+  .visit-row .btn { font-family: var(--sans); }
+  .subscribe { margin-top: clamp(40px, 6vw, 72px); background: var(--ultra); color: #fff; padding: clamp(24px, 4vw, 48px); display: grid; gap: 16px; position: relative; overflow: hidden; }
+  .subscribe h3 { font: 400 clamp(2rem, 4vw, 3.4rem)/1 var(--serif); }
+  .subscribe p { max-width: 46ch; opacity: .92; }
+  .subscribe .btn-solid { background: var(--sheet); color: var(--ultra); border-color: var(--sheet); justify-self: start; }
+  .subscribe .btn-solid:hover { background: var(--ink); color: #fff; border-color: var(--ink); }
+  .subscribe .done { display: grid; gap: 12px; }
+  .subscribe .done[hidden] { display: none; }
+  .subscribe .done b { font: italic 400 1.8rem/1.1 var(--serif); }
+  .subscribe .done a { color: #fff; font-weight: 600; }
+  @media (min-width: 900px) {
+    .visit-row { grid-template-columns: 14rem 1fr; align-items: baseline; gap: 24px; }
+    .subscribe { grid-template-columns: 7fr 5fr; align-items: end; column-gap: 40px; }
+    .subscribe .act { justify-self: end; text-align: right; display: grid; gap: 12px; justify-items: end; }
+  }
+
+  /* ---------- footer ---------- */
+  .foot { padding: 32px 0 44px; }
+  .foot .wrap { display: grid; gap: 10px; font-size: .9rem; color: var(--grey); }
+  .foot b { font: 400 1.5rem/1 var(--serif); color: var(--ink); }
+  @media (min-width: 900px) { .foot .wrap { grid-template-columns: auto 1fr auto; align-items: baseline; gap: 32px; } }
+
+  /* arrive on scroll: only hidden when JS says motion is allowed */
+  html.arrive [data-arrive] { opacity: 0; transform: translateY(24px); transition: opacity .8s ease, transform .8s cubic-bezier(.2, .8, .2, 1); transition-delay: calc(var(--i, 0) * 90ms); }
+  html.arrive [data-arrive].in { opacity: 1; transform: none; }
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="#top" id="brand"></a>
+    <nav class="nav" aria-label="Main"><ul id="navList"></ul></nav>
+    <button class="menu-btn" id="menuBtn" type="button" aria-expanded="false" aria-controls="menu">Menu</button>
+  </div>
+</header>
+<nav class="menu" id="menu" aria-label="Main" hidden></nav>
+
+<main id="main">
+  <section class="issue" id="top" aria-label="Cover and contents"></section>
+  <section class="section interview" id="about" aria-labelledby="about-h"></section>
+  <section class="section index" id="stack" aria-labelledby="stack-h"></section>
+  <section class="section retro" id="career" aria-labelledby="career-h"></section>
+  <section class="section reviews" id="reviews" aria-labelledby="reviews-h"></section>
+  <section class="section onview" id="projects" aria-labelledby="projects-h"></section>
+  <section class="section visit" id="contact" aria-labelledby="contact-h"></section>
+</main>
+<footer class="foot" id="foot"></footer>
+
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/ScrollTrigger.min.js"></script>
+<script>
+  /* =====================================================================
+     Content (becomes src/content/ in the React build)
+     ===================================================================== */
+  const CONTENT = {
+    profile: {
+      name: 'Rafał Ciećwierz',
+      nameLines: ['Rafał', 'Ciećwierz'],
+      role: 'Frontend Engineer',
+      tagline: 'React & TypeScript · 5+ years building production apps',
+      availability: 'Open to frontend roles (React / TypeScript), remote or hybrid.',
+      email: 'rafal.ciecwierz4@gmail.com',
+      github: 'https://github.com/rafalciecwierz',
+      linkedin: null, // TODO: Rafał to provide URL
+      calendly: null, // TODO: Rafał to provide URL
+      cvFile: '/Rafal_Ciecwierz_CV.pdf'
+    },
+    nav: [
+      { id: 'about', label: 'About', page: 4, title: 'The interview', deck: 'Tests, teams and the backend, in his own words.' },          // NEW CONTENT: titles and decks
+      { id: 'stack', label: 'Stack', page: 9, title: 'Index', deck: 'Every tool, with its production experience.' },
+      { id: 'career', label: 'Career', page: 12, title: 'A retrospective', deck: 'Four rooms, 2021 to 2026, newest work first.' },
+      { id: 'projects', label: 'Projects', page: 22, title: 'On view', deck: 'Selected works, with their labels.' },
+      { id: 'contact', label: 'Contact', page: 28, title: 'Visiting information', deck: 'Opening hours, addresses and the full issue.' }
+    ],
+    cover: {
+      edition: 'The Weekend Edition', issue: 'No. 05', season: 'Autumn 2026', // NEW CONTENT
+      coverline: 'The frontend engineer who started in QA',
+      cv: 'Download CV', contact: 'Get in touch',
+      // NEW CONTENT: the gallery wall label on the cover art
+      label: { title: 'Untitled (Frontend Engineer)', years: '2021 – present', medium: 'React and TypeScript, in production.' },
+      // NEW CONTENT: cover lines (restating facts and quotes from the brief)
+      lines: [
+        { kicker: 'The interview', text: '“I started my career in QA automation.”', href: '#about', page: 4 },
+        { kicker: 'A retrospective', text: 'Four rooms, two promotions, one team of six.', href: '#career', page: 12 },
+        { kicker: 'Reviewed', text: '“…contagious…”', href: '#reviews', page: 18 }
+      ],
+      seal: 'The Weekend Edition · No. 05 · Autumn 2026 · ', sealNum: '05', // NEW CONTENT
+      // NEW CONTENT: the inside of the cover, seen while the page turns
+      back: { small: 'Advertisement', ad: 'Your team, plus one frontend engineer.', note: 'Enquiries: see Visiting information, page 28.' }
+    },
+    contents: { title: 'In this <em>issue</em>', note: 'A weekend edition about one frontend engineer. Read it in order, or jump to a page.' }, // NEW CONTENT
+    about: {
+      eyebrow: 'About · The interview',
+      title: '“I started my career in <em>QA automation.</em>”',
+      intro: 'Five years into commercial frontend work, Rafał Ciećwierz talks about tests, teams and the backend.', // NEW CONTENT
+      // NEW CONTENT: the questions. The answers are the brief's About text, sentence by sentence.
+      qa: [
+        { q: 'Who are you, in one sentence?', a: "I'm a frontend engineer with 5+ years of commercial experience in React and TypeScript." },
+        { q: 'How does a QA engineer end up writing the frontend?', a: "I started my career in QA automation, moved into frontend development after three months at my team's request, and later led a team of six developers." },
+        { q: 'What do you care about in a codebase?', a: 'I care about clean architecture, reusable UI and tests that actually protect the product.' },
+        { q: 'And lately?', a: "Lately I've been going deeper into the backend with NestJS and experimenting with motion and 3D in the browser." },
+        { q: 'And away from the keyboard?', a: 'Outside of code: parkour (for over 22 years) and climbing.' }
+      ],
+      portraitAlt: 'A cut-paper portrait of Rafał: swept-up light-brown hair, a wide smile, an ultramarine blazer over a white T-shirt, arms crossed.',
+      portraitCaption: ['Portrait: cut paper, made in code', 'TODO: photo'] // NEW CONTENT
+    },
+    stack: {
+      eyebrow: 'Stack',
+      title: 'Index',
+      intro: 'At the back of every issue. Levels as in the CV:', // NEW CONTENT
+      levels: { strong: 'strong', medium: 'medium', low: 'low' },
+      levelText: { strong: 'strong production experience', medium: 'medium production experience', low: 'low production experience' },
+      groups: [
+        { name: 'Frontend', items: [['React', 'strong'], ['TypeScript', 'strong'], ['JavaScript', 'strong'], ['HTML5', 'strong'], ['CSS / SCSS / Styled-components', 'strong'], ['Next.js', 'medium'], ['Gatsby', 'medium'], ['Module Federation', 'medium'], ['React Native', 'low']] },
+        { name: 'Data & UI', items: [['TanStack Query', 'strong'], ['Redux', 'strong'], ['Zod', 'strong'], ['React Hook Form', 'strong'], ['Storybook', 'strong'], ['Ant Design', 'strong'], ['Material UI', 'strong'], ['Tailwind CSS', 'medium'], ['WebSockets', 'medium']] },
+        { name: 'Testing', items: [['Jest / Vitest', 'strong'], ['React Testing Library', 'strong'], ['Cypress', 'strong']] },
+        { name: 'Backend', items: [['Node.js', 'medium'], ['NestJS', 'medium'], ['PostgreSQL', 'medium'], ['Strapi', 'medium']] },
+        { name: 'Tooling', items: [['Git', 'strong'], ['Figma', 'strong'], ['Postman', 'strong'], ['Vite', 'strong'], ['Webpack', 'strong'], ['Docker', 'medium'], ['Claude Code', 'medium']] }
+      ]
+    },
+    career: {
+      eyebrow: 'Career',
+      title: 'A retrospective, <em>newest work first</em>', // NEW CONTENT
+      intro: 'Four rooms, 2021 to 2026. Two of them end with a promotion.', // NEW CONTENT
+      roomLabel: 'Room', materialsLabel: 'Materials', turningPoint: 'Turning point: promoted', // NEW CONTENT
+      jobs: [
+        {
+          company: 'MUG Software', roles: ['Front-end Software Engineer'], dates: '04.2025 – 08.2026', years: ['2025', '2026'],
+          points: [
+            'Maintained and extended a white-label React platform: a core repository with client-specific forks, propagating global changes upstream-to-fork while keeping client customizations isolated.',
+            'Developed and maintained a shared Storybook component library (50+ components), improving UI consistency and speeding up feature development.',
+            'Introduced TanStack Query (replacing Redux for server state) and Zod (replacing Yup), adopting them incrementally across the app as part of ongoing feature work.'
+          ],
+          stack: ['React', 'TypeScript', 'Styled Components', 'Jest', 'Redux', 'Storybook', 'Webpack', 'TanStack Query', 'Zod']
+        },
+        {
+          company: 'VML Enterprise Solutions', roles: ['Front-end Software Engineer'], dates: '09.2024 – 04.2025', years: ['2024', '2025'],
+          points: [
+            'Owned a reference-data micro-frontend (countries, currencies and other company-wide dictionaries) integrated into a large enterprise advertising platform via Webpack Module Federation.',
+            "Maintained and developed the module's codebase, increasing unit test coverage from 11% to over 80%.",
+            'Took part in the migration of a subdomain to a standalone microservice.'
+          ],
+          stack: ['React', 'TypeScript', 'SCSS', 'Jest', 'React Hook Form', 'Webpack', 'Vite', 'Module Federation']
+        },
+        {
+          company: 'Mood up', roles: ['React Developer', 'Front-end Team Leader'], dates: '10.2022 – 08.2024', years: ['2022', '2024'], promoted: true,
+          points: [
+            'Built the React/Redux interface for a smart intercom running on an embedded Raspberry Pi device.',
+            'Promoted to Front-end Team Leader; led a team of 6 developers delivering MVPs for international startup clients.',
+            'Delivered projects from requirements gathering and estimation with clients through development, testing (Jest) and deployment.',
+            "Led a headless CMS evaluation (Strapi, Sanity, Contentful, headless WordPress and others), narrowing the shortlist to Strapi and Payload CMS for the company's stack."
+          ],
+          stack: ['React', 'Gatsby', 'Next.js', 'React Native', 'TypeScript', 'SCSS', 'Strapi', 'Material UI', 'Ant Design', 'Webpack', 'Vite', 'Figma']
+        },
+        {
+          company: 'mTab sp. z o.o.', roles: ['QA Automation Engineer', 'JavaScript Developer'], dates: '07.2021 – 09.2022', years: ['2021', '2022'], promoted: true,
+          points: [
+            "Promoted from QA Automation Engineer (Cypress E2E) to front-end developer after 3 months at the product team's request.",
+            'Developed views and features in React for a data visualization platform with dynamic, reactive charts and presentation-style reports.',
+            'Built Node.js scripts run nightly by Jenkins that aggregated test results into reports and posted them to Slack.',
+            'Maintained and extended a legacy Backbone.js codebase.'
+          ],
+          stack: ['React', 'JavaScript', 'TypeScript', 'Redux', 'SCSS', 'Jest', 'Cypress', 'Node.js', 'Backbone.js']
+        }
+      ],
+      education: { label: 'In the foyer', school: 'Adam Mickiewicz University', degree: "Engineer's degree in Computer Science", dates: '2015 – 2021' } // NEW CONTENT: the label
+    },
+    reviews: {
+      eyebrow: 'From the team',                 // NEW CONTENT
+      title: 'The reviews <em>are in</em>',      // NEW CONTENT
+      note: 'LinkedIn recommendations from his team at Mood up, June 2024. Blurbs are cut from the full quotes with “…” only.', // NEW CONTENT
+      source: 'Mood up, 2024',
+      quotes: [
+        { name: 'Wiktoria W.', role: 'Marketing & Communication', blurb: '“…as tuned in and supportive as him.”', text: ["Seriously, I've never met a leader as tuned in and supportive as him.", "Whoever snags him next is super lucky - yeah, I'm a bit envious. 😉"] },
+        { name: 'Rafał H.', role: 'Frontend Developer', blurb: '“…contagious…”', text: ['His enthusiasm and optimism were contagious, making him a joy to work with.'] },
+        { name: 'Szymon K.', role: 'Frontend Developer', blurb: '“…invaluable…”', text: ['His technical skills and ability to simplify complex concepts, guiding others through challenges, have been invaluable in enhancing the overall quality and efficiency of our development processes.'] }
+      ]
+    },
+    projects: {
+      eyebrow: 'Projects',
+      title: 'On <em>view</em>',
+      intro: 'Selected works. The collection grows, and the labels change as works move between the studio and the archive.', // NEW CONTENT
+      mediumLabel: 'Medium', repoLabel: 'See the repository',
+      statusLabels: { live: 'Live', 'in progress': 'In progress', archived: 'Archived' },
+      statusGallery: { live: 'on view', 'in progress': 'in the studio', archived: 'in storage' }, // NEW CONTENT
+      items: [
+        { name: 'Ashen Contracts', status: 'in progress', description: 'Browser-based idle/RPG game built as a full-stack showcase: pnpm monorepo with a Next.js app, NestJS API, shared Storybook UI library and shared TypeScript types. Architecture decisions documented in an ADR-style log.', tags: ['Next.js', 'NestJS', 'PostgreSQL', 'Prisma', 'Storybook', 'Docker', 'GitHub Actions'], repo: 'https://github.com/rafalciecwierz/ashen-contracts' },
+        { name: 'Ultimate Frisbee Tournament Platform', status: 'archived', note: 'Engineering thesis (team of 4), built for the Polish Ultimate Players Association', description: 'Owned the entire NestJS + PostgreSQL backend, built live match scoring with Socket.io (scorekeeper tablet view + real-time spectator view), designed the full UI in Figma, deployed to AWS and tested at a live tournament in Szczecin.', tags: ['NestJS', 'PostgreSQL', 'Socket.io', 'Swagger', 'AWS', 'Nuxt', 'Figma'] },
+        { name: 'This website', status: 'live', description: 'Personal site with a procedural 3D hero (React Three Fiber) and scroll-driven animations (GSAP, Lenis), built with a performance and accessibility budget.', tags: ['React', 'TypeScript', 'Three.js', 'GSAP', 'Vite'], repo: 'https://github.com/rafalciecwierz/rafalciecwierz.github.io' },
+        { name: 'Next.js page transitions', status: 'archived', description: 'Comparison of three page-transition approaches in Next.js: custom implementation, Framer Motion and GSAP.', tags: ['Next.js', 'Framer Motion', 'GSAP'], repo: 'https://github.com/rafalciecwierz/Nextjs-page-transition' }
+      ]
+    },
+    contact: {
+      eyebrow: 'Contact',
+      title: 'Visiting <em>information</em>', // NEW CONTENT
+      rows: { hours: 'Opening hours', email: 'Write', elsewhere: 'Elsewhere', call: 'Book a visit', cv: 'Take home' }, // NEW CONTENT
+      calendlyLabel: 'Book a 20-min call',
+      // NEW CONTENT: the easter egg
+      subscribe: {
+        title: 'Subscribe to the weekend edition',
+        text: 'One issue, delivered at once. No newsletter will ever follow; that is a promise.',
+        button: 'Subscribe',
+        doneTitle: 'You are subscribed.',
+        doneText: 'Your copy is ready: the whole issue as one PDF.',
+        doneLink: 'Download the CV'
+      }
+    },
+    footer: {
+      setIn: 'Set in Instrument Serif and Instrument Sans.', // NEW CONTENT
+      builtWith: 'Built with React, Three.js and GSAP',
+      repo: 'https://github.com/rafalciecwierz/rafalciecwierz.github.io',
+      repoLabel: 'Source on GitHub'
+    },
+    console: 'The Weekend Edition. Turn the cover, then try subscribing at the end of the issue.' // NEW CONTENT
+  };
+
+  /* =====================================================================
+     Helpers
+     ===================================================================== */
+  const $ = (s, r = document) => r.querySelector(s);
+  const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+  const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const finePointer = matchMedia('(hover: hover) and (pointer: fine)').matches;
+  const motion = !reduceMotion && !!window.gsap && !!window.ScrollTrigger;
+  const P = CONTENT.profile;
+  const todo = (what) => `<span class="todo">TODO: ${esc(what)}</span>`;
+  const pad = (n) => String(n).padStart(2, '0');
+  // the Polish diacritics in the masthead are printed in ultramarine
+  const markDia = (s) => esc(s).replace(/([łŁćĆ])/g, '<span class="dia">$1</span>');
+  function rng(seed) { // mulberry32: the same seed cuts the same paper on every load
+    let a = seed >>> 0;
+    return () => { a = (a + 0x6D2B79F5) >>> 0; let t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+  }
+  const hash = (s) => [...s].reduce((h, c) => Math.imul(h ^ c.charCodeAt(0), 16777619) >>> 0, 2166136261);
+  const ICON = {
+    down: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11m0 0-4.5-4.5M12 15l4.5-4.5M5 20h14"/></svg>',
+    arrow: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14m0 0-5-5m5 5-5 5"/></svg>'
+  };
+
+  /* =====================================================================
+     CutPaper: custom SVG. Shapes with slightly irregular, hand-cut edges.
+     ===================================================================== */
+  const CutPaper = {
+    // a polygon whose edges are subdivided and nudged, like scissors following a line
+    poly(points, seed, j = 1.4) {
+      const r = rng(seed), out = [];
+      for (let i = 0; i < points.length; i++) {
+        const [x1, y1] = points[i], [x2, y2] = points[(i + 1) % points.length];
+        const steps = Math.max(1, Math.round(Math.hypot(x2 - x1, y2 - y1) / 18));
+        for (let k = 0; k < steps; k++) { const t = k / steps; out.push([x1 + (x2 - x1) * t + (r() - .5) * j * 2, y1 + (y2 - y1) * t + (r() - .5) * j * 2]); }
+      }
+      return 'M' + out.map(([x, y]) => `${x.toFixed(1)} ${y.toFixed(1)}`).join('L') + 'Z';
+    },
+    blob(cx, cy, rx, ry, seed, j = 0.035, n = 30, from = 0, to = Math.PI * 2) {
+      const r = rng(seed), pts = [];
+      for (let i = 0; i <= n; i++) { const a = from + (to - from) * i / n, k = 1 + (r() - .5) * j * 2; pts.push([cx + Math.cos(a) * rx * k, cy + Math.sin(a) * ry * k]); }
+      return 'M' + pts.map(([x, y]) => `${x.toFixed(1)} ${y.toFixed(1)}`).join('L') + 'Z';
+    },
+    piece(d, fill, seed) { // each piece gets a small random shift for the hover
+      const r = rng(seed * 7 + 3);
+      return `<path d="${d}" fill="${fill}" style="--dx:${((r() - .5) * 8).toFixed(1)}px;--dy:${((r() - .5) * 8).toFixed(1)}px;--dr:${((r() - .5) * 4).toFixed(1)}deg"/>`;
+    }
+  };
+
+  function portraitSVG() {
+    const C = CutPaper, U = '#2329C8', UD = '#151A8F', S = '#F8F9FB', K = '#0E0F12', SKIN = '#F0D3BD', SKIN2 = '#E2B99E', HAIR = '#A9784E', HAIR2 = '#C79A6B', SOFT = '#CDD0F3';
+    const pieces = [
+      [C.poly([[14, 18], [286, 12], [290, 346], [10, 350]], 1, 2), SOFT],
+      [C.poly([[24, 360], [32, 284], [84, 248], [150, 238], [216, 248], [268, 284], [276, 360]], 2), U],
+      [C.poly([[116, 244], [184, 244], [168, 302], [150, 334], [132, 302]], 3), S],
+      [C.poly([[126, 196], [174, 196], [178, 248], [122, 248]], 4), SKIN2],
+      [C.blob(92, 150, 11, 18, 5), SKIN], [C.blob(208, 150, 11, 18, 6), SKIN2],
+      [C.blob(150, 146, 58, 72, 7), SKIN],
+      [C.blob(150, 176, 50, 40, 8, 0.05, 20, 0.15, Math.PI - 0.15), SKIN2], // light stubble, a darker cut on the jaw
+      [C.poly([[90, 140], [88, 104], [104, 70], [128, 46], [156, 36], [190, 44], [210, 72], [212, 124], [200, 104], [178, 92], [150, 96], [122, 100], [102, 116]], 9, 1.8), HAIR],
+      [C.poly([[112, 92], [124, 58], [150, 42], [176, 46], [158, 60], [140, 76], [128, 96]], 10, 1.2), HAIR2],
+      [C.poly([[112, 128], [136, 122], [138, 128], [114, 134]], 11, .6), K],
+      [C.poly([[162, 122], [186, 128], [186, 134], [162, 128]], 12, .6), K],
+      [C.blob(126, 146, 10, 6, 13, 0.05, 14, Math.PI, Math.PI * 2), K],
+      [C.blob(174, 146, 10, 6, 14, 0.05, 14, Math.PI, Math.PI * 2), K],
+      [C.blob(150, 176, 30, 20, 15, 0.04, 18, 0, Math.PI), K],
+      [C.blob(150, 178, 24, 8, 16, 0.05, 14, 0, Math.PI), S],
+      [C.poly([[40, 312], [254, 296], [258, 334], [44, 350]], 17), UD],
+      [C.poly([[46, 330], [250, 316], [252, 346], [44, 356]], 18), U],
+      [C.blob(252, 318, 16, 13, 19), SKIN], [C.blob(50, 338, 15, 12, 20), SKIN2]
+    ];
+    return `<svg viewBox="0 0 300 360" class="cut" role="img" aria-label="${esc(CONTENT.about.portraitAlt)}">${pieces.map(([d, f], i) => C.piece(d, f, i + 1)).join('')}</svg>`;
+  }
+
+  // a cut-paper artwork for each project, seeded by its name
+  function artworkSVG(name, ratio) {
+    const C = CutPaper, r = rng(hash(name)), W = 400, H = Math.round(400 / ratio);
+    const U = '#2329C8', K = '#0E0F12', SOFT = '#CDD0F3', S = '#F8F9FB', kind = hash(name) % 4;
+    let p = [];
+    p.push([C.poly([[0, 0], [W, 0], [W, H], [0, H]], 1, 0), kind % 2 ? SOFT : '#EEF0F3']);
+    if (kind === 0) { // a sun over a horizon
+      p.push([C.blob(W * (.3 + r() * .4), H * .42, H * .26, H * .26, 2), U]);
+      p.push([C.poly([[0, H * .8], [W, H * .76], [W, H], [0, H]], 3, 2.5), K]);
+    } else if (kind === 1) { // stacked cut strips
+      for (let i = 0; i < 5; i++) { const y = H * (.16 + i * .15); p.push([C.poly([[W * (.1 + r() * .15), y], [W * (.7 + r() * .2), y + (r() - .5) * 10], [W * (.72 + r() * .2), y + H * .09], [W * (.12 + r() * .1), y + H * .09]], 10 + i), i % 2 ? K : U]); }
+    } else if (kind === 2) { // Matisse-like leaf on a block
+      p.push([C.poly([[W * .52, H * .1], [W * .92, H * .12], [W * .9, H * .9], [W * .5, H * .88]], 4), U]);
+      const leaf = []; for (let i = 0; i <= 16; i++) { const t = i / 16, a = t * Math.PI; leaf.push([W * .32 + Math.sin(a * 3) * W * .07 * (1 - t * .3), H * (.12 + t * .76)]); }
+      for (let i = 16; i >= 0; i--) { const t = i / 16; leaf.push([leaf[i][0] - W * (.08 + .06 * Math.sin(t * Math.PI)), leaf[i][1]]); }
+      p.push([C.poly(leaf, 5, 1.2), K]);
+    } else { // an arch and a dot
+      const arch = [[W * .25, H * .9], [W * .25, H * .45]]; for (let i = 0; i <= 12; i++) { const a = Math.PI + i / 12 * Math.PI; arch.push([W * .5 + Math.cos(a) * W * .25, H * .45 + Math.sin(a) * W * .25]); } arch.push([W * .75, H * .9]);
+      p.push([C.poly(arch, 6), U]);
+      p.push([C.blob(W * .5, H * .62, W * .07, W * .07, 7), S]);
+      p.push([C.poly([[W * .08, H * .9], [W * .92, H * .9], [W * .92, H * .96], [W * .08, H * .96]], 8), K]);
+    }
+    return `<svg viewBox="0 0 ${W} ${H}" class="cut" style="--ratio:${ratio}" aria-hidden="true">${p.map(([d, f], i) => C.piece(d, f, i + 1)).join('')}</svg>`;
+  }
+
+  /* =====================================================================
+     Render (each function maps to a React component)
+     ===================================================================== */
+  function renderHeader() {
+    $('#brand').innerHTML = `Rafał <i>Ciećwierz</i>`;
+    $('#brand').setAttribute('aria-label', P.name);
+    $('#navList').innerHTML = CONTENT.nav.map((n) => `<li><a href="#${n.id}" data-nav="${n.id}">${esc(n.label)}</a></li>`).join('');
+    $('#menu').innerHTML = CONTENT.nav.map((n) => `<a href="#${n.id}"><span>${pad(n.page)}</span>${esc(n.label)}</a>`).join('');
+  }
+
+  function renderIssue() {
+    const C = CONTENT.cover;
+    $('#top').innerHTML = `
+      <div class="stage" id="stage">
+        <nav class="sheet-page contents-page" aria-labelledby="contents-h">
+          <header>
+            <h2 id="contents-h">${CONTENT.contents.title}</h2>
+            <p class="contents-note">${esc(CONTENT.contents.note)}</p>
+          </header>
+          <ol class="toc">${CONTENT.nav.map((n) => `<li><a href="#${n.id}"><b>${pad(n.page)}</b><span>${esc(n.title)}<small>${esc(n.label)} · ${esc(n.deck)}</small></span></a></li>`).join('')}</ol>
+        </nav>
+        <article class="sheet-page cover" id="cover">
+          <div class="cover-front">
+            <p class="folio-line"><b>${esc(C.edition)}</b><span>${esc(C.issue)}</span><span>${esc(C.season)}</span></p>
+            <div class="mast-row">
+              <h1 class="masthead"><span>${markDia(P.nameLines[0])}</span> <span class="l2">${markDia(P.nameLines[1])}</span></h1>
+              <ul class="cover-lines">${C.lines.map((l) => `<li><a href="${l.href}"><b>${esc(l.kicker)}</b>${esc(l.text)}<span>p. ${pad(l.page)}</span></a></li>`).join('')}</ul>
+            </div>
+            <div class="field" id="field">
+              <aside class="label-card" aria-label="Wall label"><b><i>${esc(C.label.title)}</i></b>${esc(C.label.years)}<span>${esc(C.label.medium)}</span></aside>
+              <p class="role">${esc(P.role)}</p>
+              <p class="tagline">${esc(P.tagline)}</p>
+              <p class="coverline">${esc(C.coverline)}</p>
+              <div class="ctas">
+                <a class="btn btn-solid" href="${esc(P.cvFile)}" download>${ICON.down}${esc(C.cv)}</a>
+                <a class="btn btn-line" href="#contact">${esc(C.contact)}</a>
+              </div>
+              <div class="seal" aria-hidden="true">${sealSVG(C.seal, C.sealNum)}</div>
+            </div>
+          </div>
+          <div class="cover-back" aria-hidden="true"><small>${esc(C.back.small)}</small><p class="ad">${esc(C.back.ad)}</p><p>${esc(C.back.note)}</p></div>
+        </article>
+      </div>`;
+  }
+
+  // IssueSeal: inspired by React Bits CircularText, as an SVG textPath around a circle
+  function sealSVG(text, num) {
+    return `<svg viewBox="0 0 120 120"><defs><path id="sealPath" d="M60 60 m-48 0 a48 48 0 1 1 96 0 a48 48 0 1 1 -96 0"/></defs>
+      <circle cx="60" cy="60" r="59" fill="none" stroke="currentColor" stroke-width="1"/>
+      <g class="ring"><text><textPath href="#sealPath" textLength="300" lengthAdjust="spacing">${esc(text)}</textPath></text></g>
+      <text class="num" x="60" y="72" text-anchor="middle">${esc(num)}</text></svg>`;
+  }
+
+  function sectionHead(o, id) {
+    return `<header class="section-head"><p class="eyebrow">${esc(o.eyebrow)}</p><h2 class="title" id="${id}">${o.title}</h2>${o.intro ? `<p class="intro">${esc(o.intro)}</p>` : ''}</header>`;
+  }
+
+  function renderAbout() {
+    const A = CONTENT.about;
+    $('#about').innerHTML = `
+      <div class="wrap grid">
+        <div class="aside">
+          ${sectionHead(A, 'about-h')}
+          <figure class="portrait-card">${portraitSVG()}<figcaption><span>${esc(A.portraitCaption[0])}</span>${todo('photo')}</figcaption></figure>
+        </div>
+        <dl class="qa">${A.qa.map((x, i) => `<div data-arrive style="--i:${i}"><dt>${esc(x.q)}</dt><dd>${esc(x.a)}</dd></div>`).join('')}</dl>
+      </div>`;
+  }
+
+  function renderStack() {
+    const S = CONTENT.stack;
+    $('#stack').innerHTML = `
+      <div class="wrap">
+        <header class="section-head"><p class="eyebrow">${esc(S.eyebrow)}</p><h2 class="title" id="stack-h">${esc(S.title)}</h2>
+          <div class="legend"><span>${esc(S.intro)}</span>${['strong', 'medium', 'low'].map((l) => `<span><span class="lvl ${l}">${esc(S.levels[l])}</span>${esc(S.levelText[l].replace(S.levels[l] + ' ', ''))}</span>`).join('')}</div>
+        </header>
+        <div class="index-cols">${S.groups.map((g, gi) => `
+          <div class="ix-group" data-arrive style="--i:${gi}">
+            <h3>${esc(g.name)}</h3>
+            <ul>${[...g.items].sort((a, b) => a[0].localeCompare(b[0])).map(([nm, l]) => `<li><span class="nm">${esc(nm)}</span><span class="lead" aria-hidden="true"></span><span class="lvl ${l}"><span class="sr-only">${esc(S.levelText[l])}</span><span aria-hidden="true">${esc(S.levels[l])}</span></span></li>`).join('')}</ul>
+          </div>`).join('')}
+        </div>
+      </div>`;
+  }
+
+  function renderCareer() {
+    const C = CONTENT.career;
+    $('#career').innerHTML = `
+      <div class="wrap">
+        ${sectionHead(C, 'career-h')}
+        <div class="rooms" id="rooms">
+          <span class="route" aria-hidden="true"></span><span class="route-fill" id="routeFill" aria-hidden="true"></span>
+          ${C.jobs.map((j, i) => `
+            <article class="room" aria-labelledby="room-${i}">
+              <div class="head"><p class="years" aria-hidden="true">${esc(j.years[0])}<em>–</em>${esc(j.years[1].slice(2))}</p><p class="room-no">${esc(C.roomLabel)} ${i + 1}</p></div>
+              <div class="wall-label">
+                <h3 id="room-${i}">${esc(j.company)}</h3>
+                <p class="roles">${j.roles.map(esc).join('<i aria-label="promoted to">→</i>')}</p>
+                <p class="dates">${esc(j.dates)}</p>
+                ${j.promoted ? `<p class="turning-point">${esc(C.turningPoint)}</p>` : ''}
+                <p class="materials"><b>${esc(C.materialsLabel)}:</b> ${j.stack.map(esc).join(', ')}</p>
+              </div>
+              <ul class="wall-text">${j.points.map((p) => `<li>${esc(p)}</li>`).join('')}</ul>
+            </article>`).join('')}
+          <p class="foyer room"><b>${esc(C.education.label)}:</b> ${esc(C.education.school)}, ${esc(C.education.degree)}, ${esc(C.education.dates)}</p>
+        </div>
+      </div>`;
+  }
+
+  function renderReviews() {
+    const R = CONTENT.reviews;
+    $('#reviews').innerHTML = `
+      <div class="wrap">
+        ${sectionHead(R, 'reviews-h')}
+        <div class="reviews-grid">${R.quotes.map((q, i) => `
+          <figure class="review" data-arrive style="--i:${i}">
+            <p class="blurb" aria-hidden="true">${esc(q.blurb)}</p>
+            <blockquote>${q.text.map((t) => `<p>${esc(t)}</p>`).join('')}</blockquote>
+            <figcaption><b>${esc(q.name)}</b>${esc(q.role)} · ${esc(R.source)}</figcaption>
+          </figure>`).join('')}
+        </div>
+        <p class="reviews-note">${esc(R.note)}</p>
+      </div>`;
+  }
+
+  function renderProjects() {
+    const Pr = CONTENT.projects;
+    const cls = { live: 'live', 'in progress': 'progress', archived: 'archived' };
+    // a salon hang that repeats for any number of works: wide, narrow (dropped), narrow, wide
+    const hang = [{ span: 7, ratio: 4 / 3, drop: 0 }, { span: 5, ratio: 4 / 5, drop: 120 }, { span: 5, ratio: 1, drop: 0 }, { span: 7, ratio: 16 / 10, drop: 80 }];
+    $('#projects').innerHTML = `
+      <div class="wrap">
+        ${sectionHead(Pr, 'projects-h')}
+        <ol class="wall">${Pr.items.map((p, i) => { const h = hang[i % hang.length], id = 'work-' + i; return `
+          <li class="work" style="--span:${h.span};--drop:${h.drop}px">
+            <div class="frame">${artworkSVG(p.name, h.ratio)}</div>
+            <div class="museum-label">
+              <h3 id="${id}">${p.repo ? `<a href="${esc(p.repo)}">${esc(p.name)}</a>` : esc(p.name)}</h3>
+              <p class="status ${cls[p.status]}">${esc(Pr.statusLabels[p.status])} <small>· ${esc(Pr.statusGallery[p.status])}</small></p>
+              ${p.note ? `<p class="note">${esc(p.note)}</p>` : ''}
+              <p>${esc(p.description)}</p>
+              <p class="medium"><b>${esc(Pr.mediumLabel)}:</b> ${p.tags.map(esc).join(', ')}</p>
+              ${p.repo ? `<a class="repo" href="${esc(p.repo)}" aria-describedby="${id}">${esc(Pr.repoLabel)} →</a>` : ''}
+            </div>
+          </li>`; }).join('')}
+        </ol>
+      </div>`;
+  }
+
+  function renderContact() {
+    const C = CONTENT.contact, R = C.rows, S = C.subscribe;
+    $('#contact').innerHTML = `
+      <div class="wrap">
+        ${sectionHead({ eyebrow: C.eyebrow, title: C.title }, 'contact-h')}
+        <dl class="visit-grid">
+          <div class="visit-row"><dt>${esc(R.hours)}</dt><dd>${esc(P.availability)}</dd></div>
+          <div class="visit-row"><dt>${esc(R.email)}</dt><dd><a href="mailto:${esc(P.email)}">${esc(P.email)}</a></dd></div>
+          <div class="visit-row"><dt>${esc(R.elsewhere)}</dt><dd><a href="${esc(P.github)}">GitHub</a> · ${P.linkedin ? `<a href="${esc(P.linkedin)}">LinkedIn</a>` : `LinkedIn ${todo('LinkedIn URL')}`}</dd></div>
+          <div class="visit-row"><dt>${esc(R.call)}</dt><dd>${P.calendly ? `<a href="${esc(P.calendly)}">${esc(C.calendlyLabel)}</a>` : `${esc(C.calendlyLabel)} ${todo('Calendly URL')}`}</dd></div>
+          <div class="visit-row"><dt>${esc(R.cv)}</dt><dd><a class="btn btn-solid" href="${esc(P.cvFile)}" download>${ICON.down}${esc(CONTENT.cover.cv)}</a></dd></div>
+        </dl>
+        <div class="subscribe" id="subscribe">
+          <div><h3>${esc(S.title)}</h3><p>${esc(S.text)}</p></div>
+          <div class="act">
+            <button class="btn btn-solid" id="subBtn" type="button">${esc(S.button)} ${ICON.arrow}</button>
+            <div class="done" id="subDone" hidden role="status"><b>${esc(S.doneTitle)}</b><p>${esc(S.doneText)}</p><a href="${esc(P.cvFile)}" download>${esc(S.doneLink)} ↓</a></div>
+          </div>
+        </div>
+      </div>`;
+  }
+
+  function renderFooter() {
+    const F = CONTENT.footer;
+    $('#foot').innerHTML = `<div class="wrap"><b>${esc(CONTENT.cover.edition)}</b><span>${esc(F.setIn)} ${esc(F.builtWith)} · <a href="${esc(F.repo)}">${esc(F.repoLabel)}</a></span><span>© ${new Date().getFullYear()} ${esc(P.name)}</span></div>`;
+  }
+
+  /* =====================================================================
+     Effects (each maps to a component or hook)
+     ===================================================================== */
+
+  // PageTurn: GSAP ScrollTrigger + CSS 3D. In turning mode the stage sticks for a while, the
+  // cover and the contents share one grid cell, and scroll turns the cover around its spine.
+  function PageTurn() {
+    if (!motion) return;
+    gsap.registerPlugin(ScrollTrigger);
+    document.documentElement.classList.add('turning');
+    const cover = $('#cover'), contents = $('.contents-page');
+    const tl = gsap.timeline({ scrollTrigger: { trigger: '#top', start: 'top top', end: 'bottom bottom', scrub: 0.8 } });
+    tl.to(cover, { rotateY: -180, ease: 'power2.inOut', duration: 0.8 })
+      .to(contents, { '--shade': 0, ease: 'none', duration: 0.8 }, 0)
+      .to(cover, { opacity: 0, duration: 0.12 }, 0.72)
+      .to({}, { duration: 0.2 }); // a short rest on the open contents page
+    // links on the cover stay usable: a keyboard user tabbing past the cover is not trapped
+  }
+
+  // RetrospectiveLine: GSAP ScrollTrigger scrub. The route through the rooms draws as you walk.
+  function RetrospectiveLine() {
+    if (!motion) return;
+    gsap.fromTo('#routeFill', { scaleY: 0 }, { scaleY: 1, ease: 'none', scrollTrigger: { trigger: '#rooms', start: 'top 70%', end: 'bottom 70%', scrub: true } });
+  }
+
+  // IssueSeal turning: one slow CSS-free rotation driven by rAF only while the cover is visible
+  function IssueSeal() {
+    if (reduceMotion) return;
+    const ring = $('.seal .ring'); if (!ring) return;
+    let a = 0, on = true, last = performance.now();
+    new IntersectionObserver(([e]) => { on = e.isIntersecting; if (on) { last = performance.now(); requestAnimationFrame(tick); } }).observe($('#field'));
+    function tick(t) { if (!on) return; a = (a + (t - last) * 0.012) % 360; last = t; ring.style.transform = `rotate(${a.toFixed(2)}deg)`; requestAnimationFrame(tick); }
+  }
+
+  // PigmentSheen: custom. A soft light follows the cursor over the ultramarine field.
+  function PigmentSheen() {
+    if (reduceMotion || !finePointer) return;
+    const f = $('#field');
+    f.addEventListener('pointermove', (e) => { const r = f.getBoundingClientRect(); f.style.setProperty('--sx', (e.clientX - r.left) + 'px'); f.style.setProperty('--sy', (e.clientY - r.top) + 'px'); f.style.setProperty('--sheen', 1); });
+    f.addEventListener('pointerleave', () => f.style.setProperty('--sheen', 0));
+  }
+
+  // Arrive: custom. Elements marked data-arrive come in with a stagger as they scroll into view.
+  function Arrive() {
+    if (reduceMotion) return;
+    document.documentElement.classList.add('arrive');
+    const io = new IntersectionObserver((entries) => entries.forEach((en) => { if (en.isIntersecting) { en.target.classList.add('in'); io.unobserve(en.target); } }), { rootMargin: '0px 0px -10% 0px' });
+    $$('[data-arrive]').forEach((el) => io.observe(el));
+  }
+
+  // Subscribe: custom easter egg. Nothing is sent anywhere; it only reveals the CV link.
+  function Subscribe() {
+    const btn = $('#subBtn'), done = $('#subDone');
+    btn.addEventListener('click', () => { btn.hidden = true; done.hidden = false; $('a', done).focus(); });
+  }
+
+  // NavCurrent: custom. The nav pill follows the section in view.
+  function NavCurrent() {
+    const links = $$('#navList a');
+    const io = new IntersectionObserver((entries) => entries.forEach((en) => {
+      if (!en.isIntersecting) return;
+      const id = en.target.id === 'reviews' ? 'career' : en.target.id;
+      links.forEach((a) => (a.dataset.nav === id ? a.setAttribute('aria-current', 'true') : a.removeAttribute('aria-current')));
+    }), { rootMargin: '-45% 0px -50% 0px' });
+    ['top', 'about', 'stack', 'career', 'reviews', 'projects', 'contact'].forEach((id) => io.observe(document.getElementById(id)));
+  }
+
+  // MobileMenu: custom. Full-screen menu, focus kept inside, Escape closes.
+  function MobileMenu() {
+    const btn = $('#menuBtn'), menu = $('#menu');
+    const focusables = () => [btn, ...$$('a', menu)];
+    function set(open) {
+      menu.hidden = !open;
+      btn.setAttribute('aria-expanded', String(open));
+      btn.textContent = open ? 'Close' : 'Menu';
+      document.documentElement.style.overflow = open ? 'hidden' : '';
+      if (open) $('a', menu).focus();
+    }
+    btn.addEventListener('click', () => set(menu.hidden));
+    menu.addEventListener('click', (e) => { if (e.target.closest('a')) set(false); });
+    document.addEventListener('keydown', (e) => {
+      if (menu.hidden) return;
+      if (e.key === 'Escape') { set(false); btn.focus(); }
+      if (e.key === 'Tab') {
+        const f = focusables(), i = f.indexOf(document.activeElement);
+        if (e.shiftKey && i <= 0) { e.preventDefault(); f[f.length - 1].focus(); }
+        else if (!e.shiftKey && i === f.length - 1) { e.preventDefault(); f[0].focus(); }
+      }
+    });
+    matchMedia('(min-width: 900px)').addEventListener('change', () => set(false));
+  }
+
+  function ConsoleHello() {
+    console.log('%c No. 05 %c ' + CONTENT.console, 'background:#2329C8;color:#fff;font:600 13px sans-serif;padding:2px 6px;border-radius:99px', 'font:italic 14px Georgia,serif');
+  }
+
+  /* =====================================================================
+     Boot
+     ===================================================================== */
+  renderHeader();
+  renderIssue();
+  renderAbout();
+  renderStack();
+  renderCareer();
+  renderReviews();
+  renderProjects();
+  renderContact();
+  renderFooter();
+  PageTurn();
+  RetrospectiveLine();
+  IssueSeal();
+  PigmentSheen();
+  Arrive();
+  Subscribe();
+  NavCurrent();
+  MobileMenu();
+  ConsoleHello();
+  document.fonts && document.fonts.ready.then(() => window.ScrollTrigger && ScrollTrigger.refresh());
+</script>
+</body>
+</html>

@@ -100,7 +100,7 @@ One task per direction. Each task builds both variants, `NN-<slug>-dark.html` an
 - [x] **Branch:** `feat/design-prototype-02-swiss-signal` (dark variant) and `feat/design-prototype-02-swiss-signal-light` (light variant)
 - [x] **Branch:** `feat/design-prototype-03-clay-studio` (both variants)
 - [x] **Branch:** `feat/design-prototype-04-sticker-sheet` (both variants)
-- [ ] **Branch:** `feat/design-prototype-05-<slug>`
+- [x] **Branch:** `feat/design-prototype-05-the-issue` (both variants)
 - [ ] **Branch:** `feat/design-prototype-06-<slug>`
 - [ ] **Branch:** `feat/design-prototype-07-<slug>`
 - [ ] **Branch:** `feat/design-prototype-08-<slug>`: the interests direction, built last

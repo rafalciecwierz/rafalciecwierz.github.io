@@ -494,7 +494,7 @@ The site feels like a scientist's or plotter artist's notebook where the drawing
 
 ## 08 — Ascent (`ascent`): extra, built last
 
-**Status:** built (both variants). **Files:** `design/prototypes/08-ascent-dark.html`, `design/prototypes/08-ascent-light.html`.
+**Status:** built (both variants); the **dark variant was chosen** for the site in task 2.5 ([DECISIONS.md](../DECISIONS.md), #001). It is refined in iterations in `design/iterations/` (roadmap task 2.7), recorded in an "Iterations" block under its As built block. **Files:** `design/prototypes/08-ascent-dark.html`, `design/prototypes/08-ascent-light.html`.
 
 **Shared by both variants:** only the style: scrollytelling and kinetic type with parkour and climbing as material, and a summit-first hero with "Start the climb ↓". The dark variant tells the ascent through parkour (rooftops), the light one through climbing (a crag); the concept below is the brief both started from.
 

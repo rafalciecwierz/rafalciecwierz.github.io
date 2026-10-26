@@ -1,0 +1,1136 @@
+<!doctype html>
+<!--
+  Prototype 08 — Ascent (`ascent`), LIGHT variant: "Crag in the Sun".
+  Direction brief: docs/design/DIRECTIONS.md, section 08.
+
+  Concept: a sunny limestone crag, and the page is the crag. The hero is the summit, so the name,
+  role and CTAs come first. Below it, on wide screens, the page is built bottom-up like a wall:
+  the base (About) is at the very bottom, and the story is climbed upwards. "Start the climb ↓"
+  drops the visitor to the base; scrolling up climbs past the stack, the career route, the belay
+  partners and the projects to "Climb with me." right under the summit. A rope runs up the left
+  edge of the whole crag, clipped into a quickdraw at every section, with a climber at the height
+  the visitor is reading. The reading order in the DOM stays the brief's order.
+  - Hero: "Top out". The name stands on the summit plateau in the sun and casts a long shadow; the
+    sun follows the pointer (and drifts on its own on touch screens).
+  - About: "The base", the climber's notes before the climb.
+  - Stack: "The pyramid", all tools stacked as a climbing pyramid, strong at the wide base, with
+    group filters.
+  - Career: "The route", a guidebook topo drawn up the face: four pitches, bolts, belays and the
+    crux at Team Leader. The line is drawn from the ground up to where the visitor is.
+  - From the team: "Belay partners".
+  - Projects: "Routes to try", a guidebook list with a small topo per route.
+  - Contact: "Climb with me."
+  - Footer: the ground, with a warm-up boulder problem (the easter egg mini game).
+  Clicking anywhere puffs chalk.
+  It shares only the style (scrollytelling, kinetic type, climbing and parkour as material) with
+  the dark variant, "Night Session".
+
+  Effects (each is a named function in the script below):
+  - SunShadow ......... custom: the sun follows the pointer; the name's long shadow (stacked
+                        text-shadows) points away from it
+  - RopeLine .......... custom SVG scrollytelling: rope, quickdraws and a climber at the reading
+                        height; draws clip as he passes them (GSAP ScrollTrigger in React)
+  - TopoRoute ......... custom SVG: the career topo, drawn from the ground up to the reading line
+                        (GSAP ScrollTrigger scrub + DrawSVG in React)
+  - Reach ............. custom (WAAPI): title letters reach up into place, one hand at a time
+  - PyramidBuild ...... custom: bricks are laid from the base up when the stack comes into view
+  - GroupFilter ....... custom: group chips highlight their bricks
+  - MiniTopo .......... custom SVG: a seeded crag and route line per project
+  - ChalkBurst ........ custom canvas 2D particles (a ClickSpark variant, React Bits)
+  - BoulderProblem .... custom: the warm-up boulder, drag or tap from hold to hold
+  - NavMenu (mobile, focus trapped), ConsoleHello: custom
+
+  Libraries in this file: none.
+  Fonts: League Spartan (display) + Work Sans (text) + Martian Mono (topo labels, grades),
+  Google Fonts, latin-ext. None is used by any other prototype. Swapped from the direction's Big
+  Shoulders Display and Barlow, which the dark variant uses, so the variants share no typeface.
+  React build would need: GSAP ScrollTrigger (already planned). No three.js.
+
+  Mobile (< 1000 px): the page is read top-down in the brief's order, with no rope; the topo is
+  drawn in full (below 700 px it becomes a plain route line with belays); the sun drifts on its
+  own on touch screens.
+  Reduced motion: no smooth scroll, the sun and shadow stay put, the rope is shown fully clipped
+  with the climber at the top, the topo is drawn in full, no letter or brick entrances, no chalk.
+  No WebGL. The chalk canvas and every drawing are marked aria-hidden.
+
+  Content: all copy lives in the CONTENT object at the top of the script. Additions beyond
+  brief section 5 are marked `NEW CONTENT` there.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rafał Ciećwierz, Frontend Engineer</title>
+<meta name="description" content="Rafał Ciećwierz, Frontend Engineer. React & TypeScript, 5+ years building production apps.">
+<meta name="theme-color" content="#F3EEE4">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=League+Spartan:wght@500..900&family=Martian+Mono:wght@400;500;600&family=Work+Sans:ital,wght@0,400..700;1,400..500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --lime: #F3EEE4;         /* limestone: the page */
+    --rock: #E7DDCB;         /* rock panels, strata */
+    --rock-2: #D3C3A7;
+    --card: #FFFCF6;         /* topo cards */
+    --ink: #1E2A2F;          /* slate text */
+    --muted: #55616A;        /* 5.5:1 on limestone */
+    --teal: #0B6E6D;         /* rope: links, focus, small text (5.3:1) */
+    --teal-soft: #CDE5E1;
+    --coral: #FF6F59;        /* rope: fills only, ink text on it (5.3:1) */
+    --coral-ink: #B8402E;    /* small coral text (4.7:1) */
+    --sun: #FFC94A;
+    --display: 'League Spartan', 'Arial Black', sans-serif;
+    --text: 'Work Sans', system-ui, sans-serif;
+    --mono: 'Martian Mono', ui-monospace, Menlo, monospace;
+    --gutter: clamp(16px, 4.5vw, 64px);
+    --lane: 0px;             /* the rope's lane on wide screens */
+    --max: 1120px;
+  }
+  @media (min-width: 1000px) { :root { --lane: 120px; } }
+  *, *::before, *::after { box-sizing: border-box; }
+  html { background: var(--lime); color: var(--ink); -webkit-text-size-adjust: 100%; }
+  @media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+  body { margin: 0; font: 400 17px/1.6 var(--text); background: var(--lime); overflow-x: hidden; }
+  a { color: var(--teal); text-underline-offset: .2em; text-decoration-thickness: 1.5px; }
+  a:hover { text-decoration-thickness: 2.5px; }
+  :focus-visible { outline: 3px solid var(--teal); outline-offset: 3px; border-radius: 2px; }
+  svg { display: block; }
+  h1, h2, h3, p, ul, ol, figure, blockquote { margin: 0; }
+  ul, ol { padding: 0; list-style: none; }
+  .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  .skip { position: fixed; left: 12px; top: -64px; z-index: 100; background: var(--ink); color: var(--lime); padding: 10px 16px; font: 600 15px var(--text); text-decoration: none; border-radius: 6px; }
+  .skip:focus { top: 12px; }
+  .todo { color: var(--coral-ink); font-style: italic; }
+  .todo b { font: 600 11px/1 var(--mono); font-style: normal; border: 1.5px solid currentColor; border-radius: 4px; padding: 3px 5px; margin-right: 6px; }
+
+  /* ---------- header ---------- */
+  .top { position: fixed; inset: 10px 10px auto; z-index: 50; height: 56px; display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 0 10px 0 14px; border-radius: 14px; background: rgba(255, 252, 246, .82); box-shadow: 0 1px 0 rgba(30, 42, 47, .08), 0 8px 24px rgba(80, 60, 30, .08); }
+  @supports (backdrop-filter: blur(10px)) { .top { background: rgba(255, 252, 246, .66); backdrop-filter: blur(10px) saturate(1.2); } }
+  .brand { display: flex; align-items: center; gap: 10px; color: var(--ink); text-decoration: none; }
+  .brand .mono { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 50%; background: var(--ink); color: var(--lime); font: 600 12px/1 var(--mono); letter-spacing: -.02em; }
+  .brand .label { font: 500 11px/1.2 var(--mono); text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
+  .nav ul { display: flex; gap: 4px; }
+  .nav a { display: block; font: 600 15px/1 var(--text); color: var(--ink); text-decoration: none; padding: 10px 14px; border-radius: 10px; }
+  .nav a:hover { background: var(--teal-soft); }
+  .nav a[aria-current] { background: var(--ink); color: var(--lime); }
+  .menu-btn { display: none; font: 600 15px/1 var(--text); color: var(--lime); background: var(--ink); border: 0; border-radius: 10px; padding: 11px 16px; cursor: pointer; }
+  .nav .close { display: none; }
+  @media (max-width: 799px) {
+    .menu-btn { display: block; }
+    .nav { position: fixed; inset: 0; z-index: 60; background: var(--lime); padding: 96px var(--gutter) 32px; display: none; flex-direction: column; justify-content: space-between; }
+    .nav.open { display: flex; }
+    .nav ul { flex-direction: column; gap: 4px; }
+    .nav a { font: 800 46px/1.1 var(--display); padding: 6px 0; letter-spacing: -.02em; }
+    .nav a[aria-current] { background: none; color: var(--coral-ink); }
+    .nav .close { display: block; align-self: flex-start; }
+    .brand .label { display: none; }
+  }
+
+  /* ---------- hero: top out ---------- */
+  .hero { position: relative; min-height: 100svh; display: flex; flex-direction: column; overflow: hidden; isolation: isolate; background: linear-gradient(180deg, #CFE4EC 0%, #E6EEE9 34%, #F8E9CF 58%, var(--lime) 58.1%); }
+  .sky { position: absolute; inset: 0 0 42%; z-index: -2; }
+  .sky svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .sun { position: absolute; z-index: -2; width: 92px; height: 92px; margin: -46px 0 0 -46px; border-radius: 50%; background: radial-gradient(circle, #FFE7A1 0 38%, var(--sun) 39% 46%, rgba(255, 201, 74, .35) 47%, rgba(255, 201, 74, 0) 70%); transform: scale(1.35); pointer-events: none; }
+  .plateau { position: absolute; inset: 58% 0 0; z-index: -1; background:
+      repeating-linear-gradient(176deg, transparent 0 38px, rgba(170, 140, 100, .12) 38px 40px, transparent 40px 74px),
+      linear-gradient(180deg, #E4D6BD 0, var(--lime) 60%); border-top: 3px solid #C9B593; }
+  .hero .wrap { position: relative; z-index: 2; flex: 1; display: flex; flex-direction: column; padding: 96px var(--gutter) 40px; max-width: 1400px; width: 100%; margin: 0 auto; }
+  .hero-meta { display: flex; flex-wrap: wrap; gap: 6px 10px; }
+  .hero-meta span { font: 500 11px/1 var(--mono); text-transform: uppercase; letter-spacing: .06em; padding: 7px 9px 6px; border-radius: 6px; background: rgba(255, 252, 246, .7); color: var(--ink); }
+  .hero-meta span:first-child { background: var(--ink); color: var(--lime); }
+  .name-zone { flex: 1; display: flex; flex-direction: column; justify-content: flex-end; min-height: 0; }
+  .name { position: relative; font: 900 64px/.86 var(--display); letter-spacing: -.035em; color: var(--ink); padding-top: .12em; }
+  .name .w { display: block; width: max-content; white-space: nowrap; }
+  .name .w:last-child { margin-left: .5em; }
+  .name .shadow { position: absolute; inset: 0; z-index: -1; padding-top: .12em; color: transparent; pointer-events: none; }
+  .hero-foot { display: grid; gap: 22px 48px; margin-top: clamp(26px, 5vh, 56px); }
+  @media (min-width: 900px) { .hero-foot { grid-template-columns: auto 1fr; align-items: end; } .hero-foot .ctas { justify-content: flex-end; } }
+  .role { font: 800 clamp(26px, 3vw, 38px)/1 var(--display); letter-spacing: -.02em; }
+  .role b { color: var(--coral-ink); font-weight: 800; }
+  .tagline { margin-top: 10px; color: var(--muted); font-size: clamp(16px, 1.3vw, 18px); }
+  .ctas { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 10px; min-height: 50px; padding: 12px 22px; border-radius: 999px; font: 600 16px/1 var(--text); text-decoration: none; color: var(--ink); background: var(--card); border: 2px solid var(--ink); transition: transform .2s cubic-bezier(.2, .9, .3, 1.4), background .2s; }
+  .btn svg { width: 19px; height: 19px; }
+  .btn.primary { background: var(--coral); border-color: var(--coral); color: var(--ink); box-shadow: 0 6px 0 -1px #D9503C; }
+  .btn:hover { transform: translateY(-3px); }
+  .btn.primary:hover { box-shadow: 0 9px 0 -1px #D9503C; }
+  .btn:active { transform: translateY(2px); }
+  .start { font: 600 15px/1 var(--text); color: var(--teal); padding: 14px 6px; }
+  @media (max-width: 520px) { .ctas .btn { flex: 1 1 100%; } }
+
+  /* ---------- the crag ---------- */
+  .crag { position: relative; display: flex; flex-direction: column; background-color: var(--lime);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.01 .06' numOctaves='3' seed='4' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .55 0 0 0 0 .45 0 0 0 0 .3 0 0 0 .16 0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)'/%3E%3C/svg%3E"); }
+  /* wide screens: the wall is climbed from the bottom, so the sections stack bottom-up */
+  @media (min-width: 1000px) { .crag { flex-direction: column-reverse; } }
+  .crag > section { position: relative; padding: clamp(80px, 10vw, 140px) var(--gutter) clamp(80px, 10vw, 140px) calc(var(--gutter) + var(--lane)); }
+  .crag > section + section { border-bottom: 0; }
+  .wrap { max-width: var(--max); margin: 0 auto; }
+  .sec-head { margin-bottom: clamp(32px, 4vw, 56px); }
+  .route-no { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; font: 500 12px/1 var(--mono); text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+  .route-no b { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; background: var(--ink); color: var(--lime); font: 600 14px/1 var(--mono); }
+  .sec-head h2 { font: 900 clamp(54px, 9vw, 132px)/.88 var(--display); letter-spacing: -.04em; padding-top: .08em; }
+  .sec-head .intro { margin-top: 18px; max-width: 54ch; color: var(--muted); font-size: clamp(17px, 1.4vw, 19px); }
+  .rl { display: inline-block; }
+
+  /* About: the base */
+  .about { display: grid; gap: 40px; }
+  @media (min-width: 900px) { .about { grid-template-columns: 3fr 2fr; gap: 64px; align-items: start; } }
+  .about-text p { font-size: clamp(18px, 1.5vw, 21px); line-height: 1.6; }
+  .about-text p + p { margin-top: 1em; }
+  .notes { background: var(--card); border-radius: 14px; padding: 22px 24px; box-shadow: 0 1px 0 rgba(30, 42, 47, .1), 0 14px 30px rgba(110, 85, 50, .1); }
+  .notes h3 { font: 500 12px/1 var(--mono); text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin-bottom: 12px; }
+  .notes li { display: grid; grid-template-columns: 116px 1fr; gap: 14px; padding: 12px 0; border-top: 1.5px dashed var(--rock-2); align-items: baseline; }
+  .notes li b { font: 900 34px/.9 var(--display); letter-spacing: -.03em; color: var(--coral-ink); }
+  .notes li span { font-size: 15.5px; line-height: 1.4; }
+
+  /* Stack: the pyramid */
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 36px; }
+  .chip { font: 500 12px/1 var(--mono); padding: 9px 12px; border-radius: 999px; border: 1.5px solid var(--ink); background: transparent; color: var(--ink); cursor: pointer; }
+  .chip b { font-weight: 600; margin-right: 6px; }
+  .chip[aria-pressed="true"] { background: var(--ink); color: var(--lime); }
+  .pyramid { display: flex; flex-direction: column-reverse; gap: 22px; }
+  .tier { display: grid; gap: 10px; justify-items: center; }
+  .tier h3 { font: 500 12px/1.3 var(--mono); text-transform: uppercase; letter-spacing: .06em; color: var(--muted); text-align: center; }
+  .tier h3 b { color: var(--ink); font-weight: 600; }
+  /* wrap-reverse: the short leftover row goes on top, so every tier narrows upwards */
+  .bricks { display: flex; flex-wrap: wrap-reverse; justify-content: center; gap: 8px; margin: 0 auto; }
+  .tier-strong .bricks { max-width: 100%; }
+  .tier-medium .bricks { max-width: 76%; }
+  .tier-low .bricks { max-width: 40%; }
+  @media (max-width: 699px) { .tier-medium .bricks, .tier-low .bricks { max-width: 100%; } }
+  .brick { display: flex; align-items: baseline; gap: 8px; padding: 11px 14px 10px; border-radius: 8px; font: 600 15px/1.1 var(--text); transition: opacity .25s, transform .25s; }
+  .brick small { font: 500 10px/1 var(--mono); letter-spacing: .04em; opacity: .8; }
+  .lvl-strong { background: var(--ink); color: var(--lime); box-shadow: inset 0 -4px 0 rgba(0, 0, 0, .25); }
+  .lvl-medium { background: var(--teal-soft); color: var(--ink); box-shadow: inset 0 -4px 0 rgba(11, 110, 109, .2); }
+  .lvl-low { background: var(--card); color: var(--ink); outline: 2px dashed var(--muted); outline-offset: -2px; }
+  .pyramid.filtered .brick:not(.match) { opacity: .2; }
+  .pyramid.filtered .brick.match { transform: translateY(-3px); }
+
+  /* Career: the route */
+  .route { position: relative; display: grid; grid-template-columns: 1fr; }
+  @media (min-width: 700px) { .route { grid-template-columns: 120px 1fr; } }
+  .topo { display: none; }
+  @media (min-width: 700px) { .topo { display: block; position: relative; } .topo svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; } }
+  .pitches { display: grid; gap: 30px; }
+  /* phones: the topo becomes a plain route line with a belay at the top of each pitch */
+  @media (max-width: 699px) {
+    .pitches { position: relative; padding-left: 22px; }
+    .pitches::before { content: ''; position: absolute; left: 4px; top: 8px; bottom: 0; width: 4px; border-radius: 2px; background: var(--coral); }
+    .pitch { position: relative; }
+    .pitch::before { content: ''; position: absolute; left: -26px; top: 2px; width: 12px; height: 12px; border-radius: 50%; background: var(--card); border: 3px solid var(--ink); }
+  }
+  .pitch { background: var(--card); border-radius: 14px; padding: 24px clamp(18px, 2.4vw, 30px) 26px; box-shadow: 0 1px 0 rgba(30, 42, 47, .1), 0 14px 30px rgba(110, 85, 50, .1); }
+  .pitch .pno { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; font: 500 12px/1 var(--mono); text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
+  .pitch .pno b { color: var(--ink); font-weight: 600; }
+  .pitch .crux { color: var(--coral-ink); font-weight: 600; }
+  .pitch h3 { font: 800 clamp(28px, 3vw, 40px)/1 var(--display); letter-spacing: -.03em; margin-top: 12px; padding-top: .06em; }
+  .pitch .roles { margin-top: 8px; font: 600 17px/1.4 var(--text); }
+  .pitch .roles .arrow { color: var(--coral-ink); padding: 0 .3em; }
+  .pitch .promo { display: inline-block; margin-left: 8px; vertical-align: 1px; font: 600 10.5px/1 var(--mono); text-transform: uppercase; letter-spacing: .05em; background: var(--coral); color: var(--ink); padding: 5px 7px 4px; border-radius: 4px; }
+  .pitch .dates { margin-top: 4px; font: 500 13px/1.4 var(--mono); color: var(--muted); }
+  .pitch ul.pts { margin-top: 14px; display: grid; gap: 8px; }
+  .pitch ul.pts li { position: relative; padding-left: 22px; font-size: 15.5px; line-height: 1.5; }
+  .pitch ul.pts li::before { content: '×'; position: absolute; left: 2px; top: -.05em; font: 600 15px/1.6 var(--mono); color: var(--coral-ink); }
+  .tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 16px; }
+  .tags li { font: 500 11px/1 var(--mono); color: var(--ink); background: var(--rock); padding: 6px 8px; border-radius: 5px; }
+  .approach { margin-top: 30px; font-size: 15.5px; color: var(--muted); }
+  .approach b { color: var(--ink); font-weight: 600; }
+  .approach span { font: 500 11px/1 var(--mono); text-transform: uppercase; letter-spacing: .06em; margin-right: 8px; }
+
+  /* From the team: belay partners */
+  .partners { display: grid; gap: 22px; }
+  @media (min-width: 900px) { .partners { grid-template-columns: 1.15fr 1fr 1fr; align-items: start; } .partners .bp:nth-child(1) { margin-top: 96px; } .partners .bp:nth-child(2) { margin-top: 48px; } } /* the cards step up, left to right */
+  .bp { position: relative; background: var(--card); border-radius: 14px; padding: 26px 26px 24px; box-shadow: 0 1px 0 rgba(30, 42, 47, .1), 0 14px 30px rgba(110, 85, 50, .1); }
+  .bp .call { font: 500 11px/1 var(--mono); text-transform: uppercase; letter-spacing: .06em; color: var(--teal); display: flex; align-items: center; gap: 8px; }
+  .bp .call svg { width: 22px; height: 22px; }
+  .bp blockquote { margin-top: 16px; }
+  .bp blockquote p { font: 500 19px/1.45 var(--text); }
+  .bp blockquote p + p { margin-top: .6em; }
+  .bp:first-child blockquote p:first-child { font: 800 clamp(26px, 2.3vw, 32px)/1.08 var(--display); letter-spacing: -.02em; }
+  .bp figcaption { margin-top: 18px; padding-top: 14px; border-top: 1.5px dashed var(--rock-2); display: grid; gap: 3px; }
+  .bp figcaption b { font: 800 20px/1 var(--display); letter-spacing: -.01em; padding-top: .1em; }
+  .bp figcaption span { font-size: 14px; color: var(--muted); }
+
+  /* Projects: routes to try */
+  .routes { border-top: 2px solid var(--ink); }
+  .route-row { display: grid; grid-template-columns: 64px 1fr; gap: 14px 22px; padding: 26px 0; border-bottom: 1.5px solid var(--rock-2); }
+  @media (min-width: 760px) { .route-row { grid-template-columns: 96px 1fr 220px; } }
+  .route-row .thumb svg { width: 100%; height: auto; }
+  .route-row h3 { font: 800 clamp(26px, 2.6vw, 34px)/1.02 var(--display); letter-spacing: -.025em; padding-top: .06em; }
+  .route-row .note { font-size: 14.5px; color: var(--muted); margin-top: 4px; }
+  .route-row .desc { margin-top: 10px; font-size: 16px; max-width: 60ch; }
+  .route-row .meta { grid-column: 1 / -1; display: grid; gap: 10px; align-content: start; }
+  @media (min-width: 760px) { .route-row .meta { grid-column: auto; } }
+  .grade { display: inline-flex; align-items: center; gap: 0; font: 600 11px/1 var(--mono); text-transform: uppercase; letter-spacing: .05em; border-radius: 5px; overflow: hidden; border: 1.5px solid var(--ink); width: max-content; }
+  .grade span { padding: 6px 8px 5px; }
+  .grade span + span { border-left: 1.5px solid var(--ink); font-weight: 400; text-transform: none; }
+  .g-live span:first-child { background: var(--coral); }
+  .g-progress span:first-child { background: var(--sun); }
+  .g-archived span:first-child { background: var(--rock); }
+  .route-row .meta .tags { margin-top: 0; }
+  .route-row .meta a { font: 600 15px var(--text); }
+  .count { margin-top: 18px; font: 500 12px/1.5 var(--mono); color: var(--muted); }
+
+  /* Contact: climb with me */
+  .contact-grid { display: grid; gap: 36px; }
+  @media (min-width: 900px) { .contact-grid { grid-template-columns: 1fr 1fr; gap: 64px; align-items: start; } }
+  .avail { font: 800 clamp(24px, 2.4vw, 32px)/1.15 var(--display); letter-spacing: -.02em; padding-top: .08em; }
+  .access { background: var(--card); border-radius: 14px; padding: 8px 22px; box-shadow: 0 1px 0 rgba(30, 42, 47, .1), 0 14px 30px rgba(110, 85, 50, .1); }
+  .access li { display: grid; grid-template-columns: 1fr; gap: 4px; padding: 14px 0; border-bottom: 1.5px dashed var(--rock-2); }
+  .access li:last-child { border-bottom: 0; }
+  @media (min-width: 520px) { .access li { grid-template-columns: 150px 1fr; gap: 12px; align-items: baseline; } }
+  .access .k { font: 500 11px/1.3 var(--mono); text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+  .access a { font-weight: 600; word-break: break-word; }
+  .contact .ctas { margin-top: 26px; }
+
+  /* the rope (wide screens) */
+  .rope { display: none; }
+  @media (min-width: 1000px) { .rope { display: block; position: absolute; left: calc(var(--gutter) - 14px); top: 0; width: 110px; height: 100%; z-index: 3; pointer-events: none; overflow: visible; } }
+  .rope .clip-txt { font: 600 11px var(--mono); fill: var(--coral-ink); opacity: 0; transition: opacity .3s; }
+  .rope .clip-txt.on { opacity: 1; }
+
+  /* the ground */
+  footer { position: relative; background: linear-gradient(180deg, #DCCBAB 0, #CDB894 100%); padding: 56px var(--gutter) 36px; border-top: 4px solid #B7A07A; }
+  footer .wrap { display: grid; gap: 36px; }
+  @media (min-width: 900px) { footer .wrap { grid-template-columns: 1fr 360px; align-items: end; } }
+  .ground-txt h2 { font: 900 clamp(40px, 5vw, 64px)/.9 var(--display); letter-spacing: -.035em; padding-top: .08em; }
+  .ground-txt p { margin-top: 12px; max-width: 46ch; }
+  .ground-txt .built { margin-top: 26px; font-size: 14.5px; }
+  .boulder { background: #EFE5D3; border-radius: 16px; padding: 14px 14px 12px; box-shadow: inset 0 0 0 2px rgba(30, 42, 47, .12); }
+  .boulder svg { width: 100%; height: auto; touch-action: none; }
+  .boulder .hold { cursor: pointer; }
+  .boulder .hold:focus { outline: none; }
+  .boulder .hold:focus-visible .hl { stroke: var(--teal); stroke-width: 4; }
+  .boulder .row { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-top: 8px; font: 500 12px/1.4 var(--mono); }
+  .boulder button { font: 600 12px var(--mono); background: none; border: 1.5px solid var(--ink); border-radius: 999px; padding: 6px 10px; cursor: pointer; color: var(--ink); }
+  .chalk { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 90; pointer-events: none; }
+
+  @media (prefers-reduced-motion: reduce) {
+    /* none, not a tiny duration: a running transition would make the name fit read old sizes */
+    *, *::before, *::after { transition: none !important; animation: none !important; }
+    .btn:hover { transform: none; }
+  }
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="top">
+  <a class="brand" href="#top" id="brand"></a>
+  <button class="menu-btn" id="menuBtn" aria-expanded="false" aria-controls="nav">Menu</button>
+  <nav class="nav" id="nav" aria-label="Main">
+    <ul id="navList"></ul>
+    <button class="menu-btn close" id="menuClose">Close</button>
+  </nav>
+</header>
+
+<main id="main">
+  <section class="hero" id="top" aria-labelledby="hero-name">
+    <div class="sky" aria-hidden="true" id="sky"></div>
+    <div class="sun" aria-hidden="true" id="sun"></div>
+    <div class="plateau" aria-hidden="true"></div>
+    <div class="wrap">
+      <p class="hero-meta" id="heroMeta"></p>
+      <div class="name-zone">
+        <h1 class="name" id="hero-name"></h1>
+      </div>
+      <div class="hero-foot">
+        <div>
+          <p class="role" id="role"></p>
+          <p class="tagline" id="tagline"></p>
+        </div>
+        <div class="ctas" id="heroCtas"></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="crag" id="crag">
+    <svg class="rope" id="rope" aria-hidden="true"></svg>
+
+    <section id="about" aria-labelledby="about-title">
+      <div class="wrap">
+        <div class="sec-head" id="about-head"></div>
+        <div class="about">
+          <div class="about-text" id="aboutText"></div>
+          <aside class="notes" id="notes" aria-labelledby="notes-title"></aside>
+        </div>
+      </div>
+    </section>
+
+    <section id="stack" aria-labelledby="stack-title">
+      <div class="wrap">
+        <div class="sec-head" id="stack-head"></div>
+        <div class="chips" id="chips" role="group" aria-label="Highlight a group"></div>
+        <div class="pyramid" id="pyramid"></div>
+      </div>
+    </section>
+
+    <section id="career" aria-labelledby="career-title">
+      <div class="wrap">
+        <div class="sec-head" id="career-head"></div>
+        <div class="route">
+          <div class="topo" aria-hidden="true"><svg id="topo"></svg></div>
+          <div>
+            <ol class="pitches" id="pitches"></ol>
+            <p class="approach" id="approach"></p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="team" aria-labelledby="team-title">
+      <div class="wrap">
+        <div class="sec-head" id="team-head"></div>
+        <div class="partners" id="partners"></div>
+      </div>
+    </section>
+
+    <section id="projects" aria-labelledby="projects-title">
+      <div class="wrap">
+        <div class="sec-head" id="projects-head"></div>
+        <ol class="routes" id="routes"></ol>
+        <p class="count" id="projectsCount"></p>
+      </div>
+    </section>
+
+    <section id="contact" class="contact" aria-labelledby="contact-title">
+      <div class="wrap">
+        <div class="sec-head" id="contact-head"></div>
+        <div class="contact-grid">
+          <p class="avail" id="availability"></p>
+          <div>
+            <ul class="access" id="access"></ul>
+            <div class="ctas" id="contactCtas"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+</main>
+
+<footer id="ground">
+  <div class="wrap">
+    <div class="ground-txt" id="groundTxt"></div>
+    <div class="boulder" id="boulder"></div>
+  </div>
+</footer>
+
+<canvas class="chalk" id="chalk" aria-hidden="true"></canvas>
+
+<script>
+  /* =====================================================================
+     Content (becomes src/content/ in the React build)
+     ===================================================================== */
+  const CONTENT = {
+    profile: {
+      name: 'Rafał Ciećwierz', words: ['Rafał', 'Ciećwierz'], initials: 'RC',
+      role: 'Frontend Engineer',
+      tagline: 'React & TypeScript · 5+ years building production apps',
+      availability: 'Open to frontend roles (React / TypeScript), remote or hybrid.',
+      email: 'rafal.ciecwierz4@gmail.com',
+      github: 'https://github.com/rafalciecwierz',
+      linkedin: null, // TODO: Rafał to provide URL
+      calendly: null, // TODO: Rafał to provide URL
+      cvFile: '/Rafal_Ciecwierz_CV.pdf'
+    },
+    nav: [
+      { id: 'about', label: 'About' }, { id: 'stack', label: 'Stack' }, { id: 'career', label: 'Career' },
+      { id: 'projects', label: 'Projects' }, { id: 'contact', label: 'Contact' }
+    ],
+    brand: 'Ascent · topo', // NEW CONTENT
+    hero: {
+      meta: ['Top out', 'Sector: Frontend', 'Sun all day'], // NEW CONTENT
+      cv: 'Download CV', contact: 'Get in touch',
+      start: 'Start the climb ↓' // NEW CONTENT (from the direction brief)
+    },
+    // route numbers count up from the base, as in a guidebook
+    about: {
+      no: 1, kicker: 'The base', title: 'About', // NEW CONTENT: kicker
+      text: [
+        "I'm a frontend engineer with 5+ years of commercial experience in React and TypeScript. I started my career in QA automation, moved into frontend development after three months at my team's request, and later led a team of six developers.",
+        "I care about clean architecture, reusable UI and tests that actually protect the product. Lately I've been going deeper into the backend with NestJS and experimenting with motion and 3D in the browser.",
+        'Outside of code: parkour (for over 22 years) and climbing.'
+      ],
+      // NEW CONTENT: each note restates the brief
+      notesTitle: 'Climber’s notes',
+      notes: [
+        { k: '5+ yrs', v: 'React and TypeScript in production' },
+        { k: '3 mo', v: 'from QA automation to developer, at the team’s request' },
+        { k: '6', v: 'developers led as Front-end Team Leader' },
+        { k: '22+ yrs', v: 'of parkour. Climbing too.' }
+      ]
+    },
+    stack: {
+      no: 2, kicker: 'The pyramid', title: 'Stack', // NEW CONTENT: kicker
+      intro: 'Climbers keep a pyramid: a wide base of solid routes under a few hard ones. Here is mine, by production experience.', // NEW CONTENT
+      all: 'All groups', // NEW CONTENT
+      levels: { strong: 'Strong', medium: 'Medium', low: 'Low' },
+      levelText: { strong: 'strong production experience', medium: 'medium production experience', low: 'low production experience' },
+      groups: [
+        { name: 'Frontend', short: 'FE', items: [['React', 'strong'], ['TypeScript', 'strong'], ['JavaScript', 'strong'], ['HTML5', 'strong'], ['CSS / SCSS / Styled-components', 'strong'], ['Next.js', 'medium'], ['Gatsby', 'medium'], ['Module Federation', 'medium'], ['React Native', 'low']] },
+        { name: 'Data & UI', short: 'DATA', items: [['TanStack Query', 'strong'], ['Redux', 'strong'], ['Zod', 'strong'], ['React Hook Form', 'strong'], ['Storybook', 'strong'], ['Ant Design', 'strong'], ['Material UI', 'strong'], ['Tailwind CSS', 'medium'], ['WebSockets', 'medium']] },
+        { name: 'Testing', short: 'TEST', items: [['Jest / Vitest', 'strong'], ['React Testing Library', 'strong'], ['Cypress', 'strong']] },
+        { name: 'Backend', short: 'BE', items: [['Node.js', 'medium'], ['NestJS', 'medium'], ['PostgreSQL', 'medium'], ['Strapi', 'medium']] },
+        { name: 'Tooling', short: 'TOOL', items: [['Git', 'strong'], ['Figma', 'strong'], ['Postman', 'strong'], ['Vite', 'strong'], ['Webpack', 'strong'], ['Docker', 'medium'], ['Claude Code', 'medium']] }
+      ]
+    },
+    career: {
+      no: 3, kicker: 'The route', title: 'Career', // NEW CONTENT: kicker
+      intro: 'Four pitches from 2021 to today, newest at the top. Each belay is a new company; the crux is the move to Team Leader.', // NEW CONTENT
+      pitch: n => `Pitch ${n}`, // NEW CONTENT
+      crux: 'Crux', // NEW CONTENT
+      promoted: 'Promoted',
+      jobs: [
+        {
+          company: 'MUG Software', roles: ['Front-end Software Engineer'], dates: '04.2025 – 08.2026',
+          points: [
+            'Maintained and extended a white-label React platform: a core repository with client-specific forks, propagating global changes upstream-to-fork while keeping client customizations isolated.',
+            'Developed and maintained a shared Storybook component library (50+ components), improving UI consistency and speeding up feature development.',
+            'Introduced TanStack Query (replacing Redux for server state) and Zod (replacing Yup), adopting them incrementally across the app as part of ongoing feature work.'
+          ],
+          stack: ['React', 'TypeScript', 'Styled Components', 'Jest', 'Redux', 'Storybook', 'Webpack', 'TanStack Query', 'Zod']
+        },
+        {
+          company: 'VML Enterprise Solutions', roles: ['Front-end Software Engineer'], dates: '09.2024 – 04.2025',
+          points: [
+            'Owned a reference-data micro-frontend (countries, currencies and other company-wide dictionaries) integrated into a large enterprise advertising platform via Webpack Module Federation.',
+            "Maintained and developed the module's codebase, increasing unit test coverage from 11% to over 80%.",
+            'Took part in the migration of a subdomain to a standalone microservice.'
+          ],
+          stack: ['React', 'TypeScript', 'SCSS', 'Jest', 'React Hook Form', 'Webpack', 'Vite', 'Module Federation']
+        },
+        {
+          company: 'Mood up', roles: ['React Developer', 'Front-end Team Leader'], dates: '10.2022 – 08.2024', promoted: true, crux: true,
+          points: [
+            'Built the React/Redux interface for a smart intercom running on an embedded Raspberry Pi device.',
+            'Promoted to Front-end Team Leader; led a team of 6 developers delivering MVPs for international startup clients.',
+            'Delivered projects from requirements gathering and estimation with clients through development, testing (Jest) and deployment.',
+            "Led a headless CMS evaluation (Strapi, Sanity, Contentful, headless WordPress and others), narrowing the shortlist to Strapi and Payload CMS for the company's stack."
+          ],
+          stack: ['React', 'Gatsby', 'Next.js', 'React Native', 'TypeScript', 'SCSS', 'Strapi', 'Material UI', 'Ant Design', 'Webpack', 'Vite', 'Figma']
+        },
+        {
+          company: 'mTab sp. z o.o.', roles: ['QA Automation Engineer', 'JavaScript Developer'], dates: '07.2021 – 09.2022', promoted: true,
+          points: [
+            "Promoted from QA Automation Engineer (Cypress E2E) to front-end developer after 3 months at the product team's request.",
+            'Developed views and features in React for a data visualization platform with dynamic, reactive charts and presentation-style reports.',
+            'Built Node.js scripts run nightly by Jenkins that aggregated test results into reports and posted them to Slack.',
+            'Maintained and extended a legacy Backbone.js codebase.'
+          ],
+          stack: ['React', 'JavaScript', 'TypeScript', 'Redux', 'SCSS', 'Jest', 'Cypress', 'Node.js', 'Backbone.js']
+        }
+      ],
+      education: { label: 'Approach', school: 'Adam Mickiewicz University', degree: "Engineer's degree in Computer Science", dates: '2015 – 2021' } // label: NEW CONTENT
+    },
+    team: {
+      no: 4, kicker: 'Belay partners', title: 'From the team', // NEW CONTENT: section and kicker
+      intro: 'The people who held the rope at Mood up. LinkedIn recommendations, quoted word for word.', // NEW CONTENT
+      call: 'Belay on', // NEW CONTENT
+      source: 'Mood up, 2024',
+      quotes: [
+        { name: 'Wiktoria W.', role: 'Marketing & Communication', text: ["Seriously, I've never met a leader as tuned in and supportive as him.", "Whoever snags him next is super lucky - yeah, I'm a bit envious. 😉"] },
+        { name: 'Rafał H.', role: 'Frontend Developer', text: ['His enthusiasm and optimism were contagious, making him a joy to work with.'] },
+        { name: 'Szymon K.', role: 'Frontend Developer', text: ['His technical skills and ability to simplify complex concepts, guiding others through challenges, have been invaluable in enhancing the overall quality and efficiency of our development processes.'] }
+      ]
+    },
+    projects: {
+      no: 5, kicker: 'Routes to try', title: 'Projects', // NEW CONTENT: kicker
+      intro: 'Side projects, written up like a guidebook. The status is the grade.', // NEW CONTENT
+      count: n => `${n} routes in this guide. New ones get bolted as they ship.`, // NEW CONTENT
+      statusLabels: { live: 'Live', 'in progress': 'In progress', archived: 'Archived' },
+      statusTerms: { live: 'sent', 'in progress': 'project', archived: 'retired' }, // NEW CONTENT: climbing terms
+      repoLabel: 'Repository ↗',
+      items: [
+        { name: 'Ashen Contracts', status: 'in progress', description: 'Browser-based idle/RPG game built as a full-stack showcase: pnpm monorepo with a Next.js app, NestJS API, shared Storybook UI library and shared TypeScript types. Architecture decisions documented in an ADR-style log.', tags: ['Next.js', 'NestJS', 'PostgreSQL', 'Prisma', 'Storybook', 'Docker', 'GitHub Actions'], repo: 'https://github.com/rafalciecwierz/ashen-contracts' },
+        { name: 'Ultimate Frisbee Tournament Platform', status: 'archived', note: 'Engineering thesis (team of 4), built for the Polish Ultimate Players Association', description: 'Owned the entire NestJS + PostgreSQL backend, built live match scoring with Socket.io (scorekeeper tablet view + real-time spectator view), designed the full UI in Figma, deployed to AWS and tested at a live tournament in Szczecin.', tags: ['NestJS', 'PostgreSQL', 'Socket.io', 'Swagger', 'AWS', 'Nuxt', 'Figma'] },
+        { name: 'This website', status: 'live', description: 'Personal site with a procedural 3D hero (React Three Fiber) and scroll-driven animations (GSAP, Lenis), built with a performance and accessibility budget.', tags: ['React', 'TypeScript', 'Three.js', 'GSAP', 'Vite'], repo: 'https://github.com/rafalciecwierz/rafalciecwierz.github.io' },
+        { name: 'Next.js page transitions', status: 'archived', description: 'Comparison of three page-transition approaches in Next.js: custom implementation, Framer Motion and GSAP.', tags: ['Next.js', 'Framer Motion', 'GSAP'], repo: 'https://github.com/rafalciecwierz/Nextjs-page-transition' }
+      ]
+    },
+    contact: {
+      no: 6, kicker: 'Top of the crag', title: 'Climb with me.', // kicker: NEW CONTENT; title from the direction brief
+      fields: { email: 'Email', linkedin: 'LinkedIn', github: 'GitHub', calendly: 'Book a 20-min call' },
+      todoUrl: 'Rafał to provide URL',
+      cv: 'Download CV', mail: 'Write an email'
+    },
+    ground: {
+      // NEW CONTENT: the ground and the warm-up boulder
+      title: 'The ground.',
+      text: 'Everything starts here. Warm up on the boulder first: drag the chalk hand, or tap a hold in reach.',
+      start: 'Start', top: 'Top', reset: 'Reset',
+      status: { ready: 'Reach the coral hold at the top.', moved: n => `Move ${n}. Keep going.`, far: 'Too far. Pick a hold in reach.', sent: 'Sent. Flash!' },
+      built: 'Built with React, Three.js and GSAP', repo: 'https://github.com/rafalciecwierz/rafalciecwierz.github.io', repoLabel: 'Source on GitHub',
+      sign: 'Rafał Ciećwierz'
+    },
+    console: 'Hi, fellow dev. On wide screens this crag is a flex column-reverse, so the DOM keeps the brief’s order while the eye climbs from the base. The boulder in the footer goes in four moves. Can you flash it?' // NEW CONTENT
+  };
+
+  /* =====================================================================
+     Helpers
+     ===================================================================== */
+  const $ = (s, r = document) => r.querySelector(s);
+  const NS = 'http://www.w3.org/2000/svg';
+  const el = (tag, attrs = {}, ...kids) => {
+    const n = document.createElement(tag);
+    for (const [k, v] of Object.entries(attrs)) {
+      if (k === 'class') n.className = v; else if (k === 'html') n.innerHTML = v; else if (k === 'text') n.textContent = v; else n.setAttribute(k, v);
+    }
+    for (const k of kids) if (k != null) n.append(k);
+    return n;
+  };
+  const sv = (tag, attrs = {}, parent) => { const n = document.createElementNS(NS, tag); for (const [k, v] of Object.entries(attrs)) n.setAttribute(k, v); if (parent) parent.append(n); return n; };
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const wide = () => innerWidth >= 1000;
+  const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+  const lerp = (a, b, t) => a + (b - a) * t;
+  function hash(str) { let h = 2166136261; for (const c of str) { h ^= c.codePointAt(0); h = Math.imul(h, 16777619); } return h >>> 0; }
+  function rng(seed) { return () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+  const downloadIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M12 4v11m0 0-4.5-4.5M12 15l4.5-4.5M5 19.5h14" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  // split text into letters for the Reach entrance; real text stays for assistive tech
+  const kinetic = (node, text) => {
+    node.append(el('span', { class: 'sr-only', text }));
+    const vis = el('span', { 'aria-hidden': 'true' });
+    text.split(' ').forEach((w, i) => {
+      if (i) vis.append(' ');
+      vis.append(el('span', { style: 'white-space:nowrap' }, ...[...w].map(ch => el('span', { class: 'rl', text: ch }))));
+    });
+    node.append(vis);
+  };
+  const secHead = (id, no, kicker, title, intro) => {
+    const h = $(`#${id}-head`);
+    h.append(el('p', { class: 'route-no', html: `<b>${no}</b><span>${kicker}</span>` }));
+    const h2 = el('h2', { id: `${id}-title`, class: 'reach' });
+    kinetic(h2, title);
+    h.append(h2);
+    if (intro) h.append(el('p', { class: 'intro', text: intro }));
+  };
+
+  /* =====================================================================
+     Render from CONTENT
+     ===================================================================== */
+  function render() {
+    const C = CONTENT, P = C.profile;
+    $('#brand').innerHTML = `<span class="mono">${P.initials}</span><span class="label">${C.brand}</span>`;
+    $('#brand').setAttribute('aria-label', `${P.name}, back to top`);
+    C.nav.forEach(n => $('#navList').append(el('li', {}, el('a', { href: `#${n.id}`, text: n.label }))));
+
+    // hero
+    C.hero.meta.forEach(m => $('#heroMeta').append(el('span', { text: m })));
+    const h1 = $('#hero-name');
+    h1.append(el('span', { class: 'sr-only', text: P.name }));
+    const face = el('span', { 'aria-hidden': 'true', class: 'face' });
+    P.words.forEach(w => face.append(el('span', { class: 'w', text: w })));
+    h1.append(face);
+    $('#role').textContent = P.role;
+    $('#tagline').textContent = P.tagline;
+    $('#heroCtas').append(
+      el('a', { class: 'btn primary', href: P.cvFile, download: '', html: `${downloadIcon}${C.hero.cv}` }),
+      el('a', { class: 'btn', href: '#contact', text: C.hero.contact }),
+      el('a', { class: 'start', href: '#about', text: C.hero.start }));
+
+    // about
+    const A = C.about;
+    secHead('about', A.no, A.kicker, A.title);
+    A.text.forEach(t => $('#aboutText').append(el('p', { text: t })));
+    $('#notes').append(el('h3', { id: 'notes-title', text: A.notesTitle }),
+      el('ul', {}, ...A.notes.map(n => el('li', {}, el('b', { text: n.k }), el('span', { text: n.v })))));
+
+    // stack: one tier per level, strong first in the DOM (the CSS stacks it at the base)
+    const S = C.stack;
+    secHead('stack', S.no, S.kicker, S.title, S.intro);
+    const chips = $('#chips');
+    chips.append(el('button', { class: 'chip', type: 'button', 'aria-pressed': 'true', 'data-g': '', text: S.all }));
+    S.groups.forEach(g => chips.append(el('button', { class: 'chip', type: 'button', 'aria-pressed': 'false', 'data-g': g.name, html: `<b>${g.short}</b>${g.name}` })));
+    Object.keys(S.levels).forEach(lvl => {
+      const items = S.groups.flatMap(g => g.items.filter(i => i[1] === lvl).map(i => ({ name: i[0], g })));
+      $('#pyramid').append(el('div', { class: `tier tier-${lvl}` },
+        el('h3', { html: `<b>${S.levels[lvl]}</b> · ${S.levelText[lvl]} · ${items.length}` }),
+        el('ul', { class: 'bricks' }, ...items.map(i => el('li', { class: `brick lvl-${lvl}`, 'data-g': i.g.name },
+          el('span', { text: i.name }), el('small', { text: i.g.short, title: i.g.name }), el('span', { class: 'sr-only', text: `, ${i.g.name}` }))))));
+    });
+
+    // career: newest first, so the oldest pitch sits at the bottom of the route
+    const K = C.career;
+    secHead('career', K.no, K.kicker, K.title, K.intro);
+    K.jobs.forEach((j, i) => {
+      const n = K.jobs.length - i;
+      const roles = el('p', { class: 'roles' }, el('span', { text: j.roles[0] }));
+      if (j.roles[1]) roles.append(el('span', { class: 'arrow', text: '→' }), el('span', { text: j.roles[1] }), el('span', { class: 'promo', text: K.promoted }));
+      $('#pitches').append(el('li', { class: 'pitch', 'data-crux': j.crux ? '1' : '', 'data-promo': j.promoted ? '1' : '' },
+        el('p', { class: 'pno', html: `<b>${K.pitch(n)}</b>${j.crux ? `<span class="crux">⚡ ${K.crux}</span>` : ''}` }),
+        el('h3', { text: j.company }), roles,
+        el('p', { class: 'dates', text: j.dates }),
+        el('ul', { class: 'pts' }, ...j.points.map(p => el('li', { text: p }))),
+        el('ul', { class: 'tags', 'aria-label': 'Stack' }, ...j.stack.map(s => el('li', { text: s })))));
+    });
+    const E = K.education;
+    $('#approach').innerHTML = `<span>${E.label}</span><b>${E.school}</b>, ${E.degree}, ${E.dates}`;
+
+    // team
+    const T = C.team;
+    secHead('team', T.no, T.kicker, T.title, T.intro);
+    const knot = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 18c4 0 5-12 9-12s5 12 9 12M7 12c3-3 7-3 10 0" stroke-linecap="round"/></svg>';
+    T.quotes.forEach(q => $('#partners').append(el('figure', { class: 'bp' },
+      el('p', { class: 'call', 'aria-hidden': 'true', html: `${knot}${T.call}` }),
+      el('blockquote', {}, ...q.text.map(t => el('p', { text: t }))),
+      el('figcaption', {}, el('b', { text: q.name }), el('span', { text: `${q.role} · ${T.source}` })))));
+
+    // projects
+    const PR = C.projects;
+    secHead('projects', PR.no, PR.kicker, PR.title, PR.intro);
+    PR.items.forEach((p, i) => {
+      const g = { live: 'g-live', 'in progress': 'g-progress', archived: 'g-archived' }[p.status];
+      $('#routes').append(el('li', { class: 'route-row' },
+        el('div', { class: 'thumb', 'aria-hidden': 'true' }, MiniTopo(p.name, i + 1)),
+        el('div', {},
+          el('h3', { text: p.name }),
+          p.note ? el('p', { class: 'note', text: p.note }) : null,
+          el('p', { class: 'desc', text: p.description })),
+        el('div', { class: 'meta' },
+          el('p', { class: `grade ${g}`, html: `<span>${PR.statusLabels[p.status]}</span><span>${PR.statusTerms[p.status]}</span>` }),
+          el('ul', { class: 'tags', 'aria-label': 'Tags' }, ...p.tags.map(t => el('li', { text: t }))),
+          p.repo ? el('a', { href: p.repo, text: PR.repoLabel }) : null)));
+    });
+    $('#projectsCount').textContent = PR.count(PR.items.length);
+
+    // contact
+    const CT = C.contact;
+    secHead('contact', CT.no, CT.kicker, CT.title);
+    $('#availability').textContent = P.availability;
+    const row = (k, v) => $('#access').append(el('li', {}, el('span', { class: 'k', text: k }), v));
+    const todo = () => el('span', { class: 'todo', html: `<b>TODO</b>${CT.todoUrl}` });
+    row(CT.fields.email, el('a', { href: `mailto:${P.email}`, text: P.email }));
+    row(CT.fields.linkedin, P.linkedin ? el('a', { href: P.linkedin, text: 'LinkedIn' }) : todo());
+    row(CT.fields.github, el('a', { href: P.github, text: P.github.replace('https://', '') }));
+    row(CT.fields.calendly, P.calendly ? el('a', { href: P.calendly, text: CT.fields.calendly }) : todo());
+    $('#contactCtas').append(
+      el('a', { class: 'btn primary', href: P.cvFile, download: '', html: `${downloadIcon}${CT.cv}` }),
+      el('a', { class: 'btn', href: `mailto:${P.email}`, text: CT.mail }));
+
+    // the ground
+    const G = C.ground;
+    $('#groundTxt').append(
+      el('h2', { text: G.title }),
+      el('p', { text: G.text }),
+      el('p', { class: 'built', html: `${G.built} · <a href="${G.repo}">${G.repoLabel}</a> · © ${new Date().getFullYear()} ${G.sign}` }));
+  }
+
+  /* MiniTopo — custom SVG: a seeded crag outline and route line for each project */
+  function MiniTopo(name, n) {
+    const r = rng(hash(name));
+    const s = sv('svg', { viewBox: '0 0 96 128' });
+    let d = 'M0 128 V40';
+    for (let x = 0; x <= 96; x += 12) d += ` L${x} ${18 + r() * 26}`;
+    d += ' V128 Z';
+    sv('path', { d, fill: '#E7DDCB', stroke: '#1E2A2F', 'stroke-width': 1.5, 'stroke-linejoin': 'round' }, s);
+    for (let i = 0; i < 4; i++) { const y = 56 + i * 18 + r() * 8; sv('path', { d: `M${4 + r() * 20} ${y} q 20 ${(r() - .5) * 8} ${30 + r() * 30} 0`, fill: 'none', stroke: '#C9B593', 'stroke-width': 1.2 }, s); }
+    const pts = []; let x = 40 + r() * 16;
+    for (let y = 118; y > 44; y -= 12) { x = clamp(x + (r() - .5) * 16, 24, 72); pts.push([x, y]); }
+    sv('polyline', { points: pts.map(p => p.join(',')).join(' '), fill: 'none', stroke: '#FF6F59', 'stroke-width': 3, 'stroke-linecap': 'round', 'stroke-linejoin': 'round' }, s);
+    pts.forEach((p, i) => { if (i % 2) sv('path', { d: `M${p[0] - 3} ${p[1] - 3} l6 6 m0 -6 l-6 6`, stroke: '#1E2A2F', 'stroke-width': 1.4 }, s); });
+    const top = pts[pts.length - 1];
+    sv('circle', { cx: top[0], cy: top[1] - 4, r: 3.5, fill: 'none', stroke: '#1E2A2F', 'stroke-width': 1.5 }, s);
+    sv('circle', { cx: pts[0][0], cy: 120, r: 8, fill: '#1E2A2F' }, s);
+    sv('text', { x: pts[0][0], y: 123.5, 'text-anchor': 'middle', fill: '#F3EEE4', 'font-family': 'Martian Mono', 'font-size': 9, 'font-weight': 600 }, s).textContent = n;
+    return s;
+  }
+
+  /* =====================================================================
+     Hero
+     ===================================================================== */
+  /* Ridges — custom SVG: far limestone ridges in the haze behind the summit */
+  function Ridges() {
+    const s = sv('svg', { viewBox: '0 0 1600 500', preserveAspectRatio: 'xMidYMax slice' }, $('#sky'));
+    const r = rng(hash('crag in the sun'));
+    // three layers of limestone towers in the haze: flat tops, steep faces; far pale and cool,
+    // near warm
+    [['#D5E3E4', 330, 120], ['#C6D7D7', 385, 90], ['#E2D5BC', 450, 46]].forEach(([fill, base, amp]) => {
+      let x = -40, y = base - r() * amp;
+      let d = `M-40 500 L-40 ${y.toFixed(0)}`;
+      while (x < 1680) {
+        const run = 50 + r() * 140, ny = base - r() * amp - (r() < .15 ? amp * .7 : 0), step = 6 + r() * 14;
+        d += ` L${(x + run).toFixed(0)} ${(y + (r() - .5) * 8).toFixed(0)} L${(x + run + step).toFixed(0)} ${ny.toFixed(0)}`;
+        x += run + step; y = ny;
+      }
+      d += ' L1680 500 Z';
+      sv('path', { d, fill }, s);
+    });
+  }
+
+  /* FitName — custom: the longer word fills the hero width */
+  function FitName() {
+    const h = $('.name');
+    h.style.fontSize = '100px';
+    const avail = h.parentElement.clientWidth;
+    const widest = Math.max(...[...h.querySelectorAll('.face .w')].map(w => w.scrollWidth + parseFloat(getComputedStyle(w).marginLeft)));
+    // fit the width, but keep two lines within about 40% of the screen height
+    h.style.fontSize = `${Math.min(220, Math.max(52, innerHeight * .22), 100 * avail / widest * .98)}px`;
+  }
+
+  /* SunShadow — custom: the sun follows the pointer (and drifts by itself on touch screens);
+     the name casts a long shadow away from it, built from stacked text-shadows. */
+  const SunShadow = (() => {
+    const sun = $('#sun'), hero = $('#top');
+    let shadow, tx = .78, ty = .2, x = tx, y = ty, raf = 0;
+    function paint() {
+      const r = hero.getBoundingClientRect();
+      sun.style.left = `${x * r.width}px`; sun.style.top = `${y * r.height}px`;
+      // direction from the sun to the name, length grows as the sun gets lower
+      const nr = $('.name').getBoundingClientRect();
+      const dx = (nr.left + nr.width / 2) - (r.left + x * r.width), dy = (nr.top + nr.height / 2) - (r.top + y * r.height);
+      const len = Math.hypot(dx, dy) || 1, ux = dx / len, uy = dy / len;
+      // shadow length grows as the sun sinks, and scales with the name's size
+      const fs = parseFloat(getComputedStyle($('.name')).fontSize);
+      const steps = 22, k = clamp(.6 + y * 1.4, .6, 1.5) * clamp(fs / 176, .45, 1.2);
+      const layers = [];
+      for (let i = 1; i <= steps; i++) layers.push(`${(ux * i * 1.6 * k).toFixed(1)}px ${(uy * i * 1.6 * k).toFixed(1)}px 0 rgba(150, 112, 62, ${(.2 * (1 - i / steps) + .03).toFixed(3)})`);
+      shadow.style.textShadow = layers.join(',');
+    }
+    function loop() {
+      x = lerp(x, tx, .08); y = lerp(y, ty, .08);
+      paint();
+      raf = Math.abs(x - tx) + Math.abs(y - ty) > .001 ? requestAnimationFrame(loop) : 0;
+    }
+    const aim = (nx, ny) => { tx = clamp(nx, .04, .96); ty = clamp(ny, .06, .5); if (!raf) raf = requestAnimationFrame(loop); };
+    return {
+      init() {
+        shadow = el('span', { class: 'shadow', 'aria-hidden': 'true' });
+        CONTENT.profile.words.forEach(w => shadow.append(el('span', { class: 'w', text: w })));
+        $('.name').append(shadow);
+        paint();
+        if (reduced) return;
+        hero.addEventListener('pointermove', e => { if (e.pointerType !== 'mouse') return; const r = hero.getBoundingClientRect(); aim((e.clientX - r.left) / r.width, (e.clientY - r.top) / r.height * .9); });
+        // touch screens: the sun crosses the sky slowly, like a day on the crag
+        if (!matchMedia('(hover: hover)').matches) {
+          const t0 = performance.now();
+          setInterval(() => { if (scrollY > innerHeight) return; const t = ((performance.now() - t0) / 24000) % 1; aim(.1 + t * .8, .42 - Math.sin(t * Math.PI) * .32); }, 120);
+        }
+      },
+      paint
+    };
+  })();
+
+  /* =====================================================================
+     Reach — custom (WAAPI; GSAP stagger in React): title letters reach up into place,
+     alternating hands, and settle with a small overshoot.
+     ===================================================================== */
+  function Reach() {
+    if (reduced) return;
+    const io = new IntersectionObserver(es => es.forEach(e => {
+      if (!e.isIntersecting) return;
+      io.unobserve(e.target);
+      e.target.querySelectorAll('.rl').forEach((l, i) => l.animate([
+        { transform: `translateY(.7em) rotate(${i % 2 ? 6 : -6}deg)`, opacity: 0 },
+        { transform: 'translateY(-.08em) rotate(0)', opacity: 1, offset: .7 },
+        { transform: 'none' }
+      ], { duration: 560, delay: i * 45, easing: 'cubic-bezier(.2, .8, .3, 1)', fill: 'backwards' }));
+    }), { rootMargin: '0px 0px -10% 0px' });
+    document.querySelectorAll('.reach').forEach(h => io.observe(h));
+  }
+
+  /* PyramidBuild — custom: bricks are laid from the base up when the stack comes into view */
+  function PyramidBuild() {
+    if (reduced) return;
+    const io = new IntersectionObserver(([e]) => {
+      if (!e.isIntersecting) return;
+      io.disconnect();
+      let d = 0;
+      ['strong', 'medium', 'low'].forEach(lvl => document.querySelectorAll(`.tier-${lvl} .brick`).forEach(b => {
+        b.animate([{ transform: 'translateY(-40px)', opacity: 0 }, { transform: 'translateY(3px)', opacity: 1, offset: .75 }, { transform: 'none' }],
+          { duration: 420, delay: d, easing: 'cubic-bezier(.3, .7, .4, 1)', fill: 'backwards' });
+        d += 28;
+      }));
+    }, { threshold: .2 });
+    io.observe($('#pyramid'));
+  }
+
+  /* GroupFilter — custom: a chip highlights its group's bricks */
+  function GroupFilter() {
+    const chips = [...document.querySelectorAll('.chip')], pyr = $('#pyramid');
+    chips.forEach(c => c.addEventListener('click', () => {
+      const g = c.dataset.g;
+      chips.forEach(x => x.setAttribute('aria-pressed', String(x === c)));
+      pyr.classList.toggle('filtered', !!g);
+      pyr.querySelectorAll('.brick').forEach(b => b.classList.toggle('match', b.dataset.g === g));
+    }));
+  }
+
+  /* =====================================================================
+     TopoRoute — custom SVG: the career as a guidebook topo. One line up the face from the
+     oldest pitch at the bottom to the newest at the top, with bolts, a belay at each company,
+     a star at each promotion and the crux marked. With motion on wide screens, the line is
+     drawn from the ground up to the reading line (GSAP ScrollTrigger scrub + DrawSVG in React).
+     ===================================================================== */
+  const TopoRoute = (() => {
+    const svg = $('#topo');
+    let path, len = 0, on = false;
+    function build() {
+      svg.innerHTML = '';
+      const box = svg.getBoundingClientRect();
+      if (!box.height) return false;
+      const H = box.height, W = box.width;
+      svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+      const pitches = [...document.querySelectorAll('.pitch')];
+      const top0 = svg.getBoundingClientRect().top;
+      const r = rng(hash('the route'));
+      // points from the bottom (ground) to the top (anchor)
+      const pts = [];
+      let x = W * .5;
+      for (let y = H; y > 10; y -= 26) { x = clamp(x + (r() - .5) * 26, W * .25, W * .75); pts.push([x, y]); }
+      pts.push([W * .5, 6]);
+      const d = pts.map((p, i) => `${i ? 'L' : 'M'}${p[0].toFixed(1)} ${p[1].toFixed(1)}`).join(' ');
+      sv('path', { d, fill: 'none', stroke: '#D3C3A7', 'stroke-width': 3, 'stroke-dasharray': '2 7', 'stroke-linecap': 'round' }, svg);
+      path = sv('path', { d, fill: 'none', stroke: '#FF6F59', 'stroke-width': 4, 'stroke-linecap': 'round', 'stroke-linejoin': 'round' }, svg);
+      len = path.getTotalLength();
+      const xAt = y => { const i = clamp(Math.round((H - y) / 26), 0, pts.length - 1); return pts[i][0]; };
+      // bolts
+      for (let y = H - 40; y > 20; y -= 64) sv('path', { d: `M${xAt(y) - 5} ${y - 5} l10 10 m0 -10 l-10 10`, stroke: '#1E2A2F', 'stroke-width': 2 }, svg);
+      // a belay at the top of each pitch, a star at promotions, the crux mark
+      pitches.forEach((p, i) => {
+        const pr = p.getBoundingClientRect(), y = pr.top - top0 + 6, mid = pr.top - top0 + pr.height * .5;
+        const bx = xAt(y);
+        sv('circle', { cx: bx, cy: y, r: 9, fill: '#FFFCF6', stroke: '#1E2A2F', 'stroke-width': 2.5 }, svg);
+        sv('circle', { cx: bx, cy: y, r: 3.5, fill: '#1E2A2F' }, svg);
+        sv('text', { x: bx - 16, y: y + 4, 'text-anchor': 'end', 'font-family': 'Martian Mono', 'font-size': 11, 'font-weight': 600, fill: '#1E2A2F' }, svg).textContent = `P${pitches.length - i}`;
+        if (p.dataset.promo) {
+          const sx = xAt(mid);
+          sv('path', { d: star(sx, mid, 10), fill: '#FF6F59', stroke: '#1E2A2F', 'stroke-width': 1.5 }, svg);
+          if (p.dataset.crux) sv('text', { x: sx + 16, y: mid + 4, 'font-family': 'Martian Mono', 'font-size': 11, 'font-weight': 600, fill: '#B8402E' }, svg).textContent = 'crux';
+        }
+      });
+      // the ground
+      sv('path', { d: `M0 ${H} H${W}`, stroke: '#1E2A2F', 'stroke-width': 2 }, svg);
+      return true;
+    }
+    function star(cx, cy, R) { let d = ''; for (let i = 0; i < 10; i++) { const a = -Math.PI / 2 + i * Math.PI / 5, rr = i % 2 ? R * .45 : R; d += `${i ? 'L' : 'M'}${(cx + Math.cos(a) * rr).toFixed(1)} ${(cy + Math.sin(a) * rr).toFixed(1)}`; } return d + 'Z'; }
+    function update() {
+      if (!path) return;
+      if (!on) { path.style.strokeDasharray = ''; path.style.strokeDashoffset = ''; return; }
+      const b = svg.getBoundingClientRect();
+      const reading = innerHeight * .55;
+      const f = clamp((b.bottom - reading) / b.height, 0, 1); // share of the route below the reading line
+      path.style.strokeDasharray = `${len}`;
+      path.style.strokeDashoffset = `${(len * (1 - f)).toFixed(1)}`;
+    }
+    return {
+      init() { if (!build()) return; on = !reduced && wide(); update(); },
+      update,
+      rebuild() { if (!build()) return; on = !reduced && wide(); update(); }
+    };
+  })();
+
+  /* =====================================================================
+     RopeLine — custom SVG scrollytelling (GSAP ScrollTrigger in React). On wide screens a rope
+     runs from the ground up the left edge of the crag, through a quickdraw at each section, to
+     a climber at the visitor's reading height. Draws below the climber are clipped (coral);
+     passing one on the way up shows "clip". Scrolling down lowers him again.
+     ===================================================================== */
+  const RopeLine = (() => {
+    const crag = $('#crag'), svg = $('#rope');
+    let bolts = [], rope, climber, limbs, H = 0, raf = 0, lastY = null, built = false;
+    function build() {
+      svg.innerHTML = '';
+      H = crag.offsetHeight;
+      svg.setAttribute('viewBox', `0 0 110 ${H}`);
+      bolts = [...crag.querySelectorAll(':scope > section')].map((s, i) => {
+        const y = s.offsetTop + 70, x = i % 2 ? 40 : 58;
+        const g = sv('g', {}, svg);
+        sv('circle', { cx: x, cy: y, r: 6, fill: 'none', stroke: '#55616A', 'stroke-width': 2.5 }, g); // hanger
+        const dog = sv('path', { d: `M${x} ${y + 6} v26`, stroke: '#B9A889', 'stroke-width': 6, 'stroke-linecap': 'round' }, g); // the sling
+        sv('path', { d: `M${x - 5} ${y + 34} a6 8 0 1 0 10 0`, fill: 'none', stroke: '#55616A', 'stroke-width': 2.5 }, g); // lower carabiner
+        const txt = sv('text', { class: 'clip-txt', x: x + 16, y: y + 30 }, svg);
+        txt.textContent = 'clip';
+        return { x, y: y + 36, dog, txt, clipped: false };
+      });
+      rope = sv('path', { fill: 'none', stroke: '#0B6E6D', 'stroke-width': 3.5, 'stroke-linecap': 'round', 'stroke-linejoin': 'round' }, svg);
+      // the belayer at the ground
+      const by = H - 4;
+      const bel = sv('g', { stroke: '#1E2A2F', 'stroke-width': 4, 'stroke-linecap': 'round', fill: 'none' }, svg);
+      sv('circle', { cx: 30, cy: by - 52, r: 7, fill: '#1E2A2F', stroke: 'none' }, bel);
+      sv('path', { d: `M30 ${by - 44} V${by - 20} M30 ${by - 20} l-8 20 M30 ${by - 20} l8 20 M30 ${by - 38} l12 10 M30 ${by - 38} l12 -4` }, bel);
+      // the climber, seen from behind: helmet, body, four limbs
+      climber = sv('g', {}, svg);
+      limbs = sv('path', { fill: 'none', stroke: '#1E2A2F', 'stroke-width': 5, 'stroke-linecap': 'round', 'stroke-linejoin': 'round' }, climber);
+      sv('path', { d: 'M0 0 V-26', stroke: '#1E2A2F', 'stroke-width': 8, 'stroke-linecap': 'round' }, climber);
+      sv('circle', { cx: 0, cy: -36, r: 7.5, fill: '#1E2A2F' }, climber);
+      sv('path', { d: 'M-8 -37 a8 8 0 0 1 16 0 Z', fill: '#FF6F59' }, climber); // helmet
+      built = true;
+    }
+    function update() {
+      raf = 0;
+      if (!built) return;
+      const top = crag.getBoundingClientRect().top;
+      // reduced motion: the route is already climbed, the climber waits at the top
+      const y = reduced ? 60 : clamp(innerHeight * .55 - top, 60, H - 120); // never below the belayer
+      const below = bolts.filter(b => b.y > y).sort((a, b) => b.y - a.y);
+      bolts.forEach(b => {
+        const c = b.y > y;
+        if (c && !b.clipped && lastY != null && y < lastY) { b.txt.classList.add('on'); setTimeout(() => b.txt.classList.remove('on'), 900); }
+        b.clipped = c;
+        b.dog.setAttribute('stroke', c ? '#FF6F59' : '#B9A889');
+      });
+      lastY = y;
+      // rope: ground → clipped draws (bottom to top) → harness, with a little slack between
+      const pts = [[42, H - 30], ...below.map(b => [b.x, b.y]), [50, y + 2]];
+      let d = `M${pts[0][0]} ${pts[0][1]}`;
+      for (let i = 1; i < pts.length; i++) { const [x0, y0] = pts[i - 1], [x1, y1] = pts[i]; d += ` Q${((x0 + x1) / 2 + 10).toFixed(1)} ${((y0 + y1) / 2).toFixed(1)} ${x1} ${y1}`; }
+      rope.setAttribute('d', d);
+      const s = Math.sin(y / 34), c = Math.cos(y / 34);
+      climber.setAttribute('transform', `translate(50 ${y.toFixed(1)})`);
+      limbs.setAttribute('d', `M-6 -24 L-15 ${(-34 - 7 * s).toFixed(1)} L-17 ${(-49 - 9 * s).toFixed(1)} M6 -24 L15 ${(-34 + 7 * s).toFixed(1)} L17 ${(-49 + 9 * s).toFixed(1)} M-4 0 L-16 ${(4 + 6 * s).toFixed(1)} L-12 ${(20 - 6 * c).toFixed(1)} M4 0 L16 ${(4 - 6 * s).toFixed(1)} L12 ${(20 + 6 * c).toFixed(1)}`);
+    }
+    return {
+      init() { if (!wide()) { built = false; svg.innerHTML = ''; return; } build(); update(); },
+      onScroll() { if (built && !raf && !reduced) raf = requestAnimationFrame(update); }
+    };
+  })();
+
+  /* ChalkBurst — custom canvas 2D (a ClickSpark variant, React Bits): a puff of chalk dust at
+     every click or tap outside links and buttons. Runs only while dust is in the air. */
+  function ChalkBurst() {
+    if (reduced) return;
+    const cv = $('#chalk'), g = cv.getContext('2d');
+    let parts = [], raf = 0;
+    const size = () => { const d = Math.min(devicePixelRatio, 2); cv.width = innerWidth * d; cv.height = innerHeight * d; g.setTransform(d, 0, 0, d, 0, 0); };
+    size(); addEventListener('resize', size);
+    function step() {
+      g.clearRect(0, 0, innerWidth, innerHeight);
+      parts = parts.filter(p => p.life > 0);
+      for (const p of parts) {
+        p.vx *= .94; p.vy = p.vy * .94 + .05; p.x += p.vx; p.y += p.vy; p.life -= 1 / 55; p.r += .25;
+        g.globalAlpha = Math.max(0, p.life) * .55;
+        g.fillStyle = p.c;
+        g.beginPath(); g.arc(p.x, p.y, p.r, 0, Math.PI * 2); g.fill();
+      }
+      raf = parts.length ? requestAnimationFrame(step) : 0;
+      if (!raf) g.clearRect(0, 0, innerWidth, innerHeight);
+    }
+    addEventListener('pointerdown', e => {
+      if (e.target.closest('a, button, .boulder, input')) return;
+      for (let i = 0; i < 26; i++) {
+        const a = Math.random() * Math.PI * 2, v = 1 + Math.random() * 3.4;
+        parts.push({ x: e.clientX, y: e.clientY, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 1, r: 1.5 + Math.random() * 3, life: .7 + Math.random() * .3, c: Math.random() < .7 ? '#FFFFFF' : '#D9D1C3' });
+      }
+      if (!raf) raf = requestAnimationFrame(step);
+    });
+  }
+
+  /* =====================================================================
+     BoulderProblem — custom easter egg: the warm-up boulder at the ground. Drag the chalk hand
+     to a hold in reach, or tap or press Enter on one. The shortest line is four moves.
+     ===================================================================== */
+  function BoulderProblem() {
+    const G = CONTENT.ground;
+    const HOLDS = [[60, 236], [124, 204], [70, 160], [156, 150], [214, 186], [132, 100], [216, 92], [258, 136], [176, 44]];
+    const START = 0, TOP = HOLDS.length - 1, REACH = 82;
+    const box = $('#boulder');
+    const s = sv('svg', { viewBox: '0 0 300 270', role: 'group', 'aria-label': 'Warm-up boulder' }, box);
+    sv('path', { d: 'M12 262 L22 70 Q40 22 120 18 L230 14 Q282 30 288 90 L292 262 Z', fill: '#E3D4B7', stroke: '#1E2A2F', 'stroke-width': 2 }, s);
+    for (let i = 0; i < 5; i++) sv('path', { d: `M${30 + i * 10} ${60 + i * 44} q ${120 + i * 6} ${-14 + i * 4} 240 ${6 - i * 3}`, fill: 'none', stroke: '#CBB590', 'stroke-width': 1.5 }, s);
+    const reachRing = sv('circle', { r: REACH, fill: 'rgba(11, 110, 109, .06)', stroke: '#0B6E6D', 'stroke-width': 1.5, 'stroke-dasharray': '4 5' }, s);
+    const holds = HOLDS.map(([x, y], i) => {
+      const g = sv('g', { class: 'hold', tabindex: 0, role: 'button' }, s);
+      const rr = 10 + (i * 7 % 5);
+      sv('path', { class: 'hl', d: `M${x - rr} ${y + 2} q ${rr * .2} ${-rr * 1.3} ${rr} ${-rr} q ${rr * .9} ${rr * .2} ${rr} ${rr * 1.1} q ${-rr} ${rr * .5} ${-rr * 2} 0 Z`, fill: i === TOP ? '#FF6F59' : i === START ? '#1E2A2F' : '#0B6E6D', stroke: '#1E2A2F', 'stroke-width': 1.5 }, g);
+      if (i === TOP || i === START) sv('text', { x: x, y: y + (i === TOP ? -16 : 24), 'text-anchor': 'middle', 'font-family': 'Martian Mono', 'font-size': 10, 'font-weight': 600, fill: '#1E2A2F' }, s).textContent = i === TOP ? G.top : G.start;
+      return g;
+    });
+    const hand = sv('circle', { r: 11, fill: '#FFFFFF', stroke: '#1E2A2F', 'stroke-width': 2, style: 'cursor:grab' }, s);
+    const row = el('div', { class: 'row' });
+    const status = el('p', { 'aria-live': 'polite', text: G.status.ready });
+    const reset = el('button', { type: 'button', text: G.reset });
+    row.append(status, reset); box.append(row);
+    let at = START, moves = 0, sent = false;
+    const dist = (a, b) => Math.hypot(HOLDS[a][0] - HOLDS[b][0], HOLDS[a][1] - HOLDS[b][1]);
+    function draw() {
+      const [x, y] = HOLDS[at];
+      hand.setAttribute('cx', x); hand.setAttribute('cy', y);
+      reachRing.setAttribute('cx', x); reachRing.setAttribute('cy', y);
+      holds.forEach((h, i) => { const ok = i !== at && dist(at, i) <= REACH; h.setAttribute('aria-label', `Hold ${i + 1}${i === TOP ? ', the top' : ''}${i === at ? ', your hand is here' : ok ? ', in reach' : ', out of reach'}`); h.style.opacity = i === at || ok || sent ? 1 : .55; });
+    }
+    function go(i) {
+      if (sent || i === at) return;
+      if (dist(at, i) > REACH) { status.textContent = G.status.far; return; }
+      at = i; moves++;
+      if (i === TOP) { sent = true; status.textContent = G.status.sent; }
+      else status.textContent = G.status.moved(moves);
+      draw();
+    }
+    holds.forEach((h, i) => {
+      h.addEventListener('click', () => go(i));
+      h.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(i); } });
+    });
+    reset.addEventListener('click', () => { at = START; moves = 0; sent = false; status.textContent = G.status.ready; draw(); });
+    // drag the chalk hand
+    const toSvg = e => { const p = s.createSVGPoint(); p.x = e.clientX; p.y = e.clientY; return p.matrixTransform(s.getScreenCTM().inverse()); };
+    hand.addEventListener('pointerdown', e => {
+      if (sent) return;
+      hand.setPointerCapture(e.pointerId);
+      const move = ev => { const p = toSvg(ev); hand.setAttribute('cx', p.x); hand.setAttribute('cy', p.y); };
+      const up = ev => {
+        hand.removeEventListener('pointermove', move); hand.removeEventListener('pointerup', up);
+        const p = toSvg(ev);
+        const near = HOLDS.findIndex(([x, y]) => Math.hypot(x - p.x, y - p.y) < 22);
+        if (near >= 0) go(near); else draw();
+        draw();
+      };
+      hand.addEventListener('pointermove', move); hand.addEventListener('pointerup', up);
+    });
+    draw();
+  }
+
+  /* NavMenu — custom: mobile menu with a focus trap; marks the current section */
+  function NavMenu() {
+    const btn = $('#menuBtn'), nav = $('#nav'), close = $('#menuClose');
+    const links = () => [...nav.querySelectorAll('a, button')];
+    const open = v => {
+      nav.classList.toggle('open', v); btn.setAttribute('aria-expanded', String(v));
+      document.body.style.overflow = v ? 'hidden' : '';
+      (v ? links()[0] : btn).focus();
+    };
+    btn.addEventListener('click', () => open(true));
+    close.addEventListener('click', () => open(false));
+    nav.addEventListener('click', e => { if (e.target.closest('a') && nav.classList.contains('open')) open(false); });
+    nav.addEventListener('keydown', e => {
+      if (!nav.classList.contains('open')) return;
+      if (e.key === 'Escape') open(false);
+      if (e.key === 'Tab') {
+        const l = links(), first = l[0], last = l[l.length - 1];
+        if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+        else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+      }
+    });
+    const io = new IntersectionObserver(es => es.forEach(e => {
+      const a = nav.querySelector(`a[href="#${e.target.id}"]`);
+      if (a && e.isIntersecting) { nav.querySelectorAll('a').forEach(x => x.removeAttribute('aria-current')); a.setAttribute('aria-current', 'true'); }
+    }), { rootMargin: '-45% 0px -50% 0px' });
+    CONTENT.nav.forEach(n => io.observe(document.getElementById(n.id)));
+  }
+
+  function ConsoleHello() { console.log(`%c${CONTENT.console}`, 'color:#0B6E6D;font:500 12px/1.5 monospace'); }
+
+  /* =====================================================================
+     Boot
+     ===================================================================== */
+  render();
+  NavMenu(); Ridges(); Reach(); PyramidBuild(); GroupFilter(); ChalkBurst(); BoulderProblem(); ConsoleHello();
+  document.fonts.ready.then(() => {
+    FitName();
+    SunShadow.init();
+    TopoRoute.init();
+    RopeLine.init();
+  });
+  addEventListener('scroll', () => { TopoRoute.update(); RopeLine.onScroll(); }, { passive: true });
+  let rt, lastW = innerWidth;
+  addEventListener('resize', () => {
+    clearTimeout(rt);
+    rt = setTimeout(() => {
+      if (Math.abs(innerWidth - lastW) < 2) return; // mobile toolbar: height only
+      lastW = innerWidth;
+      FitName(); SunShadow.paint(); TopoRoute.rebuild(); RopeLine.init();
+    }, 200);
+  });
+</script>
+</body>
+</html>

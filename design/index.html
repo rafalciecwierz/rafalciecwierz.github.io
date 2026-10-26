@@ -1,0 +1,316 @@
+<!doctype html>
+<!--
+  Design prototypes: index and comparison (roadmap task 2.5).
+
+  Links every prototype in design/prototypes/ and compares them against:
+  - the brief's success criteria (5-second clarity, mobile above the fold,
+    performance risk, accessibility), docs/PROJECT_BRIEF.md section 1 and 8;
+  - the "how the site must feel" test, docs/design/DESIGN_PROFILE.md section 2;
+  - the implementation effort and cost of each prototype's effects.
+
+  Measured on 26.10.2026 with Chrome DevTools MCP, served over HTTP.
+  The decision itself is recorded in docs/DECISIONS.md (entry 001): 08 Ascent dark.
+  Iterations of the chosen design (design/iterations/) are listed here as they are added.
+  Static page: no scripts, no external resources except Google Fonts.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Design prototypes · Rafał Ciećwierz</title>
+<meta name="description" content="Index and comparison of the sixteen design prototypes for Rafał Ciećwierz's portfolio.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap&subset=latin-ext" rel="stylesheet">
+<style>
+  :root {
+    --bg: #F7F7F5; --card: #FFFFFF; --ink: #16171A; --muted: #5A5D66; --line: #DEDFE3;
+    --good: #1C7C4A; --mid: #9A6200; --bad: #B3261E; --chosen: #2B4BD8; --chosen-bg: #EEF1FD;
+    --radius: 10px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #111214; --card: #1A1B1F; --ink: #ECEDEF; --muted: #A2A5AE; --line: #2D2F35;
+      --good: #5BD08F; --mid: #F0B44C; --bad: #FF8A80; --chosen: #8FA4FF; --chosen-bg: #1D2240;
+    }
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.55 "IBM Plex Sans", system-ui, sans-serif; }
+  a { color: inherit; }
+  a:focus-visible, summary:focus-visible { outline: 3px solid var(--chosen); outline-offset: 2px; border-radius: 4px; }
+  .skip { position: absolute; left: -999px; top: 8px; background: var(--ink); color: var(--bg); padding: 8px 12px; }
+  .skip:focus { left: 8px; }
+  .wrap { max-width: 1240px; margin: 0 auto; padding: 0 16px; }
+  header.top { padding: 48px 0 24px; border-bottom: 1px solid var(--line); }
+  .kicker { font: 500 13px/1 "IBM Plex Mono", monospace; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+  h1 { font-size: clamp(30px, 5vw, 48px); line-height: 1.1; margin: 12px 0 12px; letter-spacing: -.02em; }
+  h2 { font-size: clamp(22px, 3vw, 28px); margin: 0 0 8px; letter-spacing: -.01em; }
+  h3 { font-size: 18px; margin: 0; }
+  p.lead { max-width: 70ch; color: var(--muted); margin: 0; }
+  section { padding: 40px 0; border-bottom: 1px solid var(--line); }
+  .note { color: var(--muted); font-size: 14px; max-width: 80ch; }
+
+  /* Decision banner */
+  .decision { background: var(--chosen-bg); border: 2px solid var(--chosen); border-radius: var(--radius); padding: 20px; margin-top: 24px; }
+  .decision strong { color: var(--chosen); }
+
+  /* Direction gallery */
+  .directions { display: grid; gap: 16px; margin-top: 24px; }
+  .dir { display: grid; grid-template-columns: 1fr; gap: 12px; }
+  @media (min-width: 860px) { .dir { grid-template-columns: 220px 1fr 1fr; align-items: stretch; } }
+  .dir-head { padding: 4px 0; }
+  .dir-head .num { font: 500 13px "IBM Plex Mono", monospace; color: var(--muted); }
+  .dir-head p { margin: 4px 0 0; font-size: 14px; color: var(--muted); }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px; display: flex; flex-direction: column; gap: 8px; }
+  .card.chosen { border: 2px solid var(--chosen); }
+  .card .title { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+  .card .title a { font-weight: 600; font-size: 17px; text-decoration-thickness: 1px; text-underline-offset: 3px; }
+  .badge { font: 500 12px/1 "IBM Plex Mono", monospace; padding: 4px 6px; border-radius: 4px; border: 1px solid var(--line); color: var(--muted); white-space: nowrap; }
+  .badge.pick { border-color: var(--chosen); color: var(--chosen); }
+  .swatches { display: flex; gap: 4px; }
+  .swatches span { width: 22px; height: 22px; border-radius: 50%; border: 1px solid rgba(127,127,127,.35); }
+  .card p { margin: 0; font-size: 14px; }
+  .card .meta { font: 13px/1.45 "IBM Plex Mono", monospace; color: var(--muted); }
+
+  /* Comparison table */
+  .table-scroll { overflow-x: auto; margin-top: 20px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--card); }
+  table { border-collapse: collapse; width: 100%; min-width: 1060px; font-size: 14px; }
+  caption { text-align: left; padding: 12px 14px; color: var(--muted); font-size: 13px; }
+  th, td { text-align: left; padding: 9px 12px; border-top: 1px solid var(--line); vertical-align: top; }
+  thead th { font: 600 12px/1.3 "IBM Plex Mono", monospace; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); border-top: 0; background: var(--card); }
+  tbody th { font-weight: 600; white-space: nowrap; }
+  tr.chosen-row { background: var(--chosen-bg); }
+  .num { font-family: "IBM Plex Mono", monospace; white-space: nowrap; }
+  .good { color: var(--good); font-weight: 600; }
+  .mid { color: var(--mid); font-weight: 600; }
+  .bad { color: var(--bad); font-weight: 600; }
+  .feel { font-family: "IBM Plex Mono", monospace; letter-spacing: .1em; white-space: nowrap; }
+  dl.legend { display: grid; grid-template-columns: max-content 1fr; gap: 4px 16px; font-size: 14px; margin: 16px 0 0; max-width: 90ch; }
+  dl.legend dt { font-weight: 600; }
+  dl.legend dd { margin: 0; color: var(--muted); }
+  ul.plain { padding-left: 20px; margin: 8px 0 0; max-width: 85ch; }
+  ul.plain li { margin: 4px 0; }
+  footer { padding: 32px 0 48px; color: var(--muted); font-size: 14px; }
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="top">
+  <div class="wrap">
+    <div class="kicker">Roadmap task 2.5 · design selection</div>
+    <h1>Sixteen prototypes, one site</h1>
+    <p class="lead">Eight design directions, each with a dark and a light variant that share only the style. Open any prototype below, then read the comparison against the brief's success criteria, the design profile's feel test and the cost of building it in React.</p>
+    <div class="decision" id="decision">
+      <p><strong>Decision (26.10.2026):</strong> the site ships one design, <a href="prototypes/08-ascent-dark.html">08 Ascent, dark: Night Session</a>, with no light variant and no theme toggle. It will be refined in iterations saved as new files, so these sixteen prototypes stay exactly as they were built. Reasoning and rejected alternatives: <a href="../docs/DECISIONS.md">docs/DECISIONS.md</a>, entry 001.</p>
+    </div>
+  </div>
+</header>
+
+<main id="main">
+  <section aria-labelledby="gallery-title">
+    <div class="wrap">
+      <h2 id="gallery-title">The prototypes</h2>
+      <p class="note">Each card links to a self-contained HTML file. The reasoning behind every variant is in its "As built" block in <a href="../docs/design/DIRECTIONS.md">docs/design/DIRECTIONS.md</a>.</p>
+
+      <div class="directions">
+        <article class="dir" aria-labelledby="d01">
+          <div class="dir-head"><span class="num">01</span><h3 id="d01">Fluid Glass</h3><p>Glass, liquid and refracted light.</p></div>
+          <div class="card">
+            <div class="title"><a href="prototypes/01-fluid-glass-dark.html">Dark: the RC lens</a><span class="badge">three.js</span></div>
+            <div class="swatches" aria-hidden="true"><span style="background:#090B0A"></span><span style="background:#ECF0EC"></span><span style="background:#2EE68C"></span></div>
+            <p>Near-black and acid green; a refracting glass lens over the "RC" monogram bends the name behind it.</p>
+            <p class="meta">Unbounded + Geist · 15 React Bits effects</p>
+          </div>
+          <div class="card">
+            <div class="title"><a href="prototypes/01-fluid-glass-light.html">Light: Underwater</a><span class="badge">raw WebGL</span></div>
+            <div class="swatches" aria-hidden="true"><span style="background:#F3FAFD"></span><span style="background:#BCE5EB"></span><span style="background:#0F2340"></span><span style="background:#FFC531"></span></div>
+            <p>The page is a water tank and scrolling is a dive; the water line cuts the surname, a rubber duck rides the cursor's waves.</p>
+            <p class="meta">Fraunces + Figtree · depth-gauge navigation</p>
+          </div>
+        </article>
+
+        <article class="dir" aria-labelledby="d02">
+          <div class="dir-head"><span class="num">02</span><h3 id="d02">Swiss Signal</h3><p>Swiss grid and kinetic type.</p></div>
+          <div class="card">
+            <div class="title"><a href="prototypes/02-swiss-signal-dark.html">Dark: Night Grid</a><span class="badge">GSAP</span></div>
+            <div class="swatches" aria-hidden="true"><span style="background:#000000"></span><span style="background:#EDEBE6"></span><span style="background:#2F5BFF"></span></div>
+            <p>The name fills a glowing grid, swells towards the cursor and docks into the header; the Ć acute marks the active link.</p>
+            <p class="meta">Archivo (width axis) + Hanken Grotesk</p>
+          </div>
+          <div class="card">
+            <div class="title"><a href="prototypes/02-swiss-signal-light.html">Light: Plakat</a><span class="badge">no deps</span></div>
+            <div class="swatches" aria-hidden="true"><span style="background:#FFFFFF"></span><span style="background:#000000"></span><span style="background:#FF4000"></span></div>
+            <p>A series of Swiss posters; a red-orange disc bites into the name and knocks the letters out. Printing gives a one-page poster CV.</p>
+            <p class="meta">Schibsted Grotesk only · motion in hero and hover only</p>
+          </div>
+        </article>
+
+        <article class="dir" aria-labelledby="d03">
+          <div class="dir-head"><span class="num">03</span><h3 id="d03">Clay Studio</h3><p>Claymorphism and hand-made clay.</p></div>
+          <div class="card">
+            <div class="title"><a href="prototypes/03-clay-studio-dark.html">Dark: After Hours</a><span class="badge">three.js</span></div>
+            <div class="swatches" aria-hidden="true"><span style="background:#1C1030"></span><span style="background:#F7F0FF"></span><span style="background:#FFC98A"></span><span style="background:#B9A4FF"></span></div>
+            <p>A procedural clay figure of Ralph on a turntable follows the cursor, waves when clicked and backflips after ten clicks.</p>
+            <p class="meta">Fredoka + Nunito · 38 meshes, no model files</p>
+          </div>
+          <div class="card">
+            <div class="title"><a href="prototypes/03-clay-studio-light.html">Light: Morning Claymation</a><span class="badge">no deps</span></div>
+            <div class="swatches" aria-hidden="true"><span style="background:#FFF9F2"></span><span style="background:#2F3C8F"></span><span style="background:#E04A74"></span><span style="background:#B7EBD7"></span></div>
+            <p>A stop-motion table at 12 fps; the name is navy plasticine whose Ł stroke and Ć accent pop off when poked.</p>
+            <p class="meta">Baloo 2 + Onest · SVG turbulence "boil"</p>
+          </div>
+        </article>
+
+        <article class="dir" aria-labelledby="d04">
+          <div class="dir-head"><span class="num">04</span><h3 id="d04">Sticker Sheet</h3><p>Neubrutalism, hand-drawn notes, stickers.</p></div>
+          <div class="card">
+            <div class="title"><a href="prototypes/04-sticker-sheet-dark.html">Dark: Night Zine</a><span class="badge">no deps</span></div>
+            <div class="swatches" aria-hidden="true"><span style="background:#1F1E26"></span><span style="background:#FF4FA3"></span><span style="background:#FFE83D"></span><span style="background:#3DE3FF"></span></div>
+            <p>A riso zine in a bento grid; the name prints in two drifting ink plates, nine stickers peel into a sticker book.</p>
+            <p class="meta">Bricolage Grotesque + Caveat Brush</p>
+          </div>
+          <div class="card">
+            <div class="title"><a href="prototypes/04-sticker-sheet-light.html">Light: Fresh Sketchbook</a><span class="badge">no deps</span></div>
+            <div class="swatches" aria-hidden="true"><span style="background:#FFFFFF"></span><span style="background:#FFD52E"></span><span style="background:#B8F03C"></span><span style="background:#86CCFF"></span></div>
+            <p>The name is a die-cut sticker; peel it back along a real fold to find "call me Ralph" pencilled underneath.</p>
+            <p class="meta">Gabarito + Caveat + Rubik Mono One</p>
+          </div>
+        </article>
+
+        <article class="dir" aria-labelledby="d05">
+          <div class="dir-head"><span class="num">05</span><h3 id="d05">The Issue</h3><p>Editorial magazine and scrollytelling.</p></div>
+          <div class="card">
+            <div class="title"><a href="prototypes/05-the-issue-dark.html">Dark: The Night Edition</a><span class="badge">GSAP</span></div>
+            <div class="swatches" aria-hidden="true"><span style="background:#0D0B0A"></span><span style="background:#F1E9DC"></span><span style="background:#7E1628"></span><span style="background:#E7798A"></span></div>
+            <p>A film-magazine cover with Rafał as a line engraving over the masthead; the career is a feature in four chapters.</p>
+            <p class="meta">Bodoni Moda + Newsreader · canvas engraving</p>
+          </div>
+          <div class="card">
+            <div class="title"><a href="prototypes/05-the-issue-light.html">Light: The Weekend Edition</a><span class="badge">GSAP</span></div>
+            <div class="swatches" aria-hidden="true"><span style="background:#E6E8EB"></span><span style="background:#0E0F12"></span><span style="background:#2329C8"></span></div>
+            <p>A gallery-calm arts supplement; the cover turns on its spine in 3D and the career is an exhibition retrospective.</p>
+            <p class="meta">Instrument Serif + Instrument Sans</p>
+          </div>
+        </article>
+
+        <article class="dir" aria-labelledby="d06">
+          <div class="dir-head"><span class="num">06</span><h3 id="d06">RalphOS</h3><p>An operating system as the interface.</p></div>
+          <div class="card">
+            <div class="title"><a href="prototypes/06-ralph-os-dark.html">Dark: Midnight</a><span class="badge">raw WebGL</span></div>
+            <div class="swatches" aria-hidden="true"><span style="background:#060912"></span><span style="background:#EEF2FA"></span><span style="background:#B69CFF"></span><span style="background:#3EE6C8"></span></div>
+            <p>A desktop with draggable, resizable windows, a dock and a terminal; a phone home screen on mobile; a plain list view for scanners.</p>
+            <p class="meta">Manrope + JetBrains Mono · aurora wallpaper</p>
+          </div>
+          <div class="card">
+            <div class="title"><a href="prototypes/06-ralph-os-light.html">Light: Daylight</a><span class="badge">no deps</span></div>
+            <div class="swatches" aria-hidden="true"><span style="background:#F6F1EC"></span><span style="background:#15172A"></span><span style="background:#FF7A3D"></span><span style="background:#CDBFFF"></span></div>
+            <p>Search-first: a Spotlight panel is the hero and the whole CV is live search results with keyword actions.</p>
+            <p class="meta">Outfit + Plus Jakarta Sans</p>
+          </div>
+        </article>
+
+        <article class="dir" aria-labelledby="d07">
+          <div class="dir-head"><span class="num">07</span><h3 id="d07">Field Notes</h3><p>Code-drawn generative line work.</p></div>
+          <div class="card">
+            <div class="title"><a href="prototypes/07-field-notes-dark.html">Dark: Long Exposure</a><span class="badge">canvas 2D</span></div>
+            <div class="swatches" aria-hidden="true"><span style="background:#04050D"></span><span style="background:#F2F0EA"></span><span style="background:#FFC65C"></span><span style="background:#FF4FB4"></span></div>
+            <p>A flow field of light lines traces the real HTML name, the stack orbits and the career path across the whole page.</p>
+            <p class="meta">Syne + DM Sans · ~2 400 lines per frame</p>
+          </div>
+          <div class="card">
+            <div class="title"><a href="prototypes/07-field-notes-light.html">Light: Plotter Sheet</a><span class="badge">canvas 2D</span></div>
+            <div class="swatches" aria-hidden="true"><span style="background:#FAF8F2"></span><span style="background:#1A1C22"></span><span style="background:#1B3D94"></span></div>
+            <p>A pen-plotter technical drawing; the name becomes a contour map plotted line by line, and the pointer raises hills.</p>
+            <p class="meta">Space Grotesk + IBM Plex Mono + Kalam</p>
+          </div>
+        </article>
+
+        <article class="dir" aria-labelledby="d08">
+          <div class="dir-head"><span class="num">08</span><h3 id="d08">Ascent</h3><p>Scrollytelling with parkour and climbing.</p></div>
+          <div class="card chosen">
+            <div class="title"><a href="prototypes/08-ascent-dark.html">Dark: Night Session</a><span class="badge pick">chosen</span></div>
+            <div class="swatches" aria-hidden="true"><span style="background:#0B0B0E"></span><span style="background:#F2EFE8"></span><span style="background:#FF9F38"></span></div>
+            <p>The name is a floodlit rooftop sign with a free-runner on it; the career is a pinned parkour run from roof to roof.</p>
+            <p class="meta">Big Shoulders Display + Barlow · SVG rig</p>
+          </div>
+          <div class="card">
+            <div class="title"><a href="prototypes/08-ascent-light.html">Light: Crag in the Sun</a><span class="badge">no deps</span></div>
+            <div class="swatches" aria-hidden="true"><span style="background:#F3EEE4"></span><span style="background:#1E2A2F"></span><span style="background:#0B6E6D"></span><span style="background:#FF6F59"></span></div>
+            <p>A sunny limestone crag read bottom-up on wide screens, with a climber on a rope that clips every section.</p>
+            <p class="meta">League Spartan + Work Sans + Martian Mono</p>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section aria-labelledby="compare-title">
+    <div class="wrap">
+      <h2 id="compare-title">The comparison</h2>
+      <p class="note">Measured on 26.10.2026 with Chrome DevTools MCP, each page served over HTTP. Judgements (clarity, feel test, effort, performance risk) are Claude's, made from the screenshots, the measurements and the "As built" blocks; Rafał makes the call.</p>
+
+      <div class="table-scroll" tabindex="0" role="region" aria-labelledby="compare-title">
+        <table>
+          <caption>One row per variant. Every variant passed "above the fold" at 360 × 740 and 1280 × 800 (name, role, Download CV and Get in touch all visible) with no horizontal scroll, so that column is left out.</caption>
+          <thead>
+            <tr>
+              <th scope="col">Variant</th>
+              <th scope="col">5-second clarity</th>
+              <th scope="col">Feel test<br>P · C · Pl · NB</th>
+              <th scope="col">Lighthouse mobile<br>A11y / BP / SEO</th>
+              <th scope="col">CLS</th>
+              <th scope="col">Startup cost<br>4× CPU</th>
+              <th scope="col">Performance risk</th>
+              <th scope="col">Effort</th>
+              <th scope="col">React needs</th>
+              <th scope="col">Main risk</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><th scope="row">01 Dark: RC lens</th><td class="mid">Medium</td><td class="feel">◐●●●</td><td class="num"><span class="mid">92</span> / 100 / <span class="mid">90</span></td><td class="num good">0</td><td class="num mid">406 ms</td><td class="bad">High</td><td>L</td><td>three + R3F + drei</td><td>Acid green on black is the "AI look"; scroll-reveal text fails contrast.</td></tr>
+            <tr><th scope="row">01 Light: Underwater</th><td class="good">High</td><td class="feel">◐●●●</td><td class="num"><span class="mid">96</span> / 96 / 100</td><td class="num good">0</td><td class="num mid">456 ms</td><td class="mid">Medium</td><td>L</td><td>nothing (own WebGL hook)</td><td>The tint makes deep sections low-contrast; the duck reads more fun than pro.</td></tr>
+            <tr><th scope="row">02 Dark: Night Grid</th><td class="good">High</td><td class="feel">●●◐●</td><td class="num">100 / 96 / 100</td><td class="num mid">0.29</td><td class="num good">292 ms</td><td class="good">Low</td><td>M</td><td>gsap (SplitText)</td><td>Hairline grid density is on the "AI look" list.</td></tr>
+            <tr><th scope="row">02 Light: Plakat</th><td class="good">High</td><td class="feel">●●◐◐</td><td class="num">100 / 96 / 100</td><td class="num good">0</td><td class="num good">89 ms</td><td class="good">Low</td><td>S–M</td><td>nothing</td><td>Little motion: weakest for creative studios.</td></tr>
+            <tr><th scope="row">03 Dark: After Hours</th><td class="good">High</td><td class="feel">◐●●●</td><td class="num">100 / 96 / 100</td><td class="num mid">0.39</td><td class="num mid">489 ms</td><td class="mid">Medium</td><td>L</td><td>three + R3F (+ drei)</td><td>"Too cute"; the only variant that keeps the brief's 3D hero.</td></tr>
+            <tr><th scope="row">03 Light: Claymation</th><td class="good">High</td><td class="feel">◐●●●</td><td class="num">100 / 96 / 100</td><td class="num bad">1.26</td><td class="num good">108 ms</td><td class="good">Low</td><td>M</td><td>nothing</td><td>Children's-book tone if the copy slips; letter fitting causes the layout shift.</td></tr>
+            <tr><th scope="row">04 Dark: Night Zine</th><td class="good">High</td><td class="feel">◐●●●</td><td class="num"><span class="mid">92</span> / 96 / 100</td><td class="num bad">0.71</td><td class="num good">143 ms</td><td class="good">Low</td><td>M</td><td>nothing</td><td>Neubrutalism is very common in 2026; loud for recruiters.</td></tr>
+            <tr><th scope="row">04 Light: Sketchbook</th><td class="good">High</td><td class="feel">◐●●●</td><td class="num">100 / 96 / 100</td><td class="num good">0</td><td class="num good">90 ms</td><td class="good">Low</td><td>M</td><td>nothing</td><td>Same genre risk; playful more than professional.</td></tr>
+            <tr><th scope="row">05 Dark: Night Edition</th><td class="mid">Medium</td><td class="feel">●●◐●</td><td class="num"><span class="mid">91</span> / 96 / 100</td><td class="num bad">1.00</td><td class="num mid">326 ms</td><td class="mid">Medium</td><td>M–L</td><td>gsap (ScrollTrigger, SplitText)</td><td>The given name is small next to the surname masthead; word-reveal quotes fail contrast.</td></tr>
+            <tr><th scope="row">05 Light: Weekend Edition</th><td class="good">High</td><td class="feel">●●◐◐</td><td class="num">100 / 96 / 100</td><td class="num mid">0.24</td><td class="num good">109 ms</td><td class="good">Low</td><td>M</td><td>gsap (ScrollTrigger)</td><td>Calm can tip into boring; no signature interaction.</td></tr>
+            <tr><th scope="row">06 Dark: Midnight</th><td class="good">High</td><td class="feel">●●●●</td><td class="num">100 / 96 / 100</td><td class="num good">0</td><td class="num good">199 ms</td><td class="bad">High</td><td>XL</td><td>nothing (own window manager)</td><td>Three layouts in one; a half-done desktop is worse than none. Known genre.</td></tr>
+            <tr><th scope="row">06 Light: Daylight</th><td class="good">High</td><td class="feel">●◐●◐</td><td class="num">100 / 96 / 100</td><td class="num good">0.07</td><td class="num good">220 ms</td><td class="good">Low</td><td>M–L</td><td>nothing</td><td>The search gimmick is clever but quiet below the hero.</td></tr>
+            <tr><th scope="row">07 Dark: Long Exposure</th><td class="good">High</td><td class="feel">●●●●</td><td class="num">100 / 96 / 100</td><td class="num good">0</td><td class="num mid">434 ms</td><td class="bad">High</td><td>L</td><td>nothing (+ gsap for the path)</td><td>The field runs every frame on every section; mobile battery and heat.</td></tr>
+            <tr><th scope="row">07 Light: Plotter Sheet</th><td class="good">High</td><td class="feel">●●◐●</td><td class="num">100 / 96 / 100</td><td class="num good">0</td><td class="num good">210 ms</td><td class="mid">Medium</td><td>M–L</td><td>nothing</td><td>Technical-drawing chrome can feel busy; contour maths at load.</td></tr>
+            <tr class="chosen-row"><th scope="row">08 Dark: Night Session (chosen)</th><td class="good">High</td><td class="feel">●●●●</td><td class="num">100 / 96 / 100</td><td class="num mid">0.20</td><td class="num good">216 ms</td><td class="mid">Medium</td><td>L</td><td>gsap (ScrollTrigger)</td><td>The pinned run makes Career about six screens tall on desktop (skip link and plain list on phones).</td></tr>
+            <tr><th scope="row">08 Light: Crag in the Sun</th><td class="good">High</td><td class="feel">●●●●</td><td class="num">100 / 96 / 100</td><td class="num mid">0.14</td><td class="num good">138 ms</td><td class="good">Low</td><td>M–L</td><td>gsap (ScrollTrigger)</td><td>Bottom-up order on wide screens: focus moves visually upwards.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <dl class="legend">
+        <dt>5-second clarity</dt><dd>From the 1280 px screenshot: are name, role and the two actions the first things you read? Medium means decoration competes with them.</dd>
+        <dt>Feel test</dt><dd>Design profile section 2: professional · creative and bold · playful · never boring. ● clearly passes, ◐ passes with a caveat.</dd>
+        <dt>Lighthouse</dt><dd>Mobile, navigation mode. Best Practices is 96 on every page for one shared reason: the prototype header comment pushes <code>&lt;meta charset&gt;</code> past the first 1024 bytes. The React build fixes it everywhere, so it does not separate the designs. 01 Dark also lacks <code>lang</code> and a meta description.</dd>
+        <dt>CLS</dt><dd>Cumulative layout shift from Lighthouse, mostly from script-fitted display type after the web font loads. Fixable in React (font metric overrides, reserved space), but it is real work.</dd>
+        <dt>Startup cost</dt><dd>Total long-task time while the page loads, 360 × 740, 4× CPU slowdown. Every page then held 60 fps idle and while scrolling top to bottom on this (fast) machine, so frame rate does not separate them; a real mid-range phone needs the phase 3 check.</dd>
+        <dt>Performance risk</dt><dd>A judgement from what runs continuously: WebGL or a per-frame canvas, large <code>backdrop-filter</code> areas, pinned scroll scenes.</dd>
+        <dt>Effort</dt><dd>Relative cost to rebuild in React, from S (a weekend for the effects) to XL (several weekends of interaction engineering).</dd>
+      </dl>
+
+      <h3 style="margin-top:32px">What the numbers say</h3>
+      <ul class="plain">
+        <li>The brief's hard criteria do not eliminate anything: every variant shows the essentials above the fold on phone and desktop, and every page scrolls at 60 fps under a 4× CPU slowdown.</li>
+        <li>Accessibility gaps are small and specific: contrast in scroll-reveal text (01 Dark, 05 Dark), the depth tint (01 Light) and a few accessible-name mismatches. None is structural, except 06 Dark's window manager, whose accessibility is a large job in itself.</li>
+        <li>Only 01 Dark and 03 Dark use three.js. Choosing anything else means the brief's 3D hero (sections 3, 4.2 and 6) changes.</li>
+        <li>The cost of the effects, not the criteria, separates the strong candidates. The highest risk sits in continuous rendering (01 Dark, 06 Dark, 07 Dark).</li>
+      </ul>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">Design prototypes for <a href="https://github.com/rafalciecwierz/rafalciecwierz.github.io">rafalciecwierz.github.io</a> · roadmap task 2.5 · the decision is recorded in <a href="../docs/DECISIONS.md">docs/DECISIONS.md</a>.</div>
+</footer>
+</body>
+</html>

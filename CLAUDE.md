@@ -56,5 +56,5 @@ Work is planned task by task in `docs/ROADMAP.md`, in three phases: documentatio
 ## Current status (keep this updated)
 
 - Phase: 2, design exploration
-- Last completed: 2.4 prototype 07, both variants (`design/prototypes/07-field-notes-dark.html` "Long Exposure", `07-field-notes-light.html` "Plotter Sheet")
-- Next step: 2.4 prototype 08 (Ascent), branch `feat/design-prototype-08-ascent`
+- Last completed: 2.4 prototype 08, both variants (`design/prototypes/08-ascent-dark.html` "Night Session", `08-ascent-light.html` "Crag in the Sun"); all eight directions are built
+- Next step: 2.5 design selection, branch `docs/design-selection`

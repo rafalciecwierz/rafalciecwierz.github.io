@@ -28,6 +28,8 @@ This brief was used to generate a first HTML prototype: `design/prototypes/01-fl
 
 Steps may be added between phases when needed (for example extra documentation).
 
+**The chosen design (task 2.5):** prototype 08 Ascent, dark variant "Night Session" (`design/prototypes/08-ascent-dark.html`), shipped alone, with no light variant and no theme toggle ([DECISIONS.md](DECISIONS.md), #001). Before phase 3 it is refined in iterations saved as new files in `design/iterations/`; the latest one Rafał approves is the reference for phase 3. The 16 prototypes stay unedited and are published with the site as a gallery.
+
 **Using a prototype as a reference:** the final site reproduces the chosen prototype's look and behaviour. Elements that only exist to present the prototype are not carried over (for example the "React Bits labels" toggle and its labels, hint texts such as the ClickSpark label, and "Prototype: …" toasts). Effects themselves, such as ClickSpark, stay.
 
 
@@ -38,7 +40,7 @@ A personal website that works as an interactive CV and a small showcase of front
 It has two jobs:
 
 1. **Get Rafał hired.** A recruiter or tech lead must understand who he is within 5 seconds and be able to download the CV or get in touch in one click.
-2. **Show craft.** The site itself proves the skills from the CV: React, TypeScript, animation (GSAP), 3D in the browser (Three.js / React Three Fiber), performance and accessibility.
+2. **Show craft.** The site itself proves the skills from the CV: React, TypeScript, animation (GSAP scrollytelling), graphics drawn in code (an SVG scene and character rig), performance and accessibility. It also shows, openly, how Rafał works with AI (sections 4.8 and 13).
 
 The site will be linked from a LinkedIn post asking people to recommend Rafał at their companies, and from job applications (including creative studios that value motion and WebGL).
 
@@ -74,9 +76,9 @@ The site will be linked from a LinkedIn post asking people to recommend Rafał a
 | --- | --- | --- |
 | Build | Vite + React + TypeScript (strict) | Static output, fast dev server |
 | Styling | SCSS + CSS Modules | Design tokens as CSS custom properties |
-| 3D | three, @react-three/fiber, @react-three/drei | Hero scene only, lazy-loaded |
-| Animation | gsap + ScrollTrigger, @gsap/react (`useGSAP`) | Scroll-driven reveals, timeline |
-| Smooth scroll | lenis | Synced with ScrollTrigger; disabled for reduced motion |
+| 3D | none in v1 | The chosen design draws its scenes in SVG ([DECISIONS.md](DECISIONS.md), #001). three / React Three Fiber return only with a new decision |
+| Animation | gsap + ScrollTrigger, @gsap/react (`useGSAP`) | Scroll-driven reveals, the pinned career run |
+| Smooth scroll | lenis, only if task 3.1 keeps it | The chosen prototype was built without it; if kept, synced with ScrollTrigger and disabled for reduced motion |
 | UI effects | Optional: [React Bits](https://reactbits.dev), GSAP plugins, other sources | Enhancers chosen per design, installed or ported onto the stack above (see below) |
 | Lint/format | ESLint + Prettier | One config for the whole project, following [ashen-contracts](https://github.com/rafalciecwierz/ashen-contracts) |
 | Tests | Vitest + React Testing Library | Light: content rendering, reduced-motion behavior |
@@ -95,22 +97,22 @@ Single page with anchor navigation. Sections in order:
 ### 4.1 Header / navigation
 - Fixed, minimal: name/monogram on the left, anchor links (About, Stack, Career, Projects, Contact) on the right.
 - Mobile: collapsible menu, keyboard accessible, focus trapped while open.
-- Smooth scroll to sections via Lenis (native anchor jump when reduced motion).
+- Smooth scroll to sections (Lenis if task 3.1 keeps it, otherwise CSS `scroll-behavior`); a native anchor jump with reduced motion.
 
 ### 4.2 Hero
-- **Content (must render immediately, before any 3D):**
+- **Content (must render immediately, before any effect):**
   - Name: Rafał Ciećwierz
   - Role: Frontend Engineer
   - Tagline: React & TypeScript · 5+ years building production apps
   - Primary button: **Download CV** (`/Rafal_Ciecwierz_CV.pdf`)
   - Secondary button: **Get in touch** (scrolls to Contact)
-- **3D scene (the "flashy" part):**
-  - The hero object comes from the chosen design. It must be **generic, not tied to a single project or hobby**. (The frisbee disc from an earlier draft was dropped: Rafał's only link to frisbee is one project.) A good candidate is prototype 01's fluid-glass lens over the "RC" monogram (React Bits `FluidGlass`).
-  - Prefer procedural geometry so no external model file is needed. If a GLB is used, compress it with Draco and keep it under 300 KB.
-  - Scroll interaction: as the user scrolls out of the hero, the object animates away (GSAP ScrollTrigger driving the object's transform), unless the chosen design specifies otherwise.
-  - Lazy-load the canvas with `React.lazy` + `Suspense`; the text must be the LCP element, not the canvas.
-  - Cap device pixel ratio (`dpr={[1, 1.75]}`), pause rendering when the hero is off-screen (`frameloop="demand"` or visibility check).
-  - **Fallback:** for `prefers-reduced-motion`, low-power devices or WebGL failure, show a static, well-designed image/gradient instead of the canvas.
+- **Hero scene (the "flashy" part), from the chosen design:**
+  - The name is a floodlit rooftop sign over a generated night skyline, drawn in SVG. It flickers on letter by letter.
+  - A free-runner (an SVG pose rig built in code, no image files) hops along the letters and perches on the Ł; clicking a letter sends him there, clicking him does a backflip.
+  - The scene is decoration: `aria-hidden="true"`, and the hero meaning is fully conveyed by the text. The heading is the LCP element.
+  - Its space is reserved, so nothing shifts when it draws. Animation pauses when the hero is off-screen or the tab is hidden.
+  - **Reduced motion:** the sign is lit and the runner perches still.
+  - The exact form follows the latest approved iteration (roadmap task 2.7).
 
 ### 4.3 About
 Short, human, first person. Draft (Rafał may edit):
@@ -132,24 +134,30 @@ Show levels with something more visual than coloured dots (e.g. a subtle fill, r
 Data is in section 5.
 
 ### 4.5 Career
-- Vertical timeline, newest first.
+- The baseline is a vertical list, newest first. It is what phones, reduced motion and no-JavaScript visitors get.
 - Each entry: company, role (show promotions with "→"), dates, 2–4 bullet points, stack tags.
-- Scroll animation: the timeline line "draws" as the user scrolls, entries reveal one by one (GSAP ScrollTrigger, `scrub` for the line).
-- Promotions (QA → Developer at mTab, Developer → Team Leader at Mood up) get a small visual highlight.
+- On desktop, the chosen design adds a pinned scene (GSAP ScrollTrigger `pin` + `scrub`): scrolling runs a parkour line from roof to roof, one building per company, a tower per promotion. It can be skipped with a link and the navigation.
+- Promotions (QA → Developer at mTab, Developer → Team Leader at Mood up) get a visual highlight.
 
-### 4.6 Projects
+### 4.6 Testimonials
+Up to three quotes from Rafał's team at Mood up (section 5.6), after Career. In the chosen design: "Spotters", each quote under a street lamp.
+
+### 4.7 Projects
 Cards with: name, one-line description, status badge (`live`, `in progress`, `archived`), tech tags, links (repo / demo when available).
 
 The project list will change and grow over time, and the current entries are placeholders. The section must handle any number of projects, and adding, removing or reordering a project must only require editing the content file.
 
-### 4.7 Contact
+### 4.8 AI and process
+A section after Projects about how Rafał works with AI, and how this site was made: the 16 design prototypes, the process and his role in it, with a link to the prototype gallery. Honest and factual, not a claim of expertise: what AI did, what Rafał decided, how the work was checked (see section 13 and `docs/AI_USAGE.md`). Content is in section 5.7; its form is designed in roadmap task 2.7.
+
+### 4.9 Contact
 - Short line: "Open to frontend roles (React / TypeScript), remote or hybrid."
 - Email (`mailto:`), LinkedIn, GitHub, Calendly ("Book a 20-min call").
 - Repeat the **Download CV** button.
 - Do **not** publish the phone number on the site (spam risk). It is in the CV PDF.
 
-### 4.8 Footer
-- "Built with React, Three.js and GSAP" + link to the site's own repo.
+### 4.10 Footer
+- "Built with React, TypeScript and GSAP" + link to the site's own repo.
 - Year.
 
 ---
@@ -240,8 +248,8 @@ Tooling:
 - Tags: NestJS, PostgreSQL, Socket.io, Swagger, AWS, Nuxt, Figma
 
 **This website** — `live`
-- Personal site with a procedural 3D hero (React Three Fiber) and scroll-driven animations (GSAP, Lenis), built with a performance and accessibility budget.
-- Tags: React, TypeScript, Three.js, GSAP, Vite
+- Personal site with a hero scene and character drawn in code (SVG) and scroll-driven storytelling (GSAP), built with a performance and accessibility budget.
+- Tags: React, TypeScript, GSAP, Vite
 - Repo: https://github.com/rafalciecwierz/rafalciecwierz.github.io
 
 **Next.js page transitions** — `archived` (placeholder; may be replaced when the final project list is known)
@@ -257,6 +265,13 @@ From LinkedIn recommendations written by Rafał's team at Mood up (June 2024). Q
 - **Wiktoria W.**, Marketing & Communication (another team): "Seriously, I've never met a leader as tuned in and supportive as him." / "Whoever snags him next is super lucky - yeah, I'm a bit envious. 😉"
 - **Rafał H.**, Frontend Developer (on Rafał's team): "His enthusiasm and optimism were contagious, making him a joy to work with."
 - **Szymon K.**, Frontend Developer (on Rafał's team): "His technical skills and ability to simplify complex concepts, guiding others through challenges, have been invaluable in enhancing the overall quality and efficiency of our development processes."
+
+### 5.7 AI and process
+
+For the section in 4.8. Written in roadmap task 2.6.
+
+- How Rafał works with AI (tools, what he uses it for at work, what he keeps for himself, how he checks the output): `TODO: Rafał to provide in task 2.6`.
+- How this site was made: `TODO: task 2.6`. Every number (dates, durations, counts of prototypes) comes from the git history or the repository. Known so far: 16 prototypes (8 directions × dark and light), built between 24.10.2026 and 26.10.2026 according to the commit history.
 
 ---
 
@@ -278,19 +293,20 @@ src/
     Header/
     Hero/
       Hero.tsx
-      HeroScene.tsx     # lazy-loaded R3F canvas
-      HeroObject.tsx    # the 3D object from the chosen design
-      HeroFallback.tsx
+      HeroScene.tsx     # the SVG rooftop sign and skyline
+      Runner.tsx        # the SVG free-runner rig
     About/
     Stack/
     Career/
+    Testimonials/
     Projects/
+    AiProcess/
     Contact/
     Footer/
     ui/                 # Button, Tag, Badge, SectionHeading
   hooks/
     useReducedMotion.ts
-    useLenis.ts
+    useLenis.ts         # only if task 3.1 keeps Lenis
   animation/
     gsap.ts             # register plugins once
   styles/
@@ -307,33 +323,32 @@ Rules:
 - Every user-facing string goes through the content layer so a `pl` variant can be added later (e.g. `{ en: string; pl?: string }` or a locale map).
 - All GSAP code uses `useGSAP` with a scope ref so animations clean up on unmount.
 - Register GSAP plugins once in `animation/gsap.ts`.
-- One `useReducedMotion` hook is the single source of truth; GSAP, Lenis and the 3D scene all respect it.
+- One `useReducedMotion` hook is the single source of truth; GSAP, the hero scene and smooth scroll (if kept) all respect it.
+- This tree is a starting point; `docs/ARCHITECTURE.md` (task 3.1) sets the final structure for the chosen design.
 
 ---
 
 ## 7. Design direction
 
-This is the direction prototype 01 was built from. The other directions (phase 2) may depart from it completely; what the site must feel like for every direction is in [design/DESIGN_PROFILE.md](design/DESIGN_PROFILE.md). The technical requirements in sections 2, 3, 6, 8 and 9 still apply to every design.
+The chosen direction is 08 Ascent, dark variant "Night Session": a parkour night session on rooftops lit by sodium street lamps. Its palette, type, layout and effects are in the "As built" block and the iterations in [design/DIRECTIONS.md](design/DIRECTIONS.md), and the latest approved iteration is the visual reference. What the site must feel like is in [design/DESIGN_PROFILE.md](design/DESIGN_PROFILE.md). The technical requirements in sections 2, 3, 6, 8 and 9 apply.
 
-- **Mood:** dark, premium, calm. Lots of space, sharp typography, one strong accent colour (a vivid green to echo the CV accent).
-- **Typography:** one display font for headings, one clean sans for body (Google Fonts, `font-display: swap`, preload the display font).
-- **Motion:** fewer, better animations. Ease-out reveals, nothing that blocks reading. No animation longer than ~1 s except the scroll-scrubbed timeline line and hero exit.
+- **Typography:** one display font for headings, one clean sans for body (Google Fonts, `font-display: swap`, preload the display font). In the prototype: Big Shoulders Display + Barlow.
+- **Motion:** fewer, better animations. Ease-out reveals, nothing that blocks reading. No animation longer than ~1 s except the scroll-scrubbed career run.
 - **Responsive:** mobile first. Test at 360 px, 768 px, 1280 px, 1920 px.
-- Use a photo of Rafał only in About (optional), not in the hero. Use some mocked face which can be swiped with Rafał's face later.
-  - In phase 2 prototypes, a character of Rafał built in code (a clay-like 3D figure or a hand-drawn SVG) may appear anywhere, including the hero. If the chosen design uses one, this rule is updated then.
+- **Character:** the SVG free-runner is the character, in the hero and wherever the design uses him. There is no photo in the hero; a photo of Rafał may appear in About (optional, brief section 14).
 
 ---
 
 ## 8. Performance & accessibility budget
 
-- Initial JS (without the 3D chunk): ≤ 150 KB gzipped. The three/R3F chunk loads after first paint.
+- Initial JS: ≤ 150 KB gzipped.
 - LCP element is the hero heading text.
-- No layout shift from fonts or the canvas (reserve space).
+- No layout shift from fonts or the hero scene (reserve space). The prototype measured CLS 0.20, so this needs work.
 - Images: modern formats (AVIF/WebP), explicit width/height, lazy below the fold.
 - Semantic HTML: `header`, `nav`, `main`, `section` with headings, `footer`.
 - Visible focus styles, skip-to-content link, contrast AA minimum.
-- Canvas has `aria-hidden="true"`; the hero meaning is fully conveyed by text.
-- `prefers-reduced-motion: reduce` → no Lenis, no scroll-scrubbed motion, static hero fallback, simple fades at most.
+- Decorative SVG scenes have `aria-hidden="true"`; the hero meaning is fully conveyed by text.
+- `prefers-reduced-motion: reduce` → no smooth scroll, no pinned or scroll-scrubbed motion (the career is the plain list), a static hero, simple fades at most.
 
 ---
 
@@ -359,7 +374,7 @@ This is the direction prototype 01 was built from. The other directions (phase 2
 
 Milestones are planned as tasks in [ROADMAP.md](ROADMAP.md), grouped into the three phases from section 0.
 
-Within phase 3, the order follows the original plan. First comes a usable site without motion or 3D: scaffold, content, tokens, static sections, accessibility, SEO and deploy. **Checkpoint:** the site is good enough to share. After that come the enhancements: motion, effects, the 3D hero, a performance pass, final content and the README.
+Within phase 3, the order follows the original plan. First comes a usable site without motion: scaffold, content, tokens, static sections, accessibility, SEO and deploy. **Checkpoint:** the site is good enough to share. After that come the enhancements: motion, effects, the hero scene, the career run, a performance pass, the prototype gallery, final content and the README.
 
 ---
 
@@ -369,7 +384,7 @@ Within phase 3, the order follows the original plan. First comes a usable site w
 - **Git is Rafał's.** Claude proposes branch names (conventional prefixes: `feat/`, `fix/`, `docs/`, `chore/`, `ci/`, `perf/`, `refactor/`) and they are listed in the roadmap. Rafał creates the branches, commits, pushes and merges into `main`. Claude never commits, pushes or merges.
 - **Commit messages.** At the end of each task, Claude proposes small, focused commit message(s) following Conventional Commits (`feat:`, `fix:`, `docs:`, `chore:` …), together with the files that belong to each.
 - **Language.** Everything in the repository (code, comments, docs, commit messages) is in English. Conversation with Rafał may be in Polish.
-- **Explain non-obvious code.** Rafał must be able to explain every part of this site in a job interview without AI. When writing GSAP, R3F or performance-related code, add a short explanation in the chat of *what* it does and *why* this approach was chosen. In that way he can challenge and correct your decisions. Record significant decisions in `docs/DECISIONS.md` (one short entry per decision: context, decision, alternatives considered).
+- **Explain non-obvious code.** Rafał must be able to explain every part of this site in a job interview without AI. When writing GSAP, SVG animation or performance-related code, add a short explanation in the chat of *what* it does and *why* this approach was chosen. In that way he can challenge and correct your decisions. Record significant decisions in `docs/DECISIONS.md` (one short entry per decision: context, decision, alternatives considered).
 - **Readable over clever.** Prefer readable code over clever code. Architecture and clean code follow `docs/ARCHITECTURE.md` once it exists.
 - **No invented content.** If something is missing (LinkedIn URL, Calendly URL, photo), leave a clearly marked `TODO` and list it at the end of the task summary.
 - **No tracking.** Do not add analytics, cookies or trackers.
@@ -398,4 +413,5 @@ These are provided near the end of the project. Until then, use `TODO` placehold
 - [ ] Final CV PDF exported as `Rafal_Ciecwierz_CV.pdf`
 - [ ] Final list of projects
 - [ ] Optional: photo, if the chosen design has a good place for it
-- [ ] Consent from the three testimonial authors (section 5.6), if the chosen design shows testimonials
+- [ ] Consent from the three testimonial authors (section 5.6); the chosen design shows testimonials
+- [ ] How Rafał works with AI, for the AI and process section (section 5.7, roadmap task 2.6)

@@ -1,12 +1,14 @@
 ---
 name: design-prototype
-description: Build or revise one HTML design prototype in design/prototypes/ from an approved direction in docs/design/DIRECTIONS.md. Use for roadmap task 2.4, or when the user asks to build, change or redo a design prototype.
+description: Build or revise one HTML design prototype in design/prototypes/ from an approved direction in docs/design/DIRECTIONS.md, or build an iteration of the chosen design in design/iterations/. Use for roadmap tasks 2.4 and 2.7, or when the user asks to build, change or redo a design prototype.
 argument-hint: <direction number, e.g. 03>
 ---
 
 # Design prototype
 
 Each direction for Rafał's portfolio is shown as two HTML files: a dark and a light variant: two independent designs that share only the style. Nothing else is carried over from one variant to the other, not the hero, layout, type, palette or effects. All prototypes are compared in task 2.5, and the winner is rebuilt in React in phase 3. So a prototype must be **clearly different from the others**, must **follow its direction**, and must be **easy to convert**. The rules for files in `design/` (`.claude/rules/design-prototypes.md`) apply throughout.
+
+**After task 2.5** the 16 prototypes are frozen. Iterations of the chosen design (task 2.7) are new files in `design/iterations/`, never edits to `design/prototypes/`; see "Iterations of the chosen design" in the rules file. For an iteration, skip the two-variant planning below: plan only the changes Rafał asked for, show them, and build after approval.
 
 ## Who decides what
 

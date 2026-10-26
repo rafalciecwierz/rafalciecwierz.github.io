@@ -111,7 +111,7 @@ More directions may be added later as new items in this list.
 - **Done when:** both variants match the direction brief and work on mobile and desktop (checked with screenshots at 360 and 1280 px). No `site-auditor` audit at this stage: prototypes are explorations, and only the chosen design is audited, from phase 3.
 
 ### 2.5 Design selection
-- [ ] **Branch:** `docs/design-selection`
+- [x] **Branch:** `docs/design-selection`
 - **Scope:**
   - `design/index.html`: a page that links and compares all prototypes.
   - A comparison of the prototypes covering:
@@ -120,14 +120,37 @@ More directions may be added later as new items in this list.
     - the implementation effort and cost of each prototype's effects.
   - The choice is recorded in [DECISIONS.md](DECISIONS.md). It says which variant ships (dark, light or both), and what the brief and roadmap need to change as a result.
 - **Done when:** one design is chosen. Elements borrowed from other prototypes are listed explicitly.
+- **Result:** prototype 08 Ascent, dark variant "Night Session", ships alone, with no elements borrowed so far ([DECISIONS.md](DECISIONS.md), #001). It is refined in iterations (2.7) before phase 3.
+
+### 2.6 AI and process content
+- [ ] **Branch:** `docs/ai-process-content`
+- **Scope:**
+  - A Q&A session with Rafał about how he works with AI: what he uses it for at work, which tools, what he keeps for himself and how he checks the output. Rafał may answer in Polish; Claude writes it in English.
+  - The story of how this site was made: the 16 prototypes, the process and Rafał's role in it. Every number (dates, durations, counts) comes from the git history or the repository, never from memory.
+  - The result goes into the brief: the section in 4 and the content in 5.7.
+- **Done when:** Rafał has approved the content in the brief, and every fact in it has a source.
+
+### 2.7 Design iterations of the chosen design
+One task per iteration. Each iteration is a new file, `design/iterations/08-ascent-dark-v<N>.html`, starting from the previous one (v2 starts from `design/prototypes/08-ascent-dark.html`). The 16 prototypes in `design/prototypes/` are never edited: they are the record of the exploration and the gallery.
+
+- [ ] **Branch:** `feat/design-iteration-08-v2`
+
+More iterations may be added as new items in this list.
+
+- **Scope:**
+  - The fixes Rafał lists for each section, and a more professional finish overall.
+  - The new AI and process section (content from 2.6, or `TODO` until it exists), and the link to the prototype gallery.
+  - The known issues from task 2.5: layout shift (CLS 0.20), the brand link's accessible name, and the length of the pinned career scene on desktop.
+  - `design/index.html` lists every iteration, and the direction's entry in `docs/design/DIRECTIONS.md` gets an "Iterations" block with what changed and why.
+- **Done when:** Rafał approves an iteration as the reference for phase 3, and it meets the quality floor in `.claude/rules/design-prototypes.md` (checked with screenshots at 360 and 1280 px and with reduced motion).
 
 ---
 
 ## Phase 3 — Implementation and deployment
 
-Goal: the chosen design rebuilt as a clean React + TypeScript project and deployed to GitHub Pages.
+Goal: the chosen design rebuilt as a clean React + TypeScript project and deployed to GitHub Pages. "The chosen design" is prototype 08 Ascent dark, as in the latest iteration Rafał approved in 2.7.
 
-The first part (3.1–3.10) produces a usable, deployed site without motion or 3D. Everything after that is enhancement.
+The first part (3.1–3.10) produces a usable, deployed site without motion or the hero scene. Everything after that is enhancement.
 
 ### 3.1 Architecture requirements
 - [ ] **Branch:** `docs/architecture`
@@ -188,12 +211,12 @@ The first part (3.1–3.10) produces a usable, deployed site without motion or 3
 
 ### 3.8 Hero (static)
 - [ ] **Branch:** `feat/hero-static`
-- **Scope:** hero text, the Download CV and Get in touch actions, and a static fallback visual with reserved space for the future 3D canvas.
+- **Scope:** hero text, the Download CV and Get in touch actions, and the static hero scene (the lit rooftop sign and skyline in SVG, with the runner perched still), with its space reserved so nothing shifts.
 - **Done when:** name, role and both actions are above the fold at 360 px and 1280 px, and the heading is the LCP element.
 
 ### 3.9 Content sections (static)
 - [ ] **Branch:** `feat/content-sections`
-- **Scope:** About, Stack (levels with a text label), Career (timeline with promotions highlighted), Projects (extensible list) and Contact (no phone number), all rendered from the content layer.
+- **Scope:** About, Stack (levels with a text label), Career (the plain list newest first, with promotions highlighted), testimonials, Projects (extensible list), the AI and process section and Contact (no phone number), all rendered from the content layer.
 - **Done when:** every section from the chosen design is present and readable without JavaScript animations.
 
 ### 3.10 SEO and deployment
@@ -208,9 +231,9 @@ The first part (3.1–3.10) produces a usable, deployed site without motion or 3
 - **Scope:**
   - `animation/gsap.ts`, which registers plugins once.
   - A `useReducedMotion` hook as the single source of truth.
-  - Lenis synced with ScrollTrigger and disabled for reduced motion.
+  - Lenis synced with ScrollTrigger and disabled for reduced motion, only if the dependency plan in `docs/ARCHITECTURE.md` keeps it (the chosen prototype was built without smooth scroll).
   - AI tooling: the official GSAP skills `gsap-react`, `gsap-scrolltrigger` and `gsap-performance` ([greensock/gsap-skills](https://github.com/greensock/gsap-skills), MIT), pinned with a `NOTICE.md` and limited with `paths` to files that use GSAP.
-- **Done when:** smooth scroll works, and is off with reduced motion, as covered by a test.
+- **Done when:** GSAP and the reduced-motion hook work, covered by a test (and smooth scroll, if kept, is off with reduced motion).
 
 ### 3.12 Interactive effects
 - [ ] **Branch:** `feat/interactive-effects`
@@ -219,37 +242,42 @@ The first part (3.1–3.10) produces a usable, deployed site without motion or 3
 
 ### 3.13 Scroll animations
 - [ ] **Branch:** `feat/scroll-animations`
-- **Scope:** section reveals, staggered groups, and the scroll-drawn career timeline (`scrub`), using `useGSAP` with a scope ref.
+- **Scope:** section reveals, staggered groups and the title entrances of the chosen design (the "vault and land" letters), using `useGSAP` with a scope ref.
 - **Done when:** the animations run at 60 fps on a mid-range phone and are reduced to simple fades or nothing with reduced motion.
 
-### 3.14 Hero 3D scene
-- [ ] **Branch:** `feat/hero-3d-scene`
+### 3.14 Hero scene
+- [ ] **Branch:** `feat/hero-scene`
 - **Scope:**
-  - The hero object from the chosen design. It is generic and procedural where possible, and any model is compressed and under 300 KB.
-  - React Three Fiber canvas lazy-loaded after first paint.
-  - Capped device pixel ratio and rendering paused off-screen.
-  - Fallback for reduced motion, low-power devices and WebGL failure.
-- **Done when:** the 3D chunk is loaded separately from the initial JS, and the fallback is shown in every case where the scene is unavailable.
+  - The animated hero of the chosen design: the rooftop sign flickering on, the generated skyline, and the SVG free-runner (a pose rig) hopping between letters and perching on the Ł.
+  - Animation paused when the hero is off-screen or the tab is hidden.
+  - With reduced motion: the sign lit and the runner perched still.
+- **Done when:** the scene adds no dependency, is `aria-hidden`, causes no layout shift, and the hero heading stays the LCP element.
 
-### 3.15 Hero scroll exit
-- [ ] **Branch:** `feat/hero-scroll-exit`
-- **Scope:** the hero object animates out as the user scrolls past the hero, driven by ScrollTrigger.
-- **Done when:** the exit is smooth, and it is disabled with reduced motion.
+### 3.15 Career run
+- [ ] **Branch:** `feat/career-run`
+- **Scope:** the pinned scrollytelling career from the chosen design (ScrollTrigger `pin` and `scrub`): one building per company, a tower per promotion, the job card that follows the runner, and a way to skip the scene. Below the desktop breakpoint and with reduced motion, the plain list from 3.9 stays.
+- **Done when:** the run is smooth on a mid-range phone profile, can be skipped with the keyboard, and is off with reduced motion.
 
 ### 3.16 Performance and accessibility pass
 - [ ] **Branch:** `perf/lighthouse-pass`
 - **Scope:** bundle analysis, Lighthouse on mobile, and an accessibility audit (keyboard, screen reader, contrast). Fix any regressions found.
 - **Done when:** Lighthouse mobile scores are Performance ≥ 90, Accessibility ≥ 95, Best Practices ≥ 95 and SEO ≥ 95, and initial JS is ≤ 150 KB gzipped.
 
-### 3.17 Final content
+### 3.17 Prototype gallery
+- [ ] **Branch:** `feat/prototype-gallery`
+- **Scope:** the 16 prototypes, the approved iterations and `design/index.html` published with the site (for example under `/design/`), and linked from the AI and process section. They stay static files outside the React bundle.
+- **Done when:** the gallery opens from the live site, every link in it works, and the initial JS budget is unaffected.
+
+### 3.18 Final content
 - [ ] **Branch:** `feat/final-content`
 - **Scope:**
   - LinkedIn and Calendly URLs, the CV PDF and the optional photo (images in modern formats, with explicit sizes and lazy loading below the fold).
   - The final project list.
   - The final 1200×630 OG image.
+  - The final numbers in the AI and process story, taken from the git history.
 - **Done when:** no `TODO` is left in the content layer.
 
-### 3.18 README
+### 3.19 README
 - [ ] **Branch:** `docs/readme`
 - **Scope:** the repository README covering the stack, how to run it, the architecture overview, how the hero works, performance decisions, AI usage (linking `docs/AI_USAGE.md`) and screenshots or a GIF.
 - **Done when:** a tech lead can understand the project from the README alone.
@@ -268,7 +296,7 @@ These are not needed for the site. Pick them up any time, or never.
 
 ## Open items for Rafał
 
-These are needed by task 3.17 and can arrive at any time before it.
+These are needed by task 3.18 and can arrive at any time before it.
 
 - [ ] LinkedIn profile URL
 - [ ] Calendly link (free plan, 20–30 min intro call)

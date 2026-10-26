@@ -18,6 +18,15 @@ A prototype is a reference for the React build in phase 3, not production code. 
   - the libraries used, and the dependencies the React build would need.
 - After building, the direction's entry in `docs/design/DIRECTIONS.md` gets an **As built** block for the variant (palette, type, layout, hero moment, effects, what was left out, dependencies). It records the reasoning the HTML cannot.
 
+## Iterations of the chosen design
+
+Task 2.5 chose prototype 08 Ascent, dark variant. From then on (roadmap task 2.7):
+
+- The 16 files in `design/prototypes/` are **never edited**. They are the record of the exploration and are published as a gallery.
+- Each iteration is a new file, `design/iterations/08-ascent-dark-v<N>.html`, copied from the previous one (v2 from the original prototype) and then changed.
+- The header comment adds a "Changes from v<N-1>" list. The direction's entry in `docs/design/DIRECTIONS.md` gets an "Iterations" block, and `design/index.html` links the new file.
+- Everything in this file still applies to iterations, including the quality floor. The latest iteration Rafał approves is the reference for phase 3.
+
 ## Structure
 
 - Keep one `<section id="…">` per section from brief section 4, in the brief's order, unless the direction changes the order on purpose and says so.

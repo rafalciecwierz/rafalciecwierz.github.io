@@ -95,7 +95,7 @@ The site will be linked from a LinkedIn post asking people to recommend Rafał a
 Single page with anchor navigation. Sections in order:
 
 ### 4.1 Header / navigation
-- Fixed, minimal: name/monogram on the left, anchor links (About, Stack, Career, Projects, Contact) on the right.
+- Fixed, minimal: name/monogram on the left, anchor links (About, Stack, Career, Projects, Process, Contact) on the right. The monogram's accessible name starts with its visible text (WCAG 2.5.3).
 - Mobile: collapsible menu, keyboard accessible, focus trapped while open.
 - Smooth scroll to sections (Lenis if task 3.1 keeps it, otherwise CSS `scroll-behavior`); a native anchor jump with reduced motion.
 
@@ -108,7 +108,8 @@ Single page with anchor navigation. Sections in order:
   - Secondary button: **Get in touch** (scrolls to Contact)
 - **Hero scene (the "flashy" part), from the chosen design:**
   - The name is a floodlit rooftop sign over a generated night skyline, drawn in SVG. It flickers on letter by letter.
-  - A free-runner (an SVG pose rig built in code, no image files) hops along the letters and perches on the Ł; clicking a letter sends him there, clicking him does a backflip.
+  - A free-runner (an SVG pose rig built in code, no image files) hops along the letters and perches on the Ł; clicking a letter sends him there; each click on him plays the next trick (backflip, kong vault, front flip, handstand).
+  - The role flips once, like a split-flap board, through Rafał's other titles (section 5.1, `roleFlips`) and lands back on "Frontend Engineer". Screen readers get only the role; with reduced motion it does not flip.
   - The scene is decoration: `aria-hidden="true"`, and the hero meaning is fully conveyed by the text. The heading is the LCP element.
   - Its space is reserved, so nothing shifts when it draws. Animation pauses when the hero is off-screen or the tab is hidden.
   - **Reduced motion:** the sign is lit and the runner perches still.
@@ -140,19 +141,21 @@ Data is in section 5.
 - Promotions (QA → Developer at mTab, Developer → Team Leader at Mood up) get a visual highlight.
 
 ### 4.6 Testimonials
-Up to three quotes from Rafał's team at Mood up (section 5.6), after Career. In the chosen design: "Spotters", each quote under a street lamp.
+Up to three quotes from Rafał's team at Mood up (section 5.6), after Career. In the chosen design: "Spotters", each quote a poster wheat-pasted on the wall.
 
 ### 4.7 Projects
 Cards with: name, one-line description, status badge (`live`, `in progress`, `archived`), tech tags, links (repo / demo when available).
 
 The project list will change and grow over time, and the current entries are placeholders. The section must handle any number of projects, and adding, removing or reordering a project must only require editing the content file.
 
+In the chosen design each project is a pin on a night map ("Spots"); a pin or the card's "Spot details" button opens a detail panel (a native `<dialog>`) with the full description, the stack and fields still to be written (screenshot, role, what was learned).
+
 ### 4.8 AI and process
 A section after Projects about how Rafał works with AI, and how this site was made: the 16 design prototypes, the process and his role in it, with a link to the prototype gallery. Honest and factual, not a claim of expertise: what AI did, what Rafał decided, how the work was checked (see section 13 and `docs/AI_USAGE.md`). Content is in section 5.7; its form is designed in roadmap task 2.7.
 
 ### 4.9 Contact
 - Short line: "Open to frontend roles (React / TypeScript), remote or hybrid."
-- Email (`mailto:`), LinkedIn, GitHub, Calendly ("Book a 20-min call").
+- Email (`mailto:`) with a Copy button, LinkedIn, GitHub, Calendly ("Book a 20-min call"). The address is joined from parts at runtime, so it is not in the HTML source for the simplest scrapers; a contact form was rejected because the site is fully static (section 2) and form services add third parties.
 - Repeat the **Download CV** button.
 - Do **not** publish the phone number on the site (spam risk). It is in the CV PDF.
 
@@ -171,6 +174,7 @@ All content lives in typed files in `src/content/` (see section 6). Use exactly 
 ```ts
 name: "Rafał Ciećwierz"
 role: "Frontend Engineer"
+roleFlips: ["Parkour Old Veteran", "Climbing Enjoyer", "Fullstack Engineer wannabe"]  // Rafał's words, 27.10.2026; shown in the hero before the role
 tagline: "React & TypeScript · 5+ years building production apps"
 email: "rafal.ciecwierz4@gmail.com"
 github: "https://github.com/rafalciecwierz"
@@ -201,7 +205,12 @@ Backend:
 
 Tooling:
   Git (strong), Figma (strong), Postman (strong), Vite (strong), Webpack (strong),
-  Docker (medium), Claude Code (medium)
+  Docker (medium)
+
+AI:  // Rafał, 28.10.2026; each backed by this repo or ashen-contracts
+  Claude Code (medium), Agent skills (medium), Subagents (medium), MCP servers (medium),
+  Claude Code hooks (medium), AI code review in CI (medium), Context engineering (medium),
+  Spec-driven development (medium), Agent guardrails (medium)
 ```
 
 ### 5.3 Career

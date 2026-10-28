@@ -151,7 +151,7 @@ The project list will change and grow over time, and the current entries are pla
 In the chosen design each project is a pin on a night map ("Spots"); a pin or the card's "Spot details" button opens a detail panel (a native `<dialog>`) with the full description, the stack and fields still to be written (screenshot, role, what was learned).
 
 ### 4.8 AI and process
-A section after Projects about how Rafał works with AI, and how this site was made: the 16 design prototypes, the process and his role in it, with a link to the prototype gallery. Honest and factual, not a claim of expertise: what AI did, what Rafał decided, how the work was checked (see section 13 and `docs/AI_USAGE.md`). Content is in section 5.7; its form is designed in roadmap task 2.7.
+A short section after Projects, not a wall of text. Its one job is to show that Rafał uses AI tools to their full extent (docs-first specs, skills, MCP servers, subagents, hooks, guardrails) and stays in charge of the work. It is based on two public repositories, this one and Ashen Contracts, and links to both, to `docs/AI_USAGE.md` and to the prototype gallery. Honest and factual, not a claim of expertise. Content is in section 5.7; its form is designed in roadmap task 2.7.
 
 ### 4.9 Contact
 - Short line: "Open to frontend roles (React / TypeScript), remote or hybrid."
@@ -277,10 +277,38 @@ From LinkedIn recommendations written by Rafał's team at Mood up (June 2024). Q
 
 ### 5.7 AI and process
 
-For the section in 4.8. Written in roadmap task 2.6.
+For the section in 4.8. Written in roadmap task 2.6 from Rafał's answers and the two repositories. Keep it short on the site: the headline, the short text and the links; the lists below are the facts it may draw on, not copy to show in full.
 
-- How Rafał works with AI (tools, what he uses it for at work, what he keeps for himself, how he checks the output): `TODO: Rafał to provide in task 2.6`.
-- How this site was made: `TODO: task 2.6`. Every number (dates, durations, counts of prototypes) comes from the git history or the repository. Known so far: 16 prototypes (8 directions × dark and light), built between 24.10.2026 and 26.10.2026 according to the commit history.
+**Headline idea (Rafał's, for task 2.7):** one page, built from ~~1~~ 16 designs, with the "1" crossed out.
+
+**Short text (first person):**
+
+> I work docs-first: requirements, a roadmap and decisions are written down before any code, so the AI agent builds from a spec, not from a guess. I set the frame, the direction and the rules; the agent works inside them; I verify the result and commit it myself. This site and Ashen Contracts are both built this way with Claude Code, and the whole setup is public in their repositories.
+
+**How Rafał works with AI** (his answers in task 2.6):
+
+- Principle: good documentation before any implementation.
+- His role: he comes up with the idea, designs the workflow and the project's rules, sets the frame and the direction, and verifies the work.
+- What he keeps for himself: git operations on the repository (commits, pushes, merges) and access to confidential data.
+- How he checks the output: diff review, manual testing, unit and integration tests passing, sometimes e2e tests.
+- What he watches for: inconsistency and hallucinations.
+- At work: GitHub Copilot at VML Enterprise Solutions, where it helped with unit tests. At his other employers he worked without AI tools; at the earlier ones they were not allowed.
+
+**The setup, in the repositories** (source: the files named):
+
+- This site: `CLAUDE.md`, area rules in `.claude/rules/`, six skills (three own: `roadmap-task`, `design-prototype`, `adr`; three pinned third-party copies), a read-only `site-auditor` subagent, Chrome DevTools MCP for screenshots, Lighthouse and performance traces, and git commands that change history denied in `.claude/settings.json`. Described in `docs/AI_USAGE.md`.
+- [Ashen Contracts](https://github.com/rafalciecwierz/ashen-contracts): `CLAUDE.md`, eight skills (four own: `implement-feature`, `refactor-task`, `adr`, `release`; four pinned copies from mattpocock/skills, among them `tdd` and `diagnosing-bugs`), a hook that formats every file the agent edits (`.claude/hooks/formatEditedFile.mjs`), Next.js DevTools and Playwright MCP servers (`.mcp.json`), reading `.env` files denied, an AI review on pull requests that only comments (`.github/workflows/claude-review.yml`), one spec per feature in `docs/features/` and 23 decisions in `docs/DECISIONS.md`.
+
+**How this site was made** (source: git history of `main`):
+
+- 23.10.2026: the brief, the roadmap and the first prototype, generated with Claude Code from the brief (`c19037b`; today's 01 Fluid Glass dark).
+- 24.10.2026: the AI setup (`be820c3`), then design research (`910fa04`), a discovery session about Rafał (`04f5da9`) and eight design directions (`10f6983`).
+- 24.10–26.10.2026: the other 15 prototypes, from 01 light (`6832f5a`) to 08 Ascent (`01d6321`). 16 in total, 8 directions × dark and light, 17,572 lines of HTML.
+- 26.10.2026: all 16 compared and measured, 08 Ascent dark chosen (`d1072b4`, `docs/DECISIONS.md` #001).
+- Rafał's role: he set the requirements in the brief, answered the discovery session, approved the directions, judged every prototype and chose the design. Every change reached `main` through a pull request he merged (15 by 26.10.2026).
+- Do not state working hours: commit times show when something was made, not how long it took.
+
+**Links:** the prototype gallery (`design/index.html`), `docs/AI_USAGE.md`, this repository and Ashen Contracts.
 
 ---
 
@@ -423,4 +451,4 @@ These are provided near the end of the project. Until then, use `TODO` placehold
 - [ ] Final list of projects
 - [ ] Optional: photo, if the chosen design has a good place for it
 - [ ] Consent from the three testimonial authors (section 5.6); the chosen design shows testimonials
-- [ ] How Rafał works with AI, for the AI and process section (section 5.7, roadmap task 2.6)
+- [x] How Rafał works with AI, for the AI and process section (section 5.7, roadmap task 2.6)

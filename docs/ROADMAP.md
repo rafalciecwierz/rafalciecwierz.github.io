@@ -123,7 +123,7 @@ More directions may be added later as new items in this list.
 - **Result:** prototype 08 Ascent, dark variant "Night Session", ships alone, with no elements borrowed so far ([DECISIONS.md](DECISIONS.md), #001). It is refined in iterations (2.7) before phase 3.
 
 ### 2.6 AI and process content
-- [ ] **Branch:** `docs/ai-process-content`
+- [x] **Branch:** `docs/ai-process-content`
 - **Scope:**
   - A Q&A session with Rafał about how he works with AI: what he uses it for at work, which tools, what he keeps for himself and how he checks the output. Rafał may answer in Polish; Claude writes it in English.
   - The story of how this site was made: the 16 prototypes, the process and Rafał's role in it. Every number (dates, durations, counts) comes from the git history or the repository, never from memory.

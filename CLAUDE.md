@@ -56,5 +56,6 @@ Work is planned task by task in `docs/ROADMAP.md`, in three phases: documentatio
 ## Current status (keep this updated)
 
 - Phase: 2, refining the chosen design
-- Last completed: 2.6 AI and process content (brief sections 4.8 and 5.7)
-- Next step: 2.7 iterations of 08 dark in `design/iterations/`, first branch `feat/design-iteration-08-v2`
+- Last completed: 2.5 design selection: prototype 08 Ascent dark "Night Session" ships alone (`docs/DECISIONS.md` #001); comparison in `design/index.html`
+- In progress: 2.7 iteration v2 built (`design/iterations/08-ascent-dark-v2.html`), waiting for Rafał's review; its AI and process section holds `TODO`s until 2.6
+- Next step: Rafał's feedback on v2 (approve it or list changes for v3), then 2.6 AI and process content, branch `docs/ai-process-content`

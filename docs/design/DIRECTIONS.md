@@ -536,6 +536,20 @@ Movement between sections borrows from parkour: elements vault, roll and land wi
 - **Cost to note for 2.5:** the pinned run makes the career section about six screens tall on desktop; "Skip the run ↓" and the nav get past it. The scene is one SVG updated once per scroll frame.
 - **Dependencies:** none. The React build would use GSAP ScrollTrigger (already planned) for the pin, the scrub and the vault entrances.
 
+**Iterations (dark), task 2.7.** Each is a new file in `design/iterations/`; the prototype above stays unchanged.
+- **v2** (`design/iterations/08-ascent-dark-v2.html`), from Rafał's notes per section, 27.10.2026. Status: waiting for Rafał's review.
+  - *Header:* "RC Portfolio" instead of "Night session", which said nothing to a recruiter; the accessible name now starts with the visible text (WCAG 2.5.3).
+  - *Hero:* the role flips once, split-flap style (RoleFlip), through Rafał's own titles and lands on Frontend Engineer, so the 5-second read still ends on the real role. Clicking the runner cycles four tricks (backflip, kong vault, front flip, handstand) instead of one. The name gets its final size from CSS on first paint (`cqi` ratios measured from the font), which takes CLS from 0.20 to 0.01 on mobile and 0.00 on desktop.
+  - *Stack:* the swinging plates on rails were hard to scan and moved too much. Tools now sit on three level boards (Strong full width, Medium and Low below), grouped by row inside each, with one staggered entrance and no idle motion.
+  - *Career:* unchanged except a dark plate behind each company sign and its dates, which used to overlap the windows.
+  - *From the team:* the lamps did not convince Rafał; quotes are now posters wheat-pasted on the wall (torn edge, paper noise, one in sodium orange), slapped on once as they enter (PasteUp).
+  - *Projects:* a pin or a card's "Spot details" button opens a detail panel on a native `<dialog>` (side panel on desktop, bottom sheet on phones) with a zoomed map, the full text and TODO fields for a screenshot, the role and what was learned.
+  - *New section "The leap"* (AI and process, brief 4.8): a gap jump from a "Frontend" roof to an "AI" roof in the fog, scrubbed by the scroll (GapLeap); the fog thins as he lands. Facts from brief 5.7 and the git history, TODO for the 2.6 content, and a link to the prototype gallery.
+  - *Contact:* a Copy button next to the email; the address is joined at runtime. A form was rejected (static site, third parties).
+  - *Footer:* "Session over.": the runner drops onto the street and lands a forward roll (FooterLanding); copy as in brief 4.10.
+  - *After Rafał's first review (28.10.2026):* Stack gets an "AI in the loop" band and an AI row leading the Medium board (Claude Code, agent skills, subagents, MCP servers, hooks, AI code review in CI, context engineering, spec-driven development, agent guardrails; each backed by this repo or ashen-contracts), because employers now look for AI tooling explicitly. The leap no longer scrubs with the scroll, which ran most of the jump before the runner was on screen: it plays once 80% of the scene is visible, slows to bullet time at the apex (after-images, a camera push-in, a vignette) and can be replayed. The footer runner turns to the viewer and waves, with a "Thanks for training with me!" bubble.
+  - *Removed:* GearSwing, LampWarmUp, the stack legend. *Still open from 2.5:* the pinned career scene stays about six screens long; Rafał finds the scroll fine.
+
 **Light take:** "crag in the sun": limestone and sandstone tones, chalk dust, rope-coloured accents (teal and coral) and an outdoor-climbing feel.
 
 **As built (light), task 2.4: "Crag in the Sun".** The page is a sunny limestone crag, and on wide screens it really is climbed from the bottom. Nothing from "Night Session" is reused: no rooftops, runner, sign, rails, lamps, map, pinned scene or Big Shoulders.

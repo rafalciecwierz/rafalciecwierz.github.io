@@ -58,3 +58,49 @@ Alternatives considered:
 - Server-side rendering on each request. Rejected: GitHub Pages has no server, and the content changes only when Rafał edits it, so rendering once at build time gives the same HTML.
 
 Consequences: components must render on the build machine, where `window` and `document` do not exist, so GSAP, the SVG rigs and every browser API run only after mount (`useGSAP` and effects), never during render. Reduced-motion and the static hero become the default HTML, which also serves users without JavaScript. The build gets a pre-render step, and the choice of tool (for example Vite with a pre-render step, or Astro with React islands) affects how much JavaScript ships. Not verified yet: the scores are checked by Lighthouse CI from task 3.3 and the pass in task 3.16.
+
+## 003. Pre-render with Vite and a pre-render script written in the project
+
+Date: 29.10.2026
+
+Context: #002 requires every page to ship as static HTML, and task 3.1 had to choose the tool, compared on initial JS, effort and fit with GSAP. The site is one page, React is the skill it has to show, and the budget is 150 KB of initial JS gzipped. Measured on 29.10.2026 (esbuild, minified, gzip -9): React and React DOM 19.3 take 68.9 KB in any setup that hydrates React, GSAP with ScrollTrigger 46.2 KB. Vite documents server builds, so pre-rendering needs only `renderToString` at build time and `hydrateRoot` in the browser.
+
+Decision: Vite builds the browser bundle and a server bundle of the same React tree. `scripts/prerender.ts`, about 40 lines run directly by Node 24, renders every route in `ROUTES` into `dist/<route>/index.html`, head included. The browser hydrates it with `hydrateRoot`. The steps are in `docs/ARCHITECTURE.md` section 2.
+
+Alternatives considered:
+
+- Astro with React islands. Rejected: the React runtime (68.9 KB) still ships as soon as one island hydrates, so it saves only the code of the static sections; those sections would be written as `.astro` files instead of React; and islands hydrate at different times, which complicates the pinned ScrollTrigger scene that depends on the final layout.
+- `vite-react-ssg` 0.9.2. Rejected: a pre-1.0 dependency built around routing, for a site with one page; it saves about 40 lines.
+- React Router v7 framework mode with `prerender`, or Next.js static export. Rejected: a framework runtime and conventions for one page, more JS for no gain.
+
+Consequences: no extra dependency, and every line of the build is in the repository, readable in an interview. The project owns the code: head tags, the route list and a second page if one comes. Components must be safe to render in Node (`docs/ARCHITECTURE.md` section 10). Not verified yet: the scaffold in task 3.2 builds it, and task 3.3 runs Lighthouse CI on the result.
+
+## 004. Keep Lenis for smooth scrolling
+
+Date: 29.10.2026
+
+Context: the brief left Lenis to task 3.1, because the chosen prototype was built without smooth scroll. Lenis 1.3 measures 5.5 KB gzipped. It needs syncing with ScrollTrigger and must be off with reduced motion (brief section 8).
+
+Decision: Lenis stays, as Rafał chose in task 3.1. It ships with the lazily loaded motion layer (#005), not in the initial bundle. It is created once in `src/motion/lenis.ts`, driven by `gsap.ticker`, updates ScrollTrigger on scroll, never starts with reduced motion, and anchor links use `lenis.scrollTo` when it runs and a native jump when it does not.
+
+Alternatives considered:
+
+- CSS `scroll-behavior: smooth` only, as Claude recommended. Rejected by Rafał: Lenis costs only 5.5 KB, and it gives the eased, continuous scroll that the brief planned from the start.
+- GSAP ScrollSmoother. Rejected: it requires wrapping the whole page in extra elements and moves content with transforms, which affects fixed elements and the native `<dialog>`.
+
+Consequences: one more runtime dependency (5.5 KB) and one more thing to test with reduced motion. The prototype was tuned without smooth scroll, so the scroll feel is checked again in task 3.11.
+
+## 005. Load all motion as a lazy layer on top of the static page
+
+Date: 29.10.2026
+
+Context: the pre-rendered HTML (#002) is the complete site in its reduced-motion form. GSAP, ScrollTrigger, `@gsap/react` and Lenis together measure about 52 KB gzipped. Bundled with React (68.9 KB) and the site's own code (the prototype's script is 18.8 KB), everything would come close to the 150 KB initial budget and add parsing work before the page responds on a phone. None of it is needed to read the page, and the career run is not used below 900 px at all.
+
+Decision: every animation lives in a client-only motion component (a folder in `src/motionComponents/`), loaded with `React.lazy` through a `MotionLayer` component, only after hydration, when the browser is idle and when reduced motion is off. The career run loads only from 900 px. Motion components animate the static DOM with `useGSAP` and never hide content that is already on screen. The rules are in `docs/ARCHITECTURE.md` sections 9 and 13.
+
+Alternatives considered:
+
+- GSAP in the entry bundle, with `useGSAP` directly in each section. Rejected: simpler, but about 52 KB more initial JS, which leaves almost no room in the budget and slows startup on phones.
+- Motion code written without GSAP (WAAPI and `requestAnimationFrame`, as in the prototype). Rejected: the pinned, scrubbed career run is what ScrollTrigger exists for, and GSAP is part of the skill set the site has to show (brief section 1).
+
+Consequences: initial JS is estimated at about 85–90 KB instead of about 140 KB. Animations start a moment after the page is shown, so entrances apply only to content below the viewport. Lazy modules must never be imported statically or re-exported from an `index.ts`. Not verified yet: task 3.16 measures the real chunks.

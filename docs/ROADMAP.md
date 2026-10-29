@@ -153,7 +153,7 @@ Goal: the chosen design rebuilt as a clean React + TypeScript project and deploy
 The first part (3.1–3.10) produces a usable, deployed site without motion or the hero scene. Everything after that is enhancement.
 
 ### 3.1 Architecture requirements
-- [ ] **Branch:** `docs/architecture`
+- [x] **Branch:** `docs/architecture`
 - **Scope:** `docs/ARCHITECTURE.md`, which contains:
   - Rafał's requirements for architecture and code quality. He may describe them in Polish in chat, and Claude writes them in English.
   - A component map of the chosen design: sections, shared UI, effects and the content they consume.
@@ -164,8 +164,8 @@ The first part (3.1–3.10) produces a usable, deployed site without motion or t
 ### 3.2 Project scaffold
 - [ ] **Branch:** `chore/project-scaffold`
 - **Scope:**
-  - Vite + React + TypeScript (strict) and SCSS Modules.
-  - ESLint and Prettier as one config for the whole project, following [ashen-contracts](https://github.com/rafalciecwierz/ashen-contracts).
+  - Vite + React + TypeScript (strict) and SCSS Modules, with the pre-render step (`scripts/prerender.ts`, [DECISIONS.md](DECISIONS.md) #003).
+  - ESLint and Prettier as one config for the whole project, following [ashen-contracts](https://github.com/rafalciecwierz/ashen-contracts), with the rules in `docs/ARCHITECTURE.md` section 15.
   - Vitest and React Testing Library.
   - Folder structure from `docs/ARCHITECTURE.md`.
   - Package scripts: `dev`, `build`, `preview`, `lint`, `typecheck`, `test`, `format`, `format:check`.
@@ -194,13 +194,13 @@ The first part (3.1–3.10) produces a usable, deployed site without motion or t
 
 ### 3.5 Design tokens and global styles
 - [ ] **Branch:** `feat/design-tokens`
-- **Scope:** colours, spacing, type scale, radii and motion durations from the chosen design as CSS custom properties; global styles; fonts (`font-display: swap`, preload of the display font, no layout shift).
+- **Scope:** colours, spacing, type scale, radii and motion durations from the chosen design as CSS custom properties; global styles; self-hosted fonts in `public/fonts/` (`font-display: swap`, preload of the display font, adjusted fallback metrics, no layout shift; `docs/ARCHITECTURE.md` section 8).
 - **Done when:** the tokens match the chosen design, and nothing in the components uses a raw value that has a token.
 
 ### 3.6 UI primitives
 - [ ] **Branch:** `feat/ui-primitives`
 - **Scope:** shared building blocks needed by the chosen design (for example Button, Tag, Badge, SectionHeading), with visible focus states, plus tests where they carry logic.
-- **Done when:** all primitives used by more than one section exist in `components/ui/`.
+- **Done when:** all primitives used by more than one section exist in `src/components/`.
 
 ### 3.7 Layout and navigation
 - [ ] **Branch:** `feat/layout-navigation`
@@ -232,11 +232,11 @@ The first part (3.1–3.10) produces a usable, deployed site without motion or t
 ### 3.11 Motion foundation
 - [ ] **Branch:** `feat/motion-foundation`
 - **Scope:**
-  - `animation/gsap.ts`, which registers plugins once.
+  - `motion/gsap.ts`, which registers plugins once, and the `MotionLayer` that loads motion components lazily after hydration ([DECISIONS.md](DECISIONS.md) #005).
   - A `useReducedMotion` hook as the single source of truth.
-  - Lenis synced with ScrollTrigger and disabled for reduced motion, only if the dependency plan in `docs/ARCHITECTURE.md` keeps it (the chosen prototype was built without smooth scroll).
+  - Lenis synced with ScrollTrigger and disabled for reduced motion ([DECISIONS.md](DECISIONS.md) #004).
   - AI tooling: the official GSAP skills `gsap-react`, `gsap-scrolltrigger` and `gsap-performance` ([greensock/gsap-skills](https://github.com/greensock/gsap-skills), MIT), pinned with a `NOTICE.md` and limited with `paths` to files that use GSAP.
-- **Done when:** GSAP and the reduced-motion hook work, covered by a test (and smooth scroll, if kept, is off with reduced motion).
+- **Done when:** GSAP, the motion layer and the reduced-motion hook work, covered by a test, and smooth scroll is off with reduced motion.
 
 ### 3.12 Interactive effects
 - [ ] **Branch:** `feat/interactive-effects`

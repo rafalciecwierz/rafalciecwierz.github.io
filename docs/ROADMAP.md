@@ -133,9 +133,9 @@ More directions may be added later as new items in this list.
 ### 2.7 Design iterations of the chosen design
 One task per iteration. Each iteration is a new file, `design/iterations/08-ascent-dark-v<N>.html`, starting from the previous one (v2 starts from `design/prototypes/08-ascent-dark.html`). The 16 prototypes in `design/prototypes/` are never edited: they are the record of the exploration and the gallery.
 
-- [ ] **Branch:** `feat/design-iteration-08-v2`
+- [x] **Branch:** `feat/design-iteration-08-v2`: approved by Rafał on 29.10.2026 as the reference for phase 3. Later fixes are not made in new iterations: they wait for the working site (task 3.19).
 
-More iterations may be added as new items in this list.
+The task closed with v2; no further iterations are planned.
 
 - **Scope:**
   - The fixes Rafał lists for each section, and a more professional finish overall.
@@ -158,6 +158,7 @@ The first part (3.1–3.10) produces a usable, deployed site without motion or t
   - Rafał's requirements for architecture and code quality. He may describe them in Polish in chat, and Claude writes them in English.
   - A component map of the chosen design: sections, shared UI, effects and the content they consume.
   - A dependency plan: for each effect, either an installed library or a port onto the existing stack, with the reason.
+  - The pre-rendering tool (brief section 3, [DECISIONS.md](DECISIONS.md) #002): for example Vite with a pre-render step, or Astro with React islands for the interactive parts. Compare them on initial JS, effort and how well each fits GSAP, and record the choice in a decision entry.
 - **Done when:** Rafał has approved the document. All later tasks follow it.
 
 ### 3.2 Project scaffold
@@ -178,8 +179,10 @@ The first part (3.1–3.10) produces a usable, deployed site without motion or t
 
 ### 3.3 Continuous integration
 - [ ] **Branch:** `ci/quality-checks`
-- **Scope:** a GitHub Actions workflow that runs lint, format check, typecheck, test, build and commitlint on every push and pull request.
-- **Done when:** the workflow passes on GitHub.
+- **Scope:**
+  - A GitHub Actions workflow that runs lint, format check, typecheck, test, build and commitlint on every push and pull request.
+  - Lighthouse CI on the built, pre-rendered pages in every pull request, failing below the scores in brief section 1, so a regression shows up before it is merged.
+- **Done when:** the workflow passes on GitHub, and a pull request that drops a Lighthouse score below the threshold fails.
 
 ### 3.4 Content layer
 - [ ] **Branch:** `feat/content-layer`
@@ -223,8 +226,8 @@ The first part (3.1–3.10) produces a usable, deployed site without motion or t
 - [ ] **Branch:** `ci/github-pages-deploy`
 - **Scope:**
   - Title, meta description, Open Graph and Twitter tags, placeholder OG image, favicon, theme colour and `lang`.
-  - A GitHub Actions deploy to GitHub Pages using `actions/deploy-pages`, with Vite `base: '/'`.
-- **Done when:** the site is live at `https://rafalciecwierz.github.io`. **Checkpoint:** the site is good enough to share.
+  - A GitHub Actions deploy to GitHub Pages using `actions/deploy-pages`, with Vite `base: '/'`: every merge into `main` builds the pre-rendered site and deploys it (brief section 10).
+- **Done when:** the site is live at `https://rafalciecwierz.github.io`, a merge into `main` redeploys it, and the served HTML contains the page content and meta tags before any JavaScript runs. **Checkpoint:** the site is good enough to share.
 
 ### 3.11 Motion foundation
 - [ ] **Branch:** `feat/motion-foundation`
@@ -277,7 +280,12 @@ The first part (3.1–3.10) produces a usable, deployed site without motion or t
   - The final numbers in the AI and process story, taken from the git history.
 - **Done when:** no `TODO` is left in the content layer.
 
-### 3.19 README
+### 3.19 Final polish
+- [ ] **Branch:** `fix/final-polish`
+- **Scope:** the small design and behaviour fixes Rafał lists after using the working site. They replace further design iterations (task 2.7 closed with v2). Rafał may make some of them himself.
+- **Done when:** Rafał's list is done, and the Lighthouse thresholds from 3.16 still hold.
+
+### 3.20 README
 - [ ] **Branch:** `docs/readme`
 - **Scope:** the repository README covering the stack, how to run it, the architecture overview, how the hero works, performance decisions, AI usage (linking `docs/AI_USAGE.md`) and screenshots or a GIF.
 - **Done when:** a tech lead can understand the project from the README alone.

@@ -74,11 +74,11 @@ The site will be linked from a LinkedIn post asking people to recommend Rafał a
 
 | Area | Choice | Notes |
 | --- | --- | --- |
-| Build | Vite + React + TypeScript (strict), pre-rendered | Every page is pre-rendered to static HTML at build time, not a client-only SPA ([DECISIONS.md](DECISIONS.md), #002). The tool is chosen in task 3.1 |
+| Build | Vite + React + TypeScript (strict), pre-rendered | Every page is pre-rendered to static HTML at build time, not a client-only SPA ([DECISIONS.md](DECISIONS.md), #002), by a pre-render script in the project (#003) |
 | Styling | SCSS + CSS Modules | Design tokens as CSS custom properties |
 | 3D | none in v1 | The chosen design draws its scenes in SVG ([DECISIONS.md](DECISIONS.md), #001). three / React Three Fiber return only with a new decision |
 | Animation | gsap + ScrollTrigger, @gsap/react (`useGSAP`) | Scroll-driven reveals, the pinned career run |
-| Smooth scroll | lenis, only if task 3.1 keeps it | The chosen prototype was built without it; if kept, synced with ScrollTrigger and disabled for reduced motion |
+| Smooth scroll | lenis | Kept in task 3.1 (#004): loaded with the motion layer, synced with ScrollTrigger and disabled for reduced motion |
 | UI effects | Optional: [React Bits](https://reactbits.dev), GSAP plugins, other sources | Enhancers chosen per design, installed or ported onto the stack above (see below) |
 | Lint/format | ESLint + Prettier | One config for the whole project, following [ashen-contracts](https://github.com/rafalciecwierz/ashen-contracts) |
 | Tests | Vitest + React Testing Library | Light: content rendering, reduced-motion behavior |
@@ -97,7 +97,7 @@ Single page with anchor navigation. Sections in order:
 ### 4.1 Header / navigation
 - Fixed, minimal: name/monogram on the left, anchor links (About, Stack, Career, Projects, Process, Contact) on the right. The monogram's accessible name starts with its visible text (WCAG 2.5.3).
 - Mobile: collapsible menu, keyboard accessible, focus trapped while open.
-- Smooth scroll to sections (Lenis if task 3.1 keeps it, otherwise CSS `scroll-behavior`); a native anchor jump with reduced motion.
+- Smooth scroll to sections with Lenis; a native anchor jump with reduced motion or before the motion layer loads.
 
 ### 4.2 Hero
 - **Content (must render immediately, before any effect):**
@@ -314,54 +314,12 @@ For the section in 4.8. Written in roadmap task 2.6 from Rafał's answers and th
 
 ## 6. Architecture
 
-```
-public/
-  Rafal_Ciecwierz_CV.pdf
-  og-image.png
-  favicon.svg
-src/
-  content/
-    profile.ts
-    stack.ts
-    career.ts
-    projects.ts
-    types.ts            # shared content types
-  components/
-    Header/
-    Hero/
-      Hero.tsx
-      HeroScene.tsx     # the SVG rooftop sign and skyline
-      Runner.tsx        # the SVG free-runner rig
-    About/
-    Stack/
-    Career/
-    Testimonials/
-    Projects/
-    AiProcess/
-    Contact/
-    Footer/
-    ui/                 # Button, Tag, Badge, SectionHeading
-  hooks/
-    useReducedMotion.ts
-    useLenis.ts         # only if task 3.1 keeps Lenis
-  animation/
-    gsap.ts             # register plugins once
-  styles/
-    tokens.scss         # colors, spacing, type scale as CSS custom properties
-    global.scss
-  App.tsx
-  main.tsx
-.github/workflows/deploy.yml
-```
+The structure, the code conventions, the component map and the dependency plan are in [ARCHITECTURE.md](ARCHITECTURE.md) (task 3.1). In short:
 
-Rules:
-- Effects come from the chosen design: [React Bits](https://reactbits.dev/get-started/index) components, GSAP plugins or other sources, used only where they fit (section 3).
-- Content files export typed data only; components never hard-code copy.
-- Every user-facing string goes through the content layer so a `pl` variant can be added later (e.g. `{ en: string; pl?: string }` or a locale map).
-- All GSAP code uses `useGSAP` with a scope ref so animations clean up on unmount.
-- Register GSAP plugins once in `animation/gsap.ts`.
-- One `useReducedMotion` hook is the single source of truth; GSAP, the hero scene and smooth scroll (if kept) all respect it.
-- This tree is a starting point; `docs/ARCHITECTURE.md` (task 3.1) sets the final structure for the chosen design.
+- Pages compose sections, sections compose components, and all copy comes from typed content files in `src/content/`, one folder per locale, so a `pl` variant can be added later.
+- Every page is pre-rendered; motion is a lazily loaded layer on top of the static HTML ([DECISIONS.md](DECISIONS.md), #003 and #005).
+- All GSAP code uses `useGSAP` with a scope ref, plugins are registered once, and one `useReducedMotion` hook is the single source of truth for GSAP, the hero scene and Lenis.
+- Effects come from the chosen design; all of them are ported onto GSAP, with no extra library.
 
 ---
 
@@ -369,7 +327,7 @@ Rules:
 
 The chosen direction is 08 Ascent, dark variant "Night Session": a parkour night session on rooftops lit by sodium street lamps. Its palette, type, layout and effects are in the "As built" block and the iterations in [design/DIRECTIONS.md](design/DIRECTIONS.md), and the latest approved iteration is the visual reference. What the site must feel like is in [design/DESIGN_PROFILE.md](design/DESIGN_PROFILE.md). The technical requirements in sections 2, 3, 6, 8 and 9 apply.
 
-- **Typography:** one display font for headings, one clean sans for body (Google Fonts, `font-display: swap`, preload the display font). In the prototype: Big Shoulders Display + Barlow.
+- **Typography:** one display font for headings, one clean sans for body (self-hosted woff2 files, `font-display: swap`, preload the display font; see `docs/ARCHITECTURE.md` section 8). In the prototype: Big Shoulders Display + Barlow.
 - **Motion:** fewer, better animations. Ease-out reveals, nothing that blocks reading. No animation longer than ~1 s except the scroll-scrubbed career run.
 - **Responsive:** mobile first. Test at 360 px, 768 px, 1280 px, 1920 px.
 - **Character:** the SVG free-runner is the character, in the hero and wherever the design uses him. There is no photo in the hero; a photo of Rafał may appear in About (optional, brief section 14).

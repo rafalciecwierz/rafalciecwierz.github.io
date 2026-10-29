@@ -29,6 +29,8 @@
   - The leap (review): plays once most of the scene is in view, with bullet time at the apex
     (after-images, a camera push-in, a vignette), and a replay button.
   - Project "This website" and the footer now match the brief (no three.js, no Lenis).
+  - Fix (review): the mobile menu opened after scrolling was only 64px tall, because the header's
+    backdrop-filter made it the menu's containing block; the blur now sits on .top::before.
 
   Concept: a parkour night session on the rooftops of a city lit by sodium street lamps. The page
   starts at the summit: the name is a floodlit rooftop sign, and a free-runner perches on its
@@ -135,7 +137,12 @@
   /* ---------- header ---------- */
   .top { position: fixed; inset: 0 0 auto; z-index: 50; height: 64px; display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 0 var(--gutter); background: linear-gradient(rgba(11, 11, 14, .8), rgba(11, 11, 14, 0)); transition: background .3s; }
   .top.solid { background: rgba(11, 11, 14, .92); box-shadow: 0 1px 0 var(--line); }
-  @supports (backdrop-filter: blur(8px)) { .top.solid { background: rgba(11, 11, 14, .78); backdrop-filter: blur(8px); } }
+  /* The blur sits on a pseudo-element, not on .top itself: backdrop-filter on .top would make it
+     the containing block of the fixed mobile menu, clipping the menu to the 64px header. */
+  @supports (backdrop-filter: blur(8px)) {
+    .top.solid { background: transparent; }
+    .top.solid::before { content: ''; position: absolute; inset: 0; z-index: -1; background: rgba(11, 11, 14, .78); backdrop-filter: blur(8px); }
+  }
   .brand { display: flex; align-items: center; gap: 10px; color: var(--chalk); text-decoration: none; }
   .brand .mono { font: 900 20px/1 var(--display); background: var(--sodium); color: var(--night); padding: 6px 7px 4px; letter-spacing: .02em; }
   .brand .label { font: 600 13px/1.1 var(--text); text-transform: uppercase; letter-spacing: .14em; color: var(--muted); }

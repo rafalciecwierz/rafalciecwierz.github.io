@@ -41,6 +41,7 @@ Work is planned task by task in `docs/ROADMAP.md`, in three phases: documentatio
 ## Where to find more context
 
 - Requirements: `docs/PROJECT_BRIEF.md`
+- Architecture and code conventions (phase 3): `docs/ARCHITECTURE.md`
 - Task list and definition of done: `docs/ROADMAP.md`
 - Technical decisions with rejected alternatives: `docs/DECISIONS.md`
 - How AI is used here and why: `docs/AI_USAGE.md`
@@ -55,6 +56,6 @@ Work is planned task by task in `docs/ROADMAP.md`, in three phases: documentatio
 
 ## Current status (keep this updated)
 
-- Phase: 3, implementation (not started)
-- Last completed: 2.7 design iterations: v2 (`design/iterations/08-ascent-dark-v2.html`) approved as the phase 3 reference; later fixes wait for task 3.19. The site is pre-rendered to static HTML (`docs/DECISIONS.md` #002)
-- Next step: 3.1 architecture requirements, branch `docs/architecture`
+- Phase: 3, implementation
+- Last completed: 3.1 architecture: `docs/ARCHITECTURE.md` approved (pre-render script #003, Lenis kept #004, lazy motion layer #005); all phase 3 code follows it
+- Next step: 3.2 project scaffold, branch `chore/project-scaffold`

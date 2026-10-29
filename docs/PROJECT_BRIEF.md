@@ -28,7 +28,7 @@ This brief was used to generate a first HTML prototype: `design/prototypes/01-fl
 
 Steps may be added between phases when needed (for example extra documentation).
 
-**The chosen design (task 2.5):** prototype 08 Ascent, dark variant "Night Session" (`design/prototypes/08-ascent-dark.html`), shipped alone, with no light variant and no theme toggle ([DECISIONS.md](DECISIONS.md), #001). Before phase 3 it is refined in iterations saved as new files in `design/iterations/`; the latest one Rafał approves is the reference for phase 3. The 16 prototypes stay unedited and are published with the site as a gallery.
+**The chosen design (task 2.5):** prototype 08 Ascent, dark variant "Night Session" (`design/prototypes/08-ascent-dark.html`), shipped alone, with no light variant and no theme toggle ([DECISIONS.md](DECISIONS.md), #001). Before phase 3 it is refined in iterations saved as new files in `design/iterations/`; the latest one Rafał approves is the reference for phase 3. **Approved:** iteration v2 (`design/iterations/08-ascent-dark-v2.html`), 29.10.2026; later fixes wait for the working site (roadmap task 3.19). The 16 prototypes stay unedited and are published with the site as a gallery.
 
 **Using a prototype as a reference:** the final site reproduces the chosen prototype's look and behaviour. Elements that only exist to present the prototype are not carried over (for example the "React Bits labels" toggle and its labels, hint texts such as the ClickSpark label, and "Prototype: …" toasts). Effects themselves, such as ClickSpark, stay.
 
@@ -74,7 +74,7 @@ The site will be linked from a LinkedIn post asking people to recommend Rafał a
 
 | Area | Choice | Notes |
 | --- | --- | --- |
-| Build | Vite + React + TypeScript (strict) | Static output, fast dev server |
+| Build | Vite + React + TypeScript (strict), pre-rendered | Every page is pre-rendered to static HTML at build time, not a client-only SPA ([DECISIONS.md](DECISIONS.md), #002). The tool is chosen in task 3.1 |
 | Styling | SCSS + CSS Modules | Design tokens as CSS custom properties |
 | 3D | none in v1 | The chosen design draws its scenes in SVG ([DECISIONS.md](DECISIONS.md), #001). three / React Three Fiber return only with a new decision |
 | Animation | gsap + ScrollTrigger, @gsap/react (`useGSAP`) | Scroll-driven reveals, the pinned career run |
@@ -379,8 +379,9 @@ The chosen direction is 08 Ascent, dark variant "Night Session": a parkour night
 ## 8. Performance & accessibility budget
 
 - Initial JS: ≤ 150 KB gzipped.
+- Pre-rendered HTML: the content, headings and meta tags are in the HTML the server sends, so the page is readable, indexable and previewable before any JavaScript runs ([DECISIONS.md](DECISIONS.md), #002). JavaScript adds the motion on top.
 - LCP element is the hero heading text.
-- No layout shift from fonts or the hero scene (reserve space). The prototype measured CLS 0.20, so this needs work.
+- No layout shift from fonts or the hero scene (reserve space). The prototype measured CLS 0.20; iteration v2 brought it to 0.01 on mobile with container query units for the name.
 - Images: modern formats (AVIF/WebP), explicit width/height, lazy below the fold.
 - Semantic HTML: `header`, `nav`, `main`, `section` with headings, `footer`.
 - Visible focus styles, skip-to-content link, contrast AA minimum.
@@ -395,6 +396,7 @@ The chosen direction is 08 Ascent, dark variant "Night Session": a parkour night
 - Meta description from the tagline + availability line.
 - Open Graph + Twitter card with a 1200×630 `og-image.png` (important: this is what shows on LinkedIn).
 - `lang="en"`, favicon, theme colour.
+- All of the above is in the pre-rendered HTML, because LinkedIn and other link previews do not run JavaScript (section 8).
 
 ---
 
@@ -402,7 +404,8 @@ The chosen direction is 08 Ascent, dark variant "Night Session": a parkour night
 
 - Repository: `rafalciecwierz.github.io`, default branch `main`.
 - In repo settings → Pages → Source: **GitHub Actions**.
-- Workflow `.github/workflows/deploy.yml`: on push to `main` → install → lint → test → `vite build` → upload `dist` → deploy with `actions/deploy-pages`.
+- Workflow `.github/workflows/deploy.yml`: on push to `main` (every merge) → install → lint → test → build with pre-rendering → upload `dist` → deploy with `actions/deploy-pages`.
+- Pull requests run the quality checks and Lighthouse CI against the thresholds in section 1 (roadmap task 3.3).
 - Vite `base: '/'`.
 
 ---
@@ -411,7 +414,7 @@ The chosen direction is 08 Ascent, dark variant "Night Session": a parkour night
 
 Milestones are planned as tasks in [ROADMAP.md](ROADMAP.md), grouped into the three phases from section 0.
 
-Within phase 3, the order follows the original plan. First comes a usable site without motion: scaffold, content, tokens, static sections, accessibility, SEO and deploy. **Checkpoint:** the site is good enough to share. After that come the enhancements: motion, effects, the hero scene, the career run, a performance pass, the prototype gallery, final content and the README.
+Within phase 3, the order follows the original plan. First comes a usable site without motion: scaffold, content, tokens, static sections, accessibility, SEO and deploy. **Checkpoint:** the site is good enough to share. After that come the enhancements: motion, effects, the hero scene, the career run, a performance pass, the prototype gallery, final content, a final polish from Rafał's notes on the working site, and the README.
 
 ---
 

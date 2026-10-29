@@ -537,7 +537,7 @@ Movement between sections borrows from parkour: elements vault, roll and land wi
 - **Dependencies:** none. The React build would use GSAP ScrollTrigger (already planned) for the pin, the scrub and the vault entrances.
 
 **Iterations (dark), task 2.7.** Each is a new file in `design/iterations/`; the prototype above stays unchanged.
-- **v2** (`design/iterations/08-ascent-dark-v2.html`), from Rafał's notes per section, 27.10.2026. Status: waiting for Rafał's review.
+- **v2** (`design/iterations/08-ascent-dark-v2.html`), from Rafał's notes per section, 27.10.2026. Status: **approved by Rafał on 29.10.2026** as the reference for phase 3; later fixes wait for the working site.
   - *Header:* "RC Portfolio" instead of "Night session", which said nothing to a recruiter; the accessible name now starts with the visible text (WCAG 2.5.3).
   - *Hero:* the role flips once, split-flap style (RoleFlip), through Rafał's own titles and lands on Frontend Engineer, so the 5-second read still ends on the real role. Clicking the runner cycles four tricks (backflip, kong vault, front flip, handstand) instead of one. The name gets its final size from CSS on first paint (`cqi` ratios measured from the font), which takes CLS from 0.20 to 0.01 on mobile and 0.00 on desktop.
   - *Stack:* the swinging plates on rails were hard to scan and moved too much. Tools now sit on three level boards (Strong full width, Medium and Low below), grouped by row inside each, with one staggered entrance and no idle motion.

@@ -124,6 +124,7 @@ export default defineConfig([
     'dist-server/',
     'design/',
     '.audit/',
+    '.lighthouseci/',
     'node_modules/',
   ]),
 

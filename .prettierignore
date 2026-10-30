@@ -15,5 +15,8 @@ design/
 # Audit reports and screenshots (git-ignored)
 .audit/
 
+# Lighthouse CI results and reports (git-ignored)
+.lighthouseci/
+
 # Markdown is hand-edited: aligning every table would rewrite whole tables for a one-cell change
 *.md

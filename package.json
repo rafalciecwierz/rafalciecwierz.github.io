@@ -16,6 +16,7 @@
     "test": "vitest run",
     "format": "prettier . --write",
     "format:check": "prettier . --check",
+    "lighthouse": "lhci autorun",
     "prepare": "simple-git-hooks"
   },
   "simple-git-hooks": {
@@ -29,6 +30,7 @@
     "@commitlint/cli": "21.2.4",
     "@commitlint/config-conventional": "21.2.4",
     "@eslint/js": "9.39.5",
+    "@lhci/cli": "0.15.1",
     "@testing-library/dom": "10.4.2",
     "@testing-library/jest-dom": "7.0.1",
     "@testing-library/react": "16.3.3",

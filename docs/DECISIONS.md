@@ -104,3 +104,20 @@ Alternatives considered:
 - Motion code written without GSAP (WAAPI and `requestAnimationFrame`, as in the prototype). Rejected: the pinned, scrubbed career run is what ScrollTrigger exists for, and GSAP is part of the skill set the site has to show (brief section 1).
 
 Consequences: initial JS is estimated at about 85–90 KB instead of about 140 KB. Animations start a moment after the page is shown, so entrances apply only to content below the viewport. Lazy modules must never be imported statically or re-exported from an `index.ts`. Not verified yet: task 3.16 measures the real chunks.
+
+## 006. Run Lighthouse CI with a pinned `@lhci/cli` and keep the reports in GitHub
+
+Date: 30.10.2026
+
+Context: brief section 1 sets Lighthouse mobile thresholds (Performance ≥ 90, Accessibility ≥ 95, Best Practices ≥ 95, SEO ≥ 95), and #002 and #003 left them to be checked by CI. Task 3.3 makes every pull request fail when a score drops below them. A single Lighthouse run on a shared CI machine can be a few points off, and by default Lighthouse CI judges only the best of several runs.
+
+Decision: `@lhci/cli` 0.15.1 (Lighthouse 12.6.1) is a pinned dev dependency, configured in `lighthouserc.yml` and run with `pnpm lighthouse`, locally and in the Lighthouse job of `.github/workflows/ci.yml` on every pull request. It audits the pre-rendered `dist/` with the default mobile settings, three runs per page, and asserts each category on the median. Reports are written to `.lighthouseci/reports/` and uploaded as a workflow artifact.
+
+Alternatives considered:
+
+- `treosh/lighthouse-ci-action`. Rejected: it wraps the same `@lhci/cli`, but cannot be run locally, and a third-party action has to be pinned to a commit and reviewed like a dependency anyway.
+- `pnpm dlx @lhci/cli` in CI only. Rejected: no lockfile entry, so the version could differ between a local run and CI.
+- Chrome DevTools MCP audits only. Rejected: they depend on someone running them; nothing stops a regression from being merged.
+- Reports in `temporary-public-storage`. Rejected: a convenient link, but the reports leave GitHub and sit on a third-party server for 7 days.
+
+Consequences: about 250 packages in `node_modules`, development only; nothing ships to the site. A Lighthouse job adds a few minutes to each pull request. Verified locally on the placeholder page: 100 / 100 / 96 / 100 (Performance, Accessibility, Best Practices, SEO), and with the meta description removed from `dist/index.html` SEO dropped to 90 and `pnpm lighthouse` exited with code 1. If Performance proves unstable on CI machines, the agreed fallback is to turn only that assertion into a warning.

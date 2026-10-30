@@ -19,5 +19,8 @@ CLAUDE.local.md
 # Agent tooling: reports and screenshots written while auditing pages
 .audit/
 
+# Lighthouse CI results and reports (`pnpm lighthouse`)
+.lighthouseci/
+
 # Server build used only during `pnpm build` (deleted by scripts/prerender.ts)
 dist-server/

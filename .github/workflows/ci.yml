@@ -1,0 +1,126 @@
+name: CI
+
+# Pushes to a branch with an open PR run through `pull_request`, so `push` only needs `main`
+# (every merge). Running both on every push would check the same commit twice.
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# A newer push to the same branch or PR makes the older run pointless.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: Lint, typecheck, test, build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          # Full history, so commitlint can read every commit in the pushed range.
+          fetch-depth: 0
+
+      # Installs the pnpm version pinned in the `packageManager` field of package.json.
+      - uses: pnpm/action-setup@v6
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # Only the commits this push or PR adds; older history predates the convention.
+      # SHAs come in through env, not inline ${{ }}, so nothing is interpolated into the script.
+      - name: Lint commit messages
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          PR_BASE: ${{ github.event.pull_request.base.sha }}
+          PR_HEAD: ${{ github.event.pull_request.head.sha }}
+          PUSH_BEFORE: ${{ github.event.before }}
+          PUSH_AFTER: ${{ github.sha }}
+        run: |
+          if [ "$EVENT_NAME" = "pull_request" ]; then
+            pnpm exec commitlint --from "$PR_BASE" --to "$PR_HEAD" --verbose
+          elif git cat-file -e "$PUSH_BEFORE^{commit}" 2>/dev/null; then
+            pnpm exec commitlint --from "$PUSH_BEFORE" --to "$PUSH_AFTER" --verbose
+          else
+            # New branch or force-push: the previous tip is unknown, so check the latest commit only.
+            pnpm exec commitlint --last --verbose
+          fi
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Check formatting
+        run: pnpm format:check
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Test
+        run: pnpm test
+
+      # Type-checks, builds and pre-renders every page into dist/.
+      - name: Build
+        run: pnpm build
+
+      # The Lighthouse job audits exactly this build instead of building again.
+      - name: Upload the build
+        if: github.event_name == 'pull_request'
+        uses: actions/upload-artifact@v7
+        with:
+          name: dist
+          path: dist/
+          retention-days: 1
+
+  lighthouse:
+    name: Lighthouse
+    # Pull requests only: a score that drops below brief section 1 fails here, before the merge.
+    if: github.event_name == 'pull_request'
+    needs: verify
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: pnpm/action-setup@v6
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      # For @lhci/cli. Chrome is preinstalled on GitHub's Ubuntu runners.
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Download the build
+        uses: actions/download-artifact@v8
+        with:
+          name: dist
+          path: dist/
+
+      # Three mobile runs per page, asserted on the median (lighthouserc.yml).
+      - name: Run Lighthouse CI
+        run: pnpm lighthouse
+
+      # Also when the assertions fail: the reports show what dropped and why.
+      - name: Upload the reports
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: lighthouse-reports
+          path: .lighthouseci/reports/
+          # The folder starts with a dot, and the action skips hidden paths unless told otherwise.
+          include-hidden-files: true
+          retention-days: 14

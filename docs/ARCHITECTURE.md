@@ -4,7 +4,7 @@ How the site is built and how its code is written. Every task in phase 3 follows
 
 - **Status:** approved by Rafał on 29.10.2026 (roadmap task 3.1).
 - **Reference design:** `design/iterations/08-ascent-dark-v2.html` (brief section 0).
-- **Requirements:** [PROJECT_BRIEF.md](PROJECT_BRIEF.md). **Decisions and rejected alternatives:** [DECISIONS.md](DECISIONS.md) #002–#005.
+- **Requirements:** [PROJECT_BRIEF.md](PROJECT_BRIEF.md). **Decisions and rejected alternatives:** [DECISIONS.md](DECISIONS.md) #002–#006.
 
 Contents:
 
@@ -413,6 +413,7 @@ Sizes were measured on 29.10.2026 by bundling each package with esbuild (minifie
 | Lint and format | `eslint`, `@eslint/js`, `typescript-eslint`, `eslint-plugin-react-hooks`, `eslint-plugin-jsx-a11y`, `eslint-plugin-simple-import-sort`, `eslint-config-prettier`, `prettier` |
 | Tests | `vitest`, `jsdom`, `@testing-library/react`, `@testing-library/dom` (its required peer), `@testing-library/user-event`, `@testing-library/jest-dom` |
 | Commits | `@commitlint/cli`, `@commitlint/config-conventional`, `simple-git-hooks` (as in ashen-contracts) |
+| Lighthouse | `@lhci/cli` (added in task 3.3, [DECISIONS.md](DECISIONS.md) #006) |
 
 Versions are exact in `package.json` and locked in `pnpm-lock.yaml`. Two are held back by their peers (checked on 29.10.2026): TypeScript stays on 6.0 because `typescript-eslint` 8 supports TypeScript below 6.1 (7.0 is out), and ESLint stays on 9 because `eslint-plugin-jsx-a11y` 6 supports ESLint up to 9 (10 is out). `pnpm-workspace.yaml` runs no install scripts.
 

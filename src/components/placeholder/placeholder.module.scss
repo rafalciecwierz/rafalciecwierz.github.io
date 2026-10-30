@@ -1,0 +1,15 @@
+// Temporary scaffold styles; the design tokens arrive in task 3.5.
+.placeholder {
+  display: grid;
+  place-content: center;
+  gap: 0.5rem;
+  min-block-size: 100svh;
+  padding: 1rem;
+  font-family: system-ui, sans-serif;
+  text-align: center;
+}
+
+.name {
+  margin: 0;
+  font-size: clamp(2rem, 8vw, 4rem);
+}

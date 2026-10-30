@@ -162,7 +162,7 @@ The first part (3.1–3.10) produces a usable, deployed site without motion or t
 - **Done when:** Rafał has approved the document. All later tasks follow it.
 
 ### 3.2 Project scaffold
-- [ ] **Branch:** `chore/project-scaffold`
+- [x] **Branch:** `chore/project-scaffold`
 - **Scope:**
   - Vite + React + TypeScript (strict) and SCSS Modules, with the pre-render step (`scripts/prerender.ts`, [DECISIONS.md](DECISIONS.md) #003).
   - ESLint and Prettier as one config for the whole project, following [ashen-contracts](https://github.com/rafalciecwierz/ashen-contracts), with the rules in `docs/ARCHITECTURE.md` section 15.
@@ -214,7 +214,7 @@ The first part (3.1–3.10) produces a usable, deployed site without motion or t
 
 ### 3.8 Hero (static)
 - [ ] **Branch:** `feat/hero-static`
-- **Scope:** hero text, the Download CV and Get in touch actions, and the static hero scene (the lit rooftop sign and skyline in SVG, with the runner perched still), with its space reserved so nothing shifts.
+- **Scope:** hero text (it replaces the scaffold's temporary `src/components/placeholder/`), the Download CV and Get in touch actions, and the static hero scene (the lit rooftop sign and skyline in SVG, with the runner perched still), with its space reserved so nothing shifts.
 - **Done when:** name, role and both actions are above the fold at 360 px and 1280 px, and the heading is the LCP element.
 
 ### 3.9 Content sections (static)

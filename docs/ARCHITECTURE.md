@@ -60,7 +60,7 @@ Vite, React 19 and TypeScript, with a pre-render step written in the project (ab
    - saves `dist/<route>/index.html`,
    - deletes `dist-server`.
 
-In the browser, `src/app/entryClient.tsx` calls `hydrateRoot`: React attaches to the HTML that is already on screen instead of rendering it again.
+In the browser, `src/app/entryClient.tsx` calls `hydrateRoot`: React attaches to the HTML that is already on screen instead of rendering it again. The dev server (`pnpm dev`) serves the template without pre-rendered content, so there the same file renders the page with `createRoot` instead.
 
 The head comes from the same content layer as the page (`content.seo`), through a typed function `renderHead(seo: Seo): string`. The title and descriptions are written only once.
 
@@ -74,12 +74,15 @@ public/
   og-image.png
 scripts/
   prerender.ts                 # step 4 of the build
+  prerender.utils.ts           # fillTemplate, outputFileFor, isServerEntry (tested)
+  prerender.constants.ts       # paths and template markers
 src/
-  app/
+  app/                         # entry points; nothing imports this folder, so it has no index.ts
     app.component.tsx          # the root: page layout and the motion layer
-    entryClient.tsx            # hydrateRoot
-    entryServer.tsx            # render(route): { head, html }
-    routes.constants.ts        # ROUTES: the pages to pre-render
+    app.constants.ts           # ROUTES (the pages to pre-render) and the root element id
+    app.utils.ts               # findRoute, renderHead
+    entryClient.tsx            # hydrateRoot (createRoot on the dev server)
+    entryServer.tsx            # render(path): { head, html }, and ROUTE_PATHS
   pages/
     home/
       home.component.tsx       # imports the content and composes the sections in order
@@ -115,14 +118,14 @@ src/
   constants/                   # shared named values: breakpoints, section ids, motion timings
   content/
     content.types.ts           # the Content type, the shape of every locale
-    en/                        # the English content, one file per area
+    en/                        # the English content: one file per area, joined in en.content.ts
     index.ts                   # exports `content` (English until a locale switch exists)
   styles/
     tokens.scss                # design tokens as CSS custom properties
     global.scss
     fonts.scss
     _breakpoints.scss          # media query mixins
-  types/                       # ambient declarations only (*.d.ts): SCSS modules, Vite env
+  types/                       # ambient declarations only (*.d.ts), when one is needed
   test/
     setup.ts                   # Vitest and Testing Library setup
 ```
@@ -157,7 +160,9 @@ components/jobEntry/
 
 `app → pages → sections → components → hooks, services, utils, constants`
 
-Content types may be imported anywhere. Content data only in `pages/` (principle 10).
+Content types may be imported anywhere. Content data only in `pages/` (principle 10) and in `app/`, which writes the head from `content.seo`.
+
+`src/app/`, `src/test/` and `src/types/` have no `index.ts`: nothing imports them.
 
 ## 4. File naming
 
@@ -289,7 +294,7 @@ The rules in brief section 8 are checked by `eslint-plugin-jsx-a11y` and by the 
 
 ## 7. Content layer
 
-- **One type, one file per locale.** `content.types.ts` defines `Content`, the shape of the whole site's copy and data. `content/en/` builds the English value from one file per area (`profile.content.ts`, `career.content.ts`, …), and `en/index.ts` checks that it matches: `export const en: Content = { … }`. A Polish version will be a `content/pl/` folder of the same type, so a missing translation is a compile error.
+- **One type, one file per locale.** `content.types.ts` defines `Content`, the shape of the whole site's copy and data. `content/en/` builds the English value from one file per area (`profile.content.ts`, `career.content.ts`, …), and `en/en.content.ts` joins them and checks that they match: `export const en: Content = { … }`. A Polish version will be a `content/pl/` folder of the same type, so a missing translation is a compile error.
 - **Every user-facing string is content.** This includes labels, button text, `aria-label` values, alt text and the console greeting. Plurals and small templates are typed functions in the content (`count: (n: number) => string`).
 - **The data has ids.** Every job, project and quote has an `id`. Adding, removing or reordering a project changes only `projects.content.ts` (brief section 4.7).
 - **Nothing outside the content layer is copy.** Section ids for the anchors (`SECTION_IDS`) are constants, not content, because they are part of the URL.
@@ -406,8 +411,10 @@ Sizes were measured on 29.10.2026 by bundling each package with esbuild (minifie
 | --- | --- |
 | Build | `vite`, `@vitejs/plugin-react`, `typescript`, `sass`, `@types/react`, `@types/react-dom`, `@types/node` |
 | Lint and format | `eslint`, `@eslint/js`, `typescript-eslint`, `eslint-plugin-react-hooks`, `eslint-plugin-jsx-a11y`, `eslint-plugin-simple-import-sort`, `eslint-config-prettier`, `prettier` |
-| Tests | `vitest`, `jsdom`, `@testing-library/react`, `@testing-library/user-event`, `@testing-library/jest-dom` |
+| Tests | `vitest`, `jsdom`, `@testing-library/react`, `@testing-library/dom` (its required peer), `@testing-library/user-event`, `@testing-library/jest-dom` |
 | Commits | `@commitlint/cli`, `@commitlint/config-conventional`, `simple-git-hooks` (as in ashen-contracts) |
+
+Versions are exact in `package.json` and locked in `pnpm-lock.yaml`. Two are held back by their peers (checked on 29.10.2026): TypeScript stays on 6.0 because `typescript-eslint` 8 supports TypeScript below 6.1 (7.0 is out), and ESLint stays on 9 because `eslint-plugin-jsx-a11y` 6 supports ESLint up to 9 (10 is out). `pnpm-workspace.yaml` runs no install scripts.
 
 The package manager is pnpm, as in ashen-contracts. When this file is approved, these development tools are approved too. Any package beyond the two lists still needs Rafał's yes first (brief section 3).
 
@@ -466,11 +473,11 @@ Set up in task 3.2. The `.claude/rules/` file for `src/**` points to this docume
 | --- | --- |
 | Strict types, no `any`, exhaustive `switch`, `import type` | `tsconfig` (section 5) and `typescript-eslint` `strictTypeChecked`, `stylisticTypeChecked`, `switch-exhaustiveness-check`, `consistent-type-imports` |
 | Return types everywhere, callbacks included | `@typescript-eslint/explicit-function-return-type` (with `allowTypedFunctionExpressions: false`), `explicit-module-boundary-types` |
-| Annotated variables | `no-restricted-syntax`: a variable with a plain name and no type annotation; `no-inferrable-types` off. The older `typedef` rule is deprecated in typescript-eslint, so it is not used |
+| Annotated variables and parameters; hook type arguments | `no-restricted-syntax`: a variable with a plain name, or a parameter, without a type annotation, and `useState`, `useRef`, `useReducer` or `createContext` without a type argument; `no-inferrable-types` off. The older `typedef` rule is deprecated in typescript-eslint, so it is not used |
 | Types only in `.types.ts` | `no-restricted-syntax` on `type` and `interface` declarations in every other file |
 | `type`, not `interface`; no casts | `consistent-type-definitions: type`, `consistent-type-assertions` |
 | Names (PascalCase, `use`, `is`/`has`, UPPER_SNAKE) | `@typescript-eslint/naming-convention` |
-| No magic numbers | `@typescript-eslint/no-magic-numbers` (0, 1 and −1 allowed; named constants and data tables are the way to write the rest) |
+| No magic numbers | `@typescript-eslint/no-magic-numbers` (0, 1 and −1 allowed). Off in `.constants.ts` files, where numbers get their names and data tables live, and in tests, which check concrete values |
 | No hard-coded copy | `no-restricted-syntax` on text inside JSX and on string literals in `aria-label`, `alt` and `title` |
 | No HTML tags in pages and section roots | `no-restricted-syntax` on lowercase JSX elements in `src/pages/**` and `src/sections/**` |
 | Named exports only | `no-restricted-syntax` on `export default` (config files excepted) |
@@ -478,7 +485,8 @@ Set up in task 3.2. The `.claude/rules/` file for `src/**` points to this docume
 | Import order | `simple-import-sort` |
 | Hooks, accessibility | `react-hooks` (recommended), `jsx-a11y` (strict) |
 | File size | `max-lines`: 150 lines without blank lines and comments, as an error |
-| Formatting | Prettier, the same config as ashen-contracts, run on every file the agent edits (the `PostToolUse` hook, task 3.2) |
+| Functions as declarations | `func-style: declaration` |
+| Formatting | Prettier, the same config as ashen-contracts, run on every file the agent edits (the `PostToolUse` hook in `.claude/hooks/formatEditedFile.mjs`). Markdown is not formatted: the docs are hand-edited, and aligning a table rewrites all of it for a one-cell change |
 
 ## 16. Sources
 

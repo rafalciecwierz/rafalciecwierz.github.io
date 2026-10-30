@@ -7,8 +7,9 @@ Much of this site is built with an AI coding agent ([Claude Code](https://claude
 | File | Purpose |
 | --- | --- |
 | [`CLAUDE.md`](../CLAUDE.md) | Short project context and working rules, loaded in every session. It points to the docs instead of repeating them. |
-| [`.claude/rules/`](../.claude/rules/) | Rules for one area of the repo. They load only when the agent works on matching files (for example, prototype rules for `design/**`), so they don't add noise everywhere else. |
-| [`.claude/settings.json`](../.claude/settings.json) | Shared permissions: read-only git commands are pre-approved, and commands that change git history or branches are denied. |
+| [`.claude/rules/`](../.claude/rules/) | Rules for one area of the repo. They load only when the agent works on matching files (prototype rules for `design/**`, code rules for `src/**` and `scripts/**`), so they don't add noise everywhere else. |
+| [`.claude/settings.json`](../.claude/settings.json) | Shared permissions: read-only git commands and the package scripts (`pnpm lint`, `test`, `build`, …) are pre-approved, and commands that change git history or branches are denied. It also registers the formatting hook. |
+| [`.claude/hooks/formatEditedFile.mjs`](../.claude/hooks/formatEditedFile.mjs) | Runs Prettier and `eslint --fix` on every file the agent edits, so its code already matches the project's style when I read the diff. |
 | [`.claude/skills/`](../.claude/skills/) | Step-by-step procedures for repeated work. |
 | [`.claude/agents/site-auditor.md`](../.claude/agents/site-auditor.md) | A read-only reviewer that audits pages in a fresh context. |
 | [`.mcp.json`](../.mcp.json) | Chrome DevTools MCP, pinned to a version, so the agent can measure pages in a real browser. |
@@ -44,6 +45,7 @@ These are the success criteria from the brief, measured rather than assumed. Usa
 | `adr` | own (criteria adapted from mattpocock/skills) | A decision entry in [`DECISIONS.md`](DECISIONS.md), written only when the decision is worth one. |
 | `grilling`, `grill-me` | [mattpocock/skills](https://github.com/mattpocock/skills), MIT | The agent questions my plan until every open decision is settled. |
 | `frontend-design` | [anthropics/skills](https://github.com/anthropics/skills), Apache 2.0 | Guidance against generic, templated "AI look" design. |
+| `tdd` | [mattpocock/skills](https://github.com/mattpocock/skills), MIT | The red → green loop for new logic: one failing test, then just enough code to pass it. |
 
 Third-party skills are copied from a pinned commit, with the licence and a `NOTICE.md` in each folder. Updates are manual and reviewed, and nothing installs or syncs skills automatically.
 

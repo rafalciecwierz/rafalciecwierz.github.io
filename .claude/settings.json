@@ -15,7 +15,7 @@
       "Bash(pnpm typecheck)",
       "Bash(pnpm test)",
       "Bash(pnpm format)",
-      "Bash(pnpm format:check)",
+      "Bash(pnpm format:check)"
     ],
     "deny": [
       "Bash(git commit *)",
@@ -37,7 +37,7 @@
       "Bash(git branch -M *)",
       "Bash(gh pr create *)",
       "Bash(gh pr merge *)"
-    ],
+    ]
   },
   "hooks": {
     "PostToolUse": [

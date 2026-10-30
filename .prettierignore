@@ -1,0 +1,19 @@
+# Generated
+dist/
+dist-server/
+pnpm-lock.yaml
+
+# The design prototypes and iterations are references kept exactly as they were approved
+design/
+
+# Third-party skills: kept byte-identical to upstream for easy diffing (see each NOTICE.md)
+.claude/skills/frontend-design/
+.claude/skills/grill-me/
+.claude/skills/grilling/
+.claude/skills/tdd/
+
+# Audit reports and screenshots (git-ignored)
+.audit/
+
+# Markdown is hand-edited: aligning every table would rewrite whole tables for a one-cell change
+*.md

@@ -1,0 +1,6 @@
+# pnpm runs no install scripts unless they are listed here.
+# Neither is needed: @parcel/watcher (an optional file watcher of sass) ships prebuilt binaries,
+# and the git hook of simple-git-hooks is installed by the `prepare` script in package.json.
+allowBuilds:
+  '@parcel/watcher': false
+  simple-git-hooks: false

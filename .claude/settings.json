@@ -7,7 +7,15 @@
       "Bash(git log *)",
       "Bash(git show *)",
       "Bash(git branch --show-current)",
-      "mcp__chrome-devtools__*"
+      "mcp__chrome-devtools__*",
+      "Bash(pnpm dev)",
+      "Bash(pnpm build)",
+      "Bash(pnpm preview)",
+      "Bash(pnpm lint)",
+      "Bash(pnpm typecheck)",
+      "Bash(pnpm test)",
+      "Bash(pnpm format)",
+      "Bash(pnpm format:check)",
     ],
     "deny": [
       "Bash(git commit *)",
@@ -29,6 +37,21 @@
       "Bash(git branch -M *)",
       "Bash(gh pr create *)",
       "Bash(gh pr merge *)"
+    ],
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/formatEditedFile.mjs\"",
+            "timeout": 60,
+            "statusMessage": "Formatting edited file"
+          }
+        ]
+      }
     ]
   }
 }

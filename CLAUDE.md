@@ -10,7 +10,7 @@ Requirements: `docs/PROJECT_BRIEF.md`, kept up to date with everything agreed. R
 
 ## Where the project is
 
-Work is planned task by task in `docs/ROADMAP.md`, in three phases: documentation and AI tooling → design prototypes (eight directions, each with a dark and a light variant) and a choice → implementation and deployment. Until task 3.2 there is no `package.json`, so there are no build, lint or test commands yet.
+Work is planned task by task in `docs/ROADMAP.md`, in three phases: documentation and AI tooling → design prototypes (eight directions, each with a dark and a light variant) and a choice → implementation and deployment. The site is a Vite + React + TypeScript app in `src/`, pre-rendered at build time; its structure and conventions are in `docs/ARCHITECTURE.md`.
 
 ## Working agreement
 
@@ -32,6 +32,15 @@ Work is planned task by task in `docs/ROADMAP.md`, in three phases: documentatio
 - Example: `feat(design): add prototype 03 with an editorial layout`.
 - Branches: `<type>/<kebab-case-task-name>`. Each task's branch is listed in `docs/ROADMAP.md`.
 
+## Commands
+
+Node 24 (`.nvmrc`) and pnpm. After `pnpm install`, a `commit-msg` hook checks commit messages with commitlint.
+
+- `pnpm dev`: the dev server
+- `pnpm build`: type-check, build and pre-render into `dist/`; `pnpm preview` serves the result
+- `pnpm lint`, `pnpm typecheck`, `pnpm test`: run all three before calling code work done
+- `pnpm format` / `pnpm format:check`: Prettier (Markdown is excluded)
+
 ## Verifying work
 
 - Check UI with the Chrome DevTools MCP server (`.mcp.json`). Use these viewports: 360, 768, 1280 and 1920 px. Also check with `prefersReducedMotion: reduce`. For mobile performance, use a 4× CPU slowdown and Slow 4G.
@@ -52,10 +61,11 @@ Work is planned task by task in `docs/ROADMAP.md`, in three phases: documentatio
   - `adr`: a decision entry
   - `grilling`, with `/grill-me` as a shortcut: settle a plan through questions
   - `frontend-design` (Anthropic): distinctive visual design
+  - `tdd` (mattpocock): test-first loop for new logic
 - Subagent `site-auditor` (`.claude/agents/`): independent UI audit
 
 ## Current status (keep this updated)
 
 - Phase: 3, implementation
-- Last completed: 3.1 architecture: `docs/ARCHITECTURE.md` approved (pre-render script #003, Lenis kept #004, lazy motion layer #005); all phase 3 code follows it
-- Next step: 3.2 project scaffold, branch `chore/project-scaffold`
+- Last completed: 3.2 project scaffold: Vite + React + TypeScript with the pre-render step, ESLint rules from `docs/ARCHITECTURE.md` section 15, Vitest, commitlint, the formatting hook and the `tdd` skill
+- Next step: 3.3 continuous integration, branch `ci/quality-checks`

@@ -40,6 +40,8 @@ Node 24 (`.nvmrc`) and pnpm. After `pnpm install`, a `commit-msg` hook checks co
 - `pnpm build`: type-check, build and pre-render into `dist/`; `pnpm preview` serves the result
 - `pnpm lint`, `pnpm typecheck`, `pnpm test`: run all three before calling code work done
 - `pnpm format` / `pnpm format:check`: Prettier (Markdown is excluded)
+- `pnpm lighthouse`: Lighthouse CI on `dist/` against the brief's thresholds (`lighthouserc.yml`); run `pnpm build` first
+- CI (`.github/workflows/`): `ci.yml` runs all of the above and commitlint on pull requests and on `main`, Lighthouse on pull requests; `pr-title.yml` lints the PR title
 
 ## Verifying work
 
@@ -67,5 +69,5 @@ Node 24 (`.nvmrc`) and pnpm. After `pnpm install`, a `commit-msg` hook checks co
 ## Current status (keep this updated)
 
 - Phase: 3, implementation
-- Last completed: 3.2 project scaffold: Vite + React + TypeScript with the pre-render step, ESLint rules from `docs/ARCHITECTURE.md` section 15, Vitest, commitlint, the formatting hook and the `tdd` skill
-- Next step: 3.3 continuous integration, branch `ci/quality-checks`
+- Last completed: 3.3 continuous integration: GitHub Actions for lint, format, typecheck, test, build and commitlint, a PR title check, and Lighthouse CI on pull requests (`@lhci/cli`, #006)
+- Next step: 3.4 content layer, branch `feat/content-layer`

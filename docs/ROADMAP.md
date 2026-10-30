@@ -178,9 +178,9 @@ The first part (3.1–3.10) produces a usable, deployed site without motion or t
 - **Done when:** a placeholder app runs locally, all scripts pass, and an agent edit is formatted automatically.
 
 ### 3.3 Continuous integration
-- [ ] **Branch:** `ci/quality-checks`
+- [x] **Branch:** `ci/quality-checks`
 - **Scope:**
-  - A GitHub Actions workflow that runs lint, format check, typecheck, test, build and commitlint on every push and pull request.
+  - A GitHub Actions workflow that runs lint, format check, typecheck, test, build and commitlint on every pull request and every push to `main` (a push to a branch with an open pull request runs through the pull request), plus a check of the pull request title, which a squash merge puts on `main`.
   - Lighthouse CI on the built, pre-rendered pages in every pull request, failing below the scores in brief section 1, so a regression shows up before it is merged.
 - **Done when:** the workflow passes on GitHub, and a pull request that drops a Lighthouse score below the threshold fails.
 

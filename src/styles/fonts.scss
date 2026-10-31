@@ -1,0 +1,77 @@
+// Self-hosted fonts (docs/ARCHITECTURE.md section 8). Both are SIL Open Font License 1.1; the
+// licences sit next to the files in public/fonts/. The woff2 files are Google Fonts' own
+// subsets (October 2026), so each face is split into Latin and Latin Extended. The browser
+// downloads a file only when the page uses a character from its `unicode-range`: the
+// Polish letters of the name (Ł, Ć) need Latin Extended.
+//
+// `font-display: swap` shows the fallback font at once and swaps when the web font arrives.
+// The display font is preloaded in index.html, because the hero name is the first thing seen.
+
+$latin:
+  U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304,
+  U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215,
+  U+FEFF, U+FFFD;
+$latin-ext:
+  U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304,
+  U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB,
+  U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+$subsets: (
+  'latin': $latin,
+  'latin-ext': $latin-ext,
+);
+
+// Big Shoulders Display: one variable file per subset holds every weight from 500 to 900.
+@each $subset, $range in $subsets {
+  @font-face {
+    font-family: 'Big Shoulders Display';
+    font-style: normal;
+    font-weight: 500 900;
+    font-display: swap;
+    src: url('/fonts/big-shoulders-display-#{$subset}.woff2') format('woff2');
+    unicode-range: $range;
+  }
+}
+
+// Barlow: one static file per weight and subset. No italics: only the TODO markers for missing
+// content are italic, and they get the browser's slanted Barlow until the content is final.
+@each $weight in (400, 500, 600, 700) {
+  @each $subset, $range in $subsets {
+    @font-face {
+      font-family: 'Barlow';
+      font-style: normal;
+      font-weight: $weight;
+      font-display: swap;
+      src: url('/fonts/barlow-#{$weight}-#{$subset}.woff2') format('woff2');
+      unicode-range: $range;
+    }
+  }
+}
+
+// Fallback faces: Arial, resized to take the same space as the web font, so the swap does not
+// shift the layout. The numbers were measured once with fontTools (task 3.5, 31.10.2026):
+// size-adjust = the web font's average glyph width ÷ Arial's (weighted by English letter
+// frequency, uppercase for the display font, which is always set in capitals), and the
+// overrides = the web font's hhea ascent and descent ÷ size-adjust. Where Arial is missing
+// (Android, Linux) these faces are skipped and the next font in the stack is used as it is.
+
+// Headings are weight 800–900, so the face is Arial Bold and covers every weight; without the
+// range the browser would embolden Arial Bold a second time.
+@font-face {
+  font-family: 'Big Shoulders Display Fallback';
+  font-weight: 100 900;
+  src: local('Arial Bold'), local('Arial-BoldMT');
+  size-adjust: 69.45%;
+  ascent-override: 141.68%;
+  descent-override: 30.67%;
+  line-gap-override: 0%;
+}
+
+// Body text is weight 400; bolder text gets the browser's synthetic bold until Barlow arrives.
+@font-face {
+  font-family: 'Barlow Fallback';
+  src: local('Arial'), local('ArialMT');
+  size-adjust: 97.5%;
+  ascent-override: 102.56%;
+  descent-override: 20.51%;
+  line-gap-override: 0%;
+}

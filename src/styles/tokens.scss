@@ -1,0 +1,201 @@
+// Design tokens: every colour, size, duration and layer of the reference design
+// (design/iterations/08-ascent-dark-v2.html) as a CSS custom property. A CSS Module uses
+// `var(--token)`, never a raw value that has a token (docs/ARCHITECTURE.md section 8;
+// scripts/cssModules.test.ts checks it).
+//
+// Units: font sizes and spacing are in rem, so they follow the reader's browser font size
+// (1rem = 16px by default, so the design's pixel values are kept). Borders stay in px.
+// Values from the design that differed by at most 0.5px (or 0.01em, 50ms) share one token.
+
+:root {
+  color-scheme: dark;
+
+  // ---------- Colours ----------
+  // The night palette: sodium street light over concrete.
+  --color-night: #0b0b0e; // the ground: page background, text on sodium
+  --color-concrete: #17171b; // panels
+  --color-concrete-raised: #222228; // chips on a panel
+  --color-wall: #111115; // the concrete wall behind sections
+  --color-wall-hole: #08080a; // the bolt holes in the wall
+  --color-line: #34353c; // borders and rules
+  --color-chalk: #f2efe8; // text
+  --color-muted: #a8a49c; // secondary text, 7.9:1 on night
+  --color-sodium: #ff9f38; // fills (night text on it, 9.6:1), links, focus, marks
+  --color-sodium-dim: #b8661c; // large marks and lines only (4.6:1 on night, too close to the AA limit for text)
+  --color-glow: rgb(255 159 56 / 32%); // the glow around lit letters
+  --color-caution: #ffc23d; // the "in progress" status stripes
+  --color-todo: #ffc98a; // visible TODO markers for missing content
+  --color-shadow: #000; // drop shadows, always mixed with transparency
+
+  // The sky, from the top down to the warm horizon over the streets.
+  --color-sky-1: #07080b;
+  --color-sky-2: #121420;
+  --color-horizon: #2b1b10; // hero
+  --color-horizon-career: #1e140d; // the pinned career run
+  --color-horizon-leap: #1a1410; // the leap scene
+  --color-dusk: #121216; // the middle of the contact gradient
+  --color-street: #2a1a0e; // contact and the footer street
+  --color-street-end: #140e0a;
+  --color-map: #0e0f13; // the projects map and its zoom
+
+  // The rooftop sign: the lit letters of the name, from the bottom up.
+  --color-sign-light: #ffd39e;
+  --color-sign-face: #f7f1e5;
+  --color-sign-shade: #cfc8bc;
+
+  // The parapet at the bottom of the hero and its lamps.
+  --color-parapet-edge: #34343b;
+  --color-parapet-top: #232328;
+  --color-parapet: #18181c;
+  --color-parapet-base: #101013;
+  --color-lamp-body: #2a2a30;
+  --color-lamp-light: #ffb566;
+
+  // Posters pasted on the wall (testimonials).
+  --color-paper: #ece6d8;
+  --color-ink: #16161a;
+  --color-ink-soft: #4a463e;
+  --color-ink-soft-on-sodium: #3a2208;
+
+  // ---------- Typography ----------
+  // The fallback faces are defined in fonts.scss, with metrics adjusted to the web fonts.
+  --font-display:
+    'Big Shoulders Display', 'Big Shoulders Display Fallback', sans-serif;
+  --font-text: 'Barlow', 'Barlow Fallback', system-ui, sans-serif;
+
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  --font-weight-extrabold: 800;
+  --font-weight-black: 900;
+
+  // Fixed sizes. md is the body text.
+  --font-size-4xs: 0.75rem; // 12px: badges, statuses, tags
+  --font-size-3xs: 0.8125rem; // 13px: kickers, labels, meta
+  --font-size-2xs: 0.875rem; // 14px: card marks, copy button
+  --font-size-xs: 0.9375rem; // 15px: notes, dates, counts, captions
+  --font-size-sm: 1rem; // 16px: chips, descriptions
+  --font-size-md: 1.0625rem; // 17px: body text
+  --font-size-lg: 1.125rem; // 18px: skip link, menu button
+  --font-size-xl: 1.1875rem; // 19px: navigation, text links
+  --font-size-2xl: 1.25rem; // 20px: buttons, monogram
+  --font-size-3xl: 1.375rem; // 22px: kicker numbers
+  --font-size-4xl: 1.5rem; // 24px: poster names
+  --font-size-menu: 3.5rem; // 56px: links in the mobile menu
+
+  // Fluid text sizes, by role.
+  --font-size-lead-sm: clamp(1rem, 1.4vw, 1.1875rem); // tagline, speech bubble
+  --font-size-lead: clamp(
+    1.0625rem,
+    1.5vw,
+    1.25rem
+  ); // intros, leap text, channels
+  --font-size-lead-lg: clamp(1.125rem, 1.6vw, 1.3125rem); // about text, quotes
+  --font-size-statement: clamp(1.25rem, 2vw, 1.625rem); // availability
+
+  // Fluid display sizes (Big Shoulders), by role, from the largest.
+  --font-size-contact-title: clamp(4.5rem, 14.5vw, 15rem);
+  --font-size-section-title: clamp(4.25rem, 13vw, 12.5rem);
+  --font-size-section-title-pinned: clamp(4rem, 8vw, 8rem);
+  --font-size-fact: clamp(4rem, 8vw, 7rem);
+  --font-size-fact-sm: clamp(3.25rem, 6vw, 5.25rem);
+  --font-size-footer-title: clamp(2.5rem, 6vw, 5rem);
+  --font-size-spot-number: clamp(3rem, 5vw, 4.5rem);
+  --font-size-dialog-title: clamp(2.5rem, 5vw, 3.75rem);
+  --font-size-board-title: clamp(2.25rem, 3.6vw, 3.25rem);
+  --font-size-card-title: clamp(2.125rem, 3.6vw, 2.875rem);
+  --font-size-role: clamp(1.75rem, 3.4vw, 2.875rem);
+  --font-size-quote-title: clamp(2rem, 3vw, 2.75rem);
+  --font-size-spot-title: clamp(1.875rem, 3vw, 2.625rem);
+  --font-size-leap-title: clamp(1.875rem, 3vw, 2.5rem);
+  --font-size-band-title: clamp(1.75rem, 2.6vw, 2.25rem);
+
+  --line-height-display-tight: 0.84; // the name, section titles, facts (0.82–0.85)
+  --line-height-display: 0.9; // board, footer and dialog titles (0.9–0.92)
+  --line-height-display-loose: 0.95; // card, spot and quote titles (0.95–0.98)
+  --line-height-none: 1;
+  --line-height-tight: 1.15; // chips, bubbles, contact labels (1.1–1.2)
+  --line-height-snug: 1.3; // kickers, roles, availability (1.3–1.35)
+  --line-height-normal: 1.45; // lists, quotes, small text (1.4–1.5)
+  --line-height-body: 1.6;
+
+  --letter-spacing-tight: -0.005em; // section titles
+  --letter-spacing-name: 0.005em; // the hero name; its width sets the font size
+  --letter-spacing-xs: 0.02em; // (0.02–0.03)
+  --letter-spacing-sm: 0.05em; // buttons, navigation (0.04–0.06)
+  --letter-spacing-md: 0.08em;
+  --letter-spacing-lg: 0.1em;
+  --letter-spacing-xl: 0.14em; // labels and badges (0.12–0.14)
+  --letter-spacing-2xl: 0.16em; // kickers and meta (0.16–0.18)
+
+  // ---------- Spacing ----------
+  // --space-N is N × 4px, with half steps where the design uses them.
+  --space-1: 0.25rem; // 4px
+  --space-1-5: 0.375rem; // 6px
+  --space-2: 0.5rem; // 8px
+  --space-2-5: 0.625rem; // 10px
+  --space-3: 0.75rem; // 12px
+  --space-3-5: 0.875rem; // 14px
+  --space-4: 1rem; // 16px
+  --space-4-5: 1.125rem; // 18px
+  --space-5: 1.25rem; // 20px
+  --space-5-5: 1.375rem; // 22px
+  --space-6: 1.5rem; // 24px
+  --space-6-5: 1.625rem; // 26px
+  --space-7: 1.75rem; // 28px
+  --space-7-5: 1.875rem; // 30px
+  --space-8: 2rem; // 32px
+  --space-9: 2.25rem; // 36px
+  --space-10: 2.5rem; // 40px
+  --space-11: 2.75rem; // 44px
+  --space-12: 3rem; // 48px
+  --space-14: 3.5rem; // 56px
+  --space-16: 4rem; // 64px
+  --space-18: 4.5rem; // 72px
+  --space-22: 5.5rem; // 88px
+  --space-26: 6.5rem; // 104px
+
+  // Fluid spacing.
+  --space-section: clamp(5.5rem, 12vw, 10.5rem); // above and below each section
+  --space-section-head: clamp(2.25rem, 5vw, 4rem); // below a section heading
+  --space-panel-inline: clamp(
+    1.125rem,
+    2.4vw,
+    1.875rem
+  ); // boards, cards, the AI band
+  --space-dialog-inline: clamp(1.125rem, 3vw, 2rem); // the project dialog
+
+  // ---------- Layout ----------
+  --layout-gutter: clamp(1rem, 4.5vw, 4rem); // page side padding
+  --layout-max-width: 77.5rem; // 1240px
+  --layout-text-width: 62ch; // the longest comfortable line
+  --layout-header-height: 4rem; // 64px
+
+  // ---------- Borders and radii ----------
+  --border-hairline: 1px;
+  --border-thin: 1.5px;
+  --border-medium: 2px;
+  --border-thick: 3px;
+  --border-heavy: 4px;
+  --radius-sm: 2px; // chips; everything else is square
+
+  // ---------- Motion ----------
+  // CSS transitions. Reduced motion turns them all off in global.scss.
+  --duration-fast: 150ms; // button press
+  --duration-quick: 200ms; // borders, bubbles (200–250ms)
+  --duration-base: 300ms; // header, colour changes (300–350ms)
+  --duration-slow: 400ms; // panels, pins, cards (400–450ms)
+  --duration-slower: 600ms; // skyline windows
+  --duration-loop: 1200ms; // the map pin's ping
+
+  --ease-out: cubic-bezier(0.2, 0.9, 0.3, 1);
+  --ease-overshoot: cubic-bezier(0.2, 0.9, 0.3, 1.2);
+  --ease-overshoot-strong: cubic-bezier(0.2, 0.9, 0.3, 1.4);
+
+  // ---------- Layers ----------
+  // Page-wide layers only. Small local stacking (-2 to 3) stays inside a component.
+  --z-header: 50;
+  --z-menu: 60;
+  --z-skip-link: 100;
+}

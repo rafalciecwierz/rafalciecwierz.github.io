@@ -68,7 +68,7 @@ The head comes from the same content layer as the page (`content.seo`), through 
 
 ```
 public/
-  fonts/                       # self-hosted woff2 files (section 8)
+  fonts/                       # self-hosted woff2 files and their OFL licences (section 8)
   Rafal_Ciecwierz_CV.pdf
   favicon.svg
   og-image.png
@@ -76,6 +76,9 @@ scripts/
   prerender.ts                 # step 4 of the build
   prerender.utils.ts           # fillTemplate, outputFileFor, isServerEntry (tested)
   prerender.constants.ts       # paths and template markers
+  cssModules.utils.ts          # findRawValues: raw values in a stylesheet that have a token (tested)
+  cssModules.test.ts           # runs findRawValues on every CSS Module (section 8)
+  breakpoints.test.ts          # the SCSS and TypeScript breakpoints match (section 8)
 src/
   app/                         # entry points; nothing imports this folder, so it has no index.ts
     app.component.tsx          # the root: page layout and the motion layer
@@ -125,9 +128,9 @@ src/
     index.ts                   # exports `content` (English until a locale switch exists)
   styles/
     tokens.scss                # design tokens as CSS custom properties
-    global.scss
-    fonts.scss
-    _breakpoints.scss          # media query mixins
+    global.scss                # imports tokens and fonts; the page-wide base (reset, links, focus)
+    fonts.scss                 # @font-face rules and the metric-adjusted fallback faces
+    _breakpoints.scss          # the breakpoint map and the from()/below() media query mixins
   types/                       # ambient declarations only (*.d.ts), when one is needed
   test/
     setup.ts                   # Vitest and Testing Library setup
@@ -307,10 +310,22 @@ The rules in brief section 8 are checked by `eslint-plugin-jsx-a11y` and by the 
 ## 8. Styles
 
 - **CSS Modules for every component** (`<name>.module.scss`). The class names are local, so a component's styles cannot leak.
-- **Design tokens** are CSS custom properties in `styles/tokens.scss` (task 3.5): colours, spacing, type scale, radii, durations and z-index. A module uses `var(--token)`, never a raw value that has a token.
-- **Breakpoints:** the one breakpoint the design needs (900 px) lives both in `_breakpoints.scss` and in `constants/breakpoints.constants.ts`, because CSS media queries cannot read TypeScript. A unit test reads both and fails if they differ.
+- **Design tokens** are CSS custom properties in `styles/tokens.scss` (task 3.5): colours, fonts, the type scale, spacing, layout widths, borders, radii, durations, easings and page-wide z-index layers. A module uses `var(--token)`, never a raw value that has a token. `scripts/cssModules.test.ts` fails when a module writes a colour, a font family, a font size, a transition or animation duration, or a z-index above 9 as a raw value. Small local stacking (−9 to 9) stays in the component.
+- **How the tokens are built:**
+  - They come from the reference design. Values that differed by at most 0.5 px (or 0.01 em, or 50 ms) share one token, so the scales stay short.
+  - Fixed font sizes are a t-shirt scale where `md` is the body text (17 px). Fluid sizes (`clamp()`) are named by role (`--font-size-section-title`).
+  - `--space-N` is N × 4 px, with half steps (`--space-1-5`) where the design uses them.
+  - Colours keep the design's names (`--color-night`, `--color-sodium`). There is one dark theme, so there is no second, semantic layer. A colour with transparency is mixed from a token: `color-mix(in srgb, var(--color-night) 80%, transparent)`.
+- **Units:** font sizes and spacing are in `rem`, so they follow the reader's browser font size (WCAG 1.4.4). 1 rem is 16 px by default, so the design's pixel values are kept. Borders and focus rings stay in px.
+- **Global styles** (`global.scss`) are imported once, by `app/entryClient.tsx`, so they come before every module in the built CSS. They hold the reset, the body text, links, one `:focus-visible` style and the reduced-motion path (no transitions or CSS animations, no smooth scroll).
+- **Breakpoints:** the six widths where the reference design's layout changes (520, 600, 760, 900, 960 and 1000 px, named `xs` to `xxl`) live both in `_breakpoints.scss` and in `constants/breakpoints/`, because CSS media queries cannot read TypeScript. `scripts/breakpoints.test.ts` reads both and fails if they differ. A module writes `@use '@/styles/breakpoints' as *;` and then `@include from(lg) { … }` (900 px and wider) or `@include below(md) { … }` (narrower than 760 px).
 - **Class names** are combined with a small `classNames(...)` function from `utils/`, not a library.
 - **Fonts are self-hosted.** Big Shoulders Display and Barlow (both SIL Open Font License) are woff2 files in `public/fonts/`, limited to the Latin and Latin Extended subsets. They use `font-display: swap`, the display font is preloaded, and the fallback font's metrics are adjusted (`size-adjust`, `ascent-override`) so the swap does not shift the layout. The page then makes no request to Google, a third party (brief section 12, no trackers), and needs no extra connection before the fonts load.
+- **How the fonts are set up** (`styles/fonts.scss`):
+  - The files are Google Fonts' own Latin and Latin Extended subsets, each with its `unicode-range`. The browser downloads Latin Extended only for characters such as Ł and Ć.
+  - Big Shoulders Display is one variable file per subset (weights 500–900). Barlow has one file per weight (400, 500, 600, 700) and subset, and no italics.
+  - `index.html` preloads both Big Shoulders files, because the hero name uses both.
+  - The fallback faces are Arial and Arial Bold, adjusted with `size-adjust`, `ascent-override` and `descent-override`. The numbers were measured with fontTools, and `fonts.scss` explains how.
 
 ## 9. Motion layer
 
@@ -467,6 +482,9 @@ Vitest and React Testing Library, light as in the brief, and aimed where a bug w
 | Reduced motion | with `prefers-reduced-motion: reduce` mocked, no motion component mounts and the static content is complete |
 | Pre-rendering | a smoke test of `render('/')`: the HTML has the `h1`, the meta tags and every section, and does not contain the email address |
 | Breakpoints | the SCSS and TypeScript values match (section 8) |
+| Design tokens | no CSS Module uses a raw value that has a token (section 8) |
+
+Tests that read files with Node (`node:fs`) live in `scripts/`. The code in `src/` has no Node types, because it also runs in the browser, and Vitest replaces every stylesheet with an empty stub, so a test in `src/` cannot read SCSS.
 
 Tests sit next to the file they test and query the DOM by role and accessible name. Snapshot tests are not used: they break on every change and protect nothing.
 
@@ -489,6 +507,7 @@ Set up in task 3.2. The `.claude/rules/` file for `src/**` points to this docume
 | Import direction; content data only in pages; no static import from `src/motionComponents/` | `no-restricted-imports` per folder |
 | Import order | `simple-import-sort` |
 | Hooks, accessibility | `react-hooks` (recommended), `jsx-a11y` (strict) |
+| No raw values in CSS Modules | `scripts/cssModules.test.ts` (section 8) |
 | File size | `max-lines`: 150 lines without blank lines and comments, as an error |
 | Functions as declarations | `func-style: declaration` |
 | Formatting | Prettier, the same config as ashen-contracts, run on every file the agent edits (the `PostToolUse` hook in `.claude/hooks/formatEditedFile.mjs`). Markdown is not formatted: the docs are hand-edited, and aligning a table rewrites all of it for a one-cell change |

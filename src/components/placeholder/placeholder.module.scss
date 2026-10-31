@@ -1,15 +1,17 @@
-// Temporary scaffold styles; the design tokens arrive in task 3.5.
+// Temporary scaffold styles (task 3.2), on the design tokens since task 3.5.
 .placeholder {
   display: grid;
   place-content: center;
-  gap: 0.5rem;
+  gap: var(--space-2);
   min-block-size: 100svh;
-  padding: 1rem;
-  font-family: system-ui, sans-serif;
+  padding: var(--space-4);
   text-align: center;
 }
 
 .name {
-  margin: 0;
-  font-size: clamp(2rem, 8vw, 4rem);
+  font-family: var(--font-display);
+  font-size: var(--font-size-footer-title);
+  font-weight: var(--font-weight-black);
+  line-height: var(--line-height-display-tight);
+  text-transform: uppercase;
 }

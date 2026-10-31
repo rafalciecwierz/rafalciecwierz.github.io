@@ -1,0 +1,15 @@
+.tagList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1-5);
+}
+
+.tag {
+  padding: var(--space-1) var(--space-2);
+  border: var(--border-hairline) solid var(--color-line);
+  color: var(--color-muted);
+  font-size: var(--font-size-4xs);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-none);
+  letter-spacing: var(--letter-spacing-sm);
+}

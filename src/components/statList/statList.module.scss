@@ -1,0 +1,32 @@
+.statList {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 var(--space-6);
+}
+
+.stat {
+  padding: var(--space-4) 0 var(--space-6-5);
+  border-top: var(--border-medium) solid var(--color-line);
+}
+
+.value {
+  color: var(--color-sodium);
+  font-family: var(--font-display);
+  font-weight: var(--font-weight-black);
+  line-height: var(--line-height-display-tight);
+}
+
+.regular .value {
+  font-size: var(--font-size-fact);
+}
+
+.small .value {
+  font-size: var(--font-size-fact-sm);
+}
+
+.label {
+  max-width: 20ch;
+  margin-top: var(--space-2-5);
+  font-size: var(--font-size-xs);
+  line-height: var(--line-height-normal);
+}

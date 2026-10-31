@@ -1,0 +1,19 @@
+.heading {
+  font-family: var(--font-display);
+  font-weight: var(--font-weight-black);
+  line-height: var(--line-height-display-loose);
+  text-transform: uppercase;
+}
+
+.sm {
+  font-size: var(--font-size-leap-title);
+}
+
+.md {
+  font-size: var(--font-size-card-title);
+}
+
+.lg {
+  font-size: var(--font-size-dialog-title);
+  line-height: var(--line-height-display);
+}

@@ -1,0 +1,8 @@
+.word {
+  white-space: nowrap;
+}
+
+// inline-block, so the motion layer can move and rotate each letter on its own.
+.letter {
+  display: inline-block;
+}

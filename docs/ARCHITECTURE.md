@@ -195,6 +195,7 @@ A folder holds one unit: `button/` holds the Button and its files. Global styles
 
 - Re-exports only, listed by name: `export { Button } from './button.component'; export type { ButtonProps } from './button.types';`. No `export *`, so the file shows exactly what the folder offers.
 - Code outside a folder imports through its `index.ts` (`import { Button, Heading } from '@/components'`). Files inside a folder import each other by relative path, never through their own `index.ts`, which avoids import cycles.
+- A component that uses another component imports it from that component's own folder (`import { Icon } from '@/components/icon'`), not from `@/components`. The root `index.ts` also re-exports the importing component, so going through it would form an import cycle.
 - `src/motionComponents/` has no `index.ts`. A motion component is loaded only through `import()` of its own file (section 13); a barrel or any static import would pull it back into the main bundle. Its name ends in `Motion` (`CareerRunMotion`), so it never clashes with the section it animates.
 
 **Names inside the code:**
@@ -376,7 +377,7 @@ Every effect in the reference (its comment header names them) mapped to where it
 | --- | --- | --- | --- |
 | `siteHeader` | Brand (monogram, label in name), Nav, MobileMenu (focus trap, Escape, focus return), header state solid once the page moves | – | `nav`, `brand`, `profile.initials` |
 | `hero` | HeroSign (the name as letters, sized by container query units; FitName fine-tunes it after the fonts load), Role, Tagline, HeroActions (Download CV, Get in touch), HeroMeta, Skyline, Parapet, Runner perched on the Ł | `heroMotion`: SignFlicker, window flicker, RoleFlip (a split-flap scramble written by us, driven by a GSAP tween; no ScrambleText plugin), LetterHop (letter clicks, tricks on runner clicks) | `profile`, `hero` |
-| `about` | AboutText, Facts (the `Stat` component) | `aboutMotion`: Vault on the title | `about` |
+| `about` | AboutText, Facts (the `StatList` component) | `aboutMotion`: Vault on the title | `about` |
 | `stack` | AiBand, LevelBoard × 3, ToolGroup, level legend with text labels | `stackMotion`: BoardReveal stagger, Vault | `stack` |
 | `career` | CareerList (newest first, a Building per job, promotions highlighted), Education, skip link | `careerRunMotion` (only from 900 px): RooftopRun with ScrollTrigger `pin` + `scrub`, a building per company, a tower per promotion, the job card following the runner, progress bar | `career` |
 | `testimonials` | Poster (with a seeded torn edge) × 3 | `testimonialsMotion`: PasteUp | `team` |
@@ -389,6 +390,12 @@ Across the page:
 
 - `PageLayout`: the skip link, the landmarks (`header`, `main`, `footer`) and the root motion layer (Lenis).
 - `ConsoleHello`: one effect in `app.component.tsx` that prints `content.console`.
+
+**UI primitives used by several sections** (task 3.6), all in `src/components/`:
+
+- Structure: `Section` (a named region; `surface` plain or concrete, `spacing` padded or none), `Container` (the page's maximum width), `SectionHeading` (kicker with the section number, the title as `KineticText`, an optional intro), `Heading` (`level` for the outline, `size` for the look), `Text`, `List` and `ListItem`.
+- Small parts: `TagList`, `Badge` (solid, caution, muted), `StatList`, `Todo` (the visible marker for a `null` in the content), `VisuallyHidden`, `KineticText` (the real text for screen readers, letters marked `data-kinetic-letter` for the motion layer) and `Icon`.
+- Actions: `ButtonLink` (an `<a>` that looks like a button: primary or secondary, optional download), `Button` (a native `<button type="button">`: outline or solid) and `TextLink` (inline or cta). They pass the native attributes through (`aria-*`, `onClick`) but take no `className`, so their look comes only from the variant. Layout primitives (`Section`, `Container`, `Text`, `List`, `ListItem`) take an optional `className` for the parent's layout.
 
 **Graphics used by several sections:**
 

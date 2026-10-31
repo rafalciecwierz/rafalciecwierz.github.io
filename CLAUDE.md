@@ -69,5 +69,5 @@ Node 24 (`.nvmrc`) and pnpm. After `pnpm install`, a `commit-msg` hook checks co
 ## Current status (keep this updated)
 
 - Phase: 3, implementation
-- Last completed: 3.5 design tokens and global styles: tokens from the reference design in `src/styles/tokens.scss` (rem, merged scales), global styles, self-hosted fonts in `public/fonts/` with metric-adjusted fallbacks, six breakpoints in SCSS and `src/constants/`, and tests in `scripts/` that keep CSS Modules on tokens
-- Next step: 3.6 UI primitives, branch `feat/ui-primitives`
+- Last completed: 3.6 UI primitives: 17 shared components in `src/components/` (Section, Container, SectionHeading, KineticText, Heading, Text, List, ListItem, TagList, Badge, StatList, Todo, VisuallyHidden, Icon, Button, ButtonLink, TextLink) and `classNames()` in `src/utils/`, with tests for the logic and the accessible roles
+- Next step: 3.7 layout and navigation, branch `feat/layout-navigation`

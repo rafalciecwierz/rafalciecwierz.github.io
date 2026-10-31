@@ -198,7 +198,7 @@ The first part (3.1–3.10) produces a usable, deployed site without motion or t
 - **Done when:** the tokens match the chosen design, and nothing in the components uses a raw value that has a token.
 
 ### 3.6 UI primitives
-- [ ] **Branch:** `feat/ui-primitives`
+- [x] **Branch:** `feat/ui-primitives`
 - **Scope:** shared building blocks needed by the chosen design (for example Button, Tag, Badge, SectionHeading), with visible focus states, plus tests where they carry logic.
 - **Done when:** all primitives used by more than one section exist in `src/components/`.
 

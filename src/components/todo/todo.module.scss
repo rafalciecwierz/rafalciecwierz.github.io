@@ -1,0 +1,16 @@
+.todo {
+  color: var(--color-todo);
+  font-style: italic;
+}
+
+.marker {
+  margin-right: var(--space-1-5);
+  padding: 2px var(--space-1) 1px; // the box sits on the baseline of the text
+  border: var(--border-thin) solid currentColor;
+  font-family: var(--font-display);
+  font-size: var(--font-size-3xs);
+  font-style: normal;
+  font-weight: var(--font-weight-extrabold);
+  line-height: var(--line-height-none);
+  letter-spacing: var(--letter-spacing-lg);
+}

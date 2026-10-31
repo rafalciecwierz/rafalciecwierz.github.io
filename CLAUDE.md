@@ -69,5 +69,5 @@ Node 24 (`.nvmrc`) and pnpm. After `pnpm install`, a `commit-msg` hook checks co
 ## Current status (keep this updated)
 
 - Phase: 3, implementation
-- Last completed: 3.4 content layer: typed content for every area of the reference design in `src/content/` (one `.types.ts` per area), `SECTION_IDS` in `src/constants/`, date and object helpers in `src/utils/`, and a content test run for every locale
-- Next step: 3.5 design tokens and global styles, branch `feat/design-tokens`
+- Last completed: 3.5 design tokens and global styles: tokens from the reference design in `src/styles/tokens.scss` (rem, merged scales), global styles, self-hosted fonts in `public/fonts/` with metric-adjusted fallbacks, six breakpoints in SCSS and `src/constants/`, and tests in `scripts/` that keep CSS Modules on tokens
+- Next step: 3.6 UI primitives, branch `feat/ui-primitives`

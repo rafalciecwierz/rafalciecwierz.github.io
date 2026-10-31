@@ -1,3 +1,6 @@
+// The global styles: tokens, fonts and the page-wide base (src/styles/global.scss).
+import '@/styles/global.scss';
+
 import { createRoot, hydrateRoot } from 'react-dom/client';
 
 import { App } from './app.component';

@@ -1,0 +1,96 @@
+// Global styles: the tokens, the fonts and the page-wide base. Imported once, by the browser
+// entry (src/app/entryClient.tsx). Everything else is styled by a component's CSS Module.
+@use 'tokens';
+@use 'fonts';
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  background: var(--color-night);
+  color: var(--color-chalk);
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--color-night);
+  font-family: var(--font-text);
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-regular);
+  line-height: var(--line-height-body);
+  // `clip`, not `hidden`: it cuts off sideways overflow without making the body a scroll
+  // container, which would break `position: sticky` (the pinned career run).
+  overflow-x: clip;
+}
+
+// Smooth scrolling for anchor links, only when the reader has not asked for less motion.
+// Task 3.11 replaces it with Lenis.
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+a {
+  color: var(--color-sodium);
+  text-decoration-thickness: var(--border-hairline);
+  text-underline-offset: 0.2em;
+}
+
+a:hover {
+  text-decoration-thickness: var(--border-medium);
+}
+
+// One focus style for the whole site, shown for keyboard focus only.
+:focus-visible {
+  outline: var(--border-thick) solid var(--color-sodium);
+  outline-offset: var(--border-thick);
+}
+
+img,
+svg {
+  display: block;
+}
+
+// Margins and list styles come from the components, not from the browser.
+h1,
+h2,
+h3,
+h4,
+p,
+ul,
+ol,
+dl,
+dd,
+figure,
+blockquote {
+  margin: 0;
+}
+
+ul,
+ol {
+  padding: 0;
+  list-style: none;
+}
+
+// Buttons and inputs inherit the page's font instead of the browser's.
+button,
+input {
+  font: inherit;
+}
+
+// The reduced-motion path: no transition or CSS animation runs. `none`, not a tiny duration,
+// so code that measures an element never reads a value halfway through a transition.
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition: none !important;
+    animation: none !important;
+  }
+}

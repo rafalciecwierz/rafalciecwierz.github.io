@@ -193,7 +193,7 @@ The first part (3.1–3.10) produces a usable, deployed site without motion or t
 - **Done when:** the content is typed, covered by tests, and no copy is hard-coded in components.
 
 ### 3.5 Design tokens and global styles
-- [ ] **Branch:** `feat/design-tokens`
+- [x] **Branch:** `feat/design-tokens`
 - **Scope:** colours, spacing, type scale, radii and motion durations from the chosen design as CSS custom properties; global styles; self-hosted fonts in `public/fonts/` (`font-display: swap`, preload of the display font, adjusted fallback metrics, no layout shift; `docs/ARCHITECTURE.md` section 8).
 - **Done when:** the tokens match the chosen design, and nothing in the components uses a raw value that has a token.
 

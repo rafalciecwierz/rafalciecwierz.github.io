@@ -18,10 +18,12 @@ const TEST_FILES = ['**/*.test.{ts,tsx}', 'src/test/**'];
 
 // Principle 4: every variable with a plain name and every parameter has a written type.
 // TypeScript does not allow a type on the variable of a for...of loop, so that one is skipped.
+// An `as const` value is skipped too: its literal type is already written out, and section 5
+// derives a union from it (`type StackLevel = (typeof STACK_LEVELS)[number]`).
 const EXPLICIT_TYPES = [
   {
     selector:
-      'VariableDeclaration:not(ForOfStatement > .left, ForInStatement > .left) > VariableDeclarator[id.type="Identifier"]:not([id.typeAnnotation])',
+      'VariableDeclaration:not(ForOfStatement > .left, ForInStatement > .left) > VariableDeclarator[id.type="Identifier"]:not([id.typeAnnotation]):not([init.type="TSAsExpression"][init.typeAnnotation.typeName.name="const"])',
     message: 'Write the type of every variable: `const label: string = …`.',
   },
   {

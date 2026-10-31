@@ -65,7 +65,7 @@ The site will be linked from a LinkedIn post asking people to recommend Rafał a
 - **Hosting:** GitHub Pages, repository `rafalciecwierz.github.io` (user site → served at the root, so Vite `base` is `/`).
 - **Fully static.** No server, no backend, no environment secrets.
 - **Free.** No paid services. Calendly free plan for scheduling.
-- **Language:** English only for v1. Structure content so Polish can be added later without refactoring (see section 6).
+- **Language:** English only for v1. Structure content so Polish can be added later without refactoring (see section 6). Polish comes after v1 at `/pl/`, chosen by the URL, with no i18n library ([DECISIONS.md](DECISIONS.md) #007, roadmap task 3.21).
 - **Time box:** two weekends. Prefer finishing over perfecting. On the other hand the product needs to feel polished.
 
 ---

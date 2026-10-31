@@ -121,3 +121,20 @@ Alternatives considered:
 - Reports in `temporary-public-storage`. Rejected: a convenient link, but the reports leave GitHub and sit on a third-party server for 7 days.
 
 Consequences: about 250 packages in `node_modules`, development only; nothing ships to the site. A Lighthouse job adds a few minutes to each pull request. Verified locally on the placeholder page: 100 / 100 / 96 / 100 (Performance, Accessibility, Best Practices, SEO), and with the meta description removed from `dist/index.html` SEO dropped to 90 and `pnpm lighthouse` exited with code 1. If Performance proves unstable on CI machines, the agreed fallback is to turn only that assertion into a warning.
+
+## 007. Keep the copy in typed TypeScript objects and choose the language by URL, without an i18n library
+
+Date: 31.10.2026
+
+Context: v1 is English only, and Polish comes later (brief section 2, roadmap task 3.21). Brief section 3 asks for minimal dependencies, and the initial JS budget is 150 KB gzipped. Every page is pre-rendered to static HTML (#002), so its copy is already in the HTML before any JavaScript runs. Most of the content is data, not sentences: jobs with `{ year, month }` dates, stack levels, projects with ids and statuses, and a few templates such as plurals (`toolCount`). The site sets no cookies (brief section 12). GitHub Pages has no server, so it cannot pick a language from request headers.
+
+Decision: every locale is one TypeScript value of the `Content` type (`src/content/en/`, later `src/content/pl/`), as `docs/ARCHITECTURE.md` section 7 describes. A missing or misshaped translation is a compile error. Plurals and small templates are typed functions in the content, and Polish plurals use the built-in `Intl.PluralRules`. The language comes from the URL: `/` is English and `/pl/` is Polish. Each path is a route, pre-rendered to its own HTML file with its own `<html lang>`, `hreflang` alternates and copy. The language switch is a plain link to the other path. The browser language is not detected and nothing redirects. Nothing stores the choice: the URL is the state.
+
+Alternatives considered:
+
+- An i18n library (i18next with react-i18next, react-intl). Rejected: it adds runtime JavaScript to solve problems the site does not have, such as switching language in the browser, loading translations lazily and supporting translators' file workflows. Its keys are strings (`t('career.jobs.0.points.2')`), so a typo shows up only on the page unless a typing tool is added.
+- JSON files per locale. Rejected: TypeScript does not force `pl.json` to match the shape of `en.json` without a schema check (another dependency), and JSON cannot hold the template functions.
+- Language held in state, with a cookie or `localStorage`. Rejected: a link to the page would not carry its language, crawlers would see one language only, and the brief rules out cookies.
+- Redirect by `navigator.language`. Rejected: it can only run in JavaScript after the page has loaded, it surprises visitors who want the other language, and it hides one version from search engines.
+
+Consequences: no i18n dependency and no runtime cost for choosing the language. Each page should load only its own locale; today the client imports `en` directly, so task 3.21 has to load the copy by route to keep that true. Content files are code, so a translator who is not a developer would need help editing them. Adding Polish means a `content/pl/` folder, a `/pl/` route, a locale-aware head and a switch link (task 3.21), and no change to sections or components, because they already receive content as props. Verified so far only for English: `en` is typed as `Content`, and `src/content/content.test.ts` runs every locale through the same checks.

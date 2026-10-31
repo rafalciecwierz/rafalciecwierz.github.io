@@ -21,4 +21,12 @@ describe('render', (): void => {
     expect(result.html).toContain(content.profile.name);
     expect(result.head).toContain('<title>');
   });
+
+  it('keeps the email address out of the HTML, so simple scrapers cannot read it', (): void => {
+    const result: RenderResult = render('/');
+    const { user, domain } = content.profile.email;
+
+    expect(result.html).not.toContain(`${user}@${domain}`);
+    expect(result.head).not.toContain(`${user}@${domain}`);
+  });
 });

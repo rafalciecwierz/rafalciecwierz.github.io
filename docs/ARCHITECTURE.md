@@ -118,6 +118,9 @@ src/
   constants/                   # shared named values: breakpoints, section ids, motion timings
   content/
     content.types.ts           # the Content type, the shape of every locale
+    <area>.types.ts            # the shape of one area (career.types.ts, projects.types.ts, …)
+    content.constants.ts       # STACK_LEVELS, PROJECT_STATUSES (the unions derive from them)
+    content.test.ts            # checks every locale (section 14)
     en/                        # the English content: one file per area, joined in en.content.ts
     index.ts                   # exports `content` (English until a locale switch exists)
   styles/
@@ -294,11 +297,12 @@ The rules in brief section 8 are checked by `eslint-plugin-jsx-a11y` and by the 
 
 ## 7. Content layer
 
-- **One type, one file per locale.** `content.types.ts` defines `Content`, the shape of the whole site's copy and data. `content/en/` builds the English value from one file per area (`profile.content.ts`, `career.content.ts`, …), and `en/en.content.ts` joins them and checks that they match: `export const en: Content = { … }`. A Polish version will be a `content/pl/` folder of the same type, so a missing translation is a compile error.
+- **One type, one file per locale.** `content.types.ts` defines `Content`, the shape of the whole site's copy and data; each area's shape is in its own `<area>.types.ts`, named like the file that holds its English value (`career.types.ts` ↔ `en/career.content.ts`), so no file passes the line limit. `content/en/` builds the English value from one file per area (`profile.content.ts`, `career.content.ts`, …), and `en/en.content.ts` joins them and checks that they match: `export const en: Content = { … }`. A Polish version will be a `content/pl/` folder of the same type, so a missing translation is a compile error.
 - **Every user-facing string is content.** This includes labels, button text, `aria-label` values, alt text and the console greeting. Plurals and small templates are typed functions in the content (`count: (n: number) => string`).
 - **The data has ids.** Every job, project and quote has an `id`. Adding, removing or reordering a project changes only `projects.content.ts` (brief section 4.7).
 - **Nothing outside the content layer is copy.** Section ids for the anchors (`SECTION_IDS`) are constants, not content, because they are part of the URL.
-- **`TODO` values are typed.** A missing LinkedIn or Calendly URL is `null` in the content, and the component renders the "Rafał to provide" state. The `null` is listed in the summary of task 3.18.
+- **Data, not formatted text.** Dates are `{ year, month }` (`Period`), formatted by `formatPeriod` in `src/utils/`, so a test can check the order of the jobs. A promotion is a job with more than one role. A link sits in a field whose name ends in `Url` (`githubUrl`, `repoUrl`), so the content test can find and check every link.
+- **`TODO` values are typed.** A missing LinkedIn or Calendly URL is `null` in the content, and the component renders the "Rafał to provide" state. The `null` is listed in `LISTED_TODOS` in `content.test.ts` and in the summary of task 3.18.
 
 ## 8. Styles
 
@@ -474,7 +478,7 @@ Set up in task 3.2. The `.claude/rules/` file for `src/**` points to this docume
 | --- | --- |
 | Strict types, no `any`, exhaustive `switch`, `import type` | `tsconfig` (section 5) and `typescript-eslint` `strictTypeChecked`, `stylisticTypeChecked`, `switch-exhaustiveness-check`, `consistent-type-imports` |
 | Return types everywhere, callbacks included | `@typescript-eslint/explicit-function-return-type` (with `allowTypedFunctionExpressions: false`), `explicit-module-boundary-types` |
-| Annotated variables and parameters; hook type arguments | `no-restricted-syntax`: a variable with a plain name, or a parameter, without a type annotation, and `useState`, `useRef`, `useReducer` or `createContext` without a type argument; `no-inferrable-types` off. The older `typedef` rule is deprecated in typescript-eslint, so it is not used |
+| Annotated variables and parameters; hook type arguments | `no-restricted-syntax`: a variable with a plain name (except an `as const` value, whose type the union is derived from; section 5), or a parameter, without a type annotation, and `useState`, `useRef`, `useReducer` or `createContext` without a type argument; `no-inferrable-types` off. The older `typedef` rule is deprecated in typescript-eslint, so it is not used |
 | Types only in `.types.ts` | `no-restricted-syntax` on `type` and `interface` declarations in every other file |
 | `type`, not `interface`; no casts | `consistent-type-definitions: type`, `consistent-type-assertions` |
 | Names (PascalCase, `use`, `is`/`has`, UPPER_SNAKE) | `@typescript-eslint/naming-convention` |

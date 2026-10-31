@@ -1,11 +1,10 @@
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 
-import type { Profile } from '@/content';
-
 import { Placeholder } from './placeholder.component';
+import type { PlaceholderProps } from './placeholder.types';
 
-const PROFILE: Profile = {
+const PROFILE: PlaceholderProps['profile'] = {
   name: 'Test Name',
   role: 'Test Role',
   tagline: 'Test tagline',

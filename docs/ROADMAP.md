@@ -185,7 +185,7 @@ The first part (3.1–3.10) produces a usable, deployed site without motion or t
 - **Done when:** the workflow passes on GitHub, and a pull request that drops a Lighthouse score below the threshold fails.
 
 ### 3.4 Content layer
-- [ ] **Branch:** `feat/content-layer`
+- [x] **Branch:** `feat/content-layer`
 - **Scope:**
   - Typed content files in `src/content/` with all data from brief section 5.
   - Every user-facing string is ready for a future `pl` locale.
@@ -289,6 +289,18 @@ The first part (3.1–3.10) produces a usable, deployed site without motion or t
 - [ ] **Branch:** `docs/readme`
 - **Scope:** the repository README covering the stack, how to run it, the architecture overview, how the hero works, performance decisions, AI usage (linking `docs/AI_USAGE.md`) and screenshots or a GIF.
 - **Done when:** a tech lead can understand the project from the README alone.
+
+### 3.21 Polish version
+- [ ] **Branch:** `feat/polish-locale`
+- **Scope** (after v1 is live; the mechanism is [DECISIONS.md](DECISIONS.md) #007):
+  - `src/content/pl/`: the whole `Content` in Polish, typed as `Content`, so a missing translation does not compile. Claude drafts the translation and Rafał approves it. Polish plurals use `Intl.PluralRules` (1 narzędzie, 2 narzędzia, 5 narzędzi).
+  - Kept in English: the testimonials, which are quoted word for word (brief section 5.6), with the Polish page marking them as English (`lang="en"`); tool and company names; the prototype gallery and the docs.
+  - A `/pl/` route, pre-rendered to `dist/pl/index.html`. The page gets its locale from the route, not from a fixed import of `en`.
+  - The head for each language: `<html lang>`, title, description, Open Graph locale, and `hreflang` alternates (`en`, `pl`, `x-default`) on both pages.
+  - A language switch: a plain link to the other path, with `hreflang` and an accessible name in the target language. Its place in the header is designed in this task, because the reference design has none.
+  - No browser-language detection, no redirect, no cookie or `localStorage`.
+  - `src/content/content.test.ts` runs every check on `pl` as well.
+- **Done when:** `/` and `/pl/` are both served as complete pre-rendered HTML in their language, the switch works with the keyboard and without JavaScript, the build fails when a Polish string is missing, and the Lighthouse thresholds from 3.16 hold on both pages. Open item for Rafał: a Polish CV PDF, or the English one linked from both pages.
 
 ---
 

@@ -69,5 +69,5 @@ Node 24 (`.nvmrc`) and pnpm. After `pnpm install`, a `commit-msg` hook checks co
 ## Current status (keep this updated)
 
 - Phase: 3, implementation
-- Last completed: 3.3 continuous integration: GitHub Actions for lint, format, typecheck, test, build and commitlint, a PR title check, and Lighthouse CI on pull requests (`@lhci/cli`, #006)
-- Next step: 3.4 content layer, branch `feat/content-layer`
+- Last completed: 3.4 content layer: typed content for every area of the reference design in `src/content/` (one `.types.ts` per area), `SECTION_IDS` in `src/constants/`, date and object helpers in `src/utils/`, and a content test run for every locale
+- Next step: 3.5 design tokens and global styles, branch `feat/design-tokens`

@@ -1,9 +1,10 @@
+import type { Keyframe, PercentKeyframes } from '@/motion/keyframes.types';
+
 import {
   LINEAR_BETWEEN_KEYFRAMES,
   PASTE_UP,
   VAULT,
 } from './entrance.constants';
-import type { Keyframe, PercentKeyframes } from './entrance.types';
 
 // Where a vaulting letter starts, in pixels for a title of this font size.
 export function vaultStart(fontSize: number): Keyframe {

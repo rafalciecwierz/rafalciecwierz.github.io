@@ -259,12 +259,13 @@ The first part (3.1–3.10) produces a usable, deployed site without motion or t
 - **Done when:** the animations run at 60 fps on a mid-range phone and are reduced to simple fades or nothing with reduced motion.
 
 ### 3.14 Hero scene
-- [ ] **Branch:** `feat/hero-scene`
+- [x] **Branch:** `feat/hero-scene`
 - **Scope:**
   - The animated hero of the chosen design: the rooftop sign flickering on, the generated skyline, and the SVG free-runner (a pose rig) hopping between letters and perching on the Ł.
   - Moved here from 3.12: RoleFlip (the split-flap role), the tricks on clicks on the runner, and the skyline's window flicker. The runner moves with `RunnerRig` (built in 3.12).
   - Animation paused when the hero is off-screen or the tab is hidden.
   - With reduced motion: the sign lit and the runner perched still.
+  - Agreed during the task: no hop-in on load (the motion loads 1–3 s after the hero is painted with the runner already on the Ł); he hops only to a clicked letter. Instead he greets the viewer once after the sign has lit: stands up on the Ł, turns, waves three times and crouches back (the footer's wave, reused). Letter and runner clicks are a pointer-only easter egg. Letter tops come from a pixel scan of each glyph at runtime.
 - **Done when:** the scene adds no dependency, is `aria-hidden`, causes no layout shift, and the hero heading stays the LCP element.
 
 ### 3.15 Career run

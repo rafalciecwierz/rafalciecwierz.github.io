@@ -1,13 +1,11 @@
-import { mixPose, POSES, type RigState } from '@/components';
+import { mixPose, POSES, type RigState, wavePose } from '@/components';
 import { clamp, easeInOutQuad, lerp } from '@/utils';
 
 import {
   DROP,
-  FULL_CYCLE,
   ROLL,
   SCALE_BY_HEIGHT,
   SPOT_SHARE,
-  WAVE,
 } from './footerLanding.constants';
 import type { StreetGeometry } from './footerMotion.types';
 
@@ -110,25 +108,11 @@ export function raiseArmState(
   };
 }
 
-// The raised arm waves: the elbow and the shoulder swing on a sine, and end where they began,
-// so the last frame is exactly the static waving pose.
+// The raised arm waves three times and ends on the static waving pose, so the static runner
+// can take over.
 export function waveState(
   geometry: StreetGeometry,
   progress: number,
 ): RigState {
-  const swing: number = Math.sin(progress * FULL_CYCLE * WAVE.cycles);
-  const [lean, head, nearShoulder, nearElbow, farShoulder, , ...legs] =
-    POSES.wave;
-  return {
-    ...upright(geometry, geometry.x),
-    pose: [
-      lean,
-      head,
-      nearShoulder,
-      nearElbow,
-      farShoulder + swing * WAVE.shoulderSwing,
-      swing * WAVE.elbowSwing,
-      ...legs,
-    ],
-  };
+  return { ...upright(geometry, geometry.x), pose: wavePose(progress) };
 }

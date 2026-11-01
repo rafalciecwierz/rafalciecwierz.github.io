@@ -82,7 +82,8 @@ export type RigPartAttributes = Readonly<
 // Where the rig stands and what it does in one frame. x and y are where his feet touch the
 // ground, in the scene's units. spin turns the whole figure (a roll) around the middle of his
 // torso. When he is grounded during a spin, the lowest point of the turned figure (his back,
-// his hands) touches the ground instead of his feet.
+// his hands) touches the ground instead of his feet. facing -1 mirrors him to run left; he
+// faces right when it is left out.
 export type RigState = {
   x: number;
   y: number;
@@ -90,7 +91,11 @@ export type RigState = {
   scale: number;
   spin: number;
   isGrounded: boolean;
+  facing?: Facing;
 };
+
+// Which way he looks: 1 to the right, -1 to the left.
+export type Facing = 1 | -1;
 
 // What a RunnerRig lets motion code do with it, 60 times a second, without a React render.
 export type RunnerRigHandle = {

@@ -12,6 +12,10 @@ export const MOTION_TARGETS = {
   board: 'board',
   boardChip: 'board-chip',
   poster: 'poster',
+  heroRunner: 'hero-runner',
+  heroRole: 'hero-role',
+  roleFlip: 'role-flip',
+  skylineWindow: 'skyline-window',
 } as const;
 
 // The attribute that carries a motion target's name.

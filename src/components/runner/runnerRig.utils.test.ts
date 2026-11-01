@@ -16,6 +16,7 @@ import {
   rigTransform,
   spinCentre,
   spinTransform,
+  wavePose,
 } from './runnerRig.utils';
 
 const STATE: RigState = {
@@ -73,7 +74,13 @@ describe('rigFoot', (): void => {
 describe('rigTransform and spinTransform', (): void => {
   it('places the feet at (x, y) and scales the figure', (): void => {
     expect(rigTransform(STATE, 60)).toBe(
-      'translate(120.0 170.0) scale(1.500) translate(0 -60.0)',
+      'translate(120.0 170.0) scale(1.500 1.500) translate(0 -60.0)',
+    );
+  });
+
+  it('mirrors him when he faces left', (): void => {
+    expect(rigTransform({ ...STATE, facing: -1 }, 60)).toContain(
+      'scale(-1.500 1.500)',
     );
   });
 
@@ -95,5 +102,18 @@ describe('rigPartAttributes', (): void => {
       ['farArm', 'farLeg', 'head', 'nearArm', 'nearLeg', 'torso'].sort(),
     );
     expect(attributes.nearArm.points).toMatch(/^-?\d+\.\d,-?\d+\.\d /);
+  });
+});
+
+describe('wavePose', (): void => {
+  it('starts and ends on the still waving pose, and swings the arm between', (): void => {
+    const start: Pose = wavePose(0);
+    const end: Pose = wavePose(1);
+
+    start.forEach((angle: number, index: number): void => {
+      expect(angle).toBeCloseTo(POSES.wave[index] ?? Number.NaN);
+      expect(end[index]).toBeCloseTo(POSES.wave[index] ?? Number.NaN);
+    });
+    expect(wavePose(1 / 12)[5]).toBeCloseTo(38);
   });
 });

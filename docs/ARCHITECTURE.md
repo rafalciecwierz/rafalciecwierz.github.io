@@ -113,7 +113,7 @@ src/
     index.ts                   # re-exports every component
   motionComponents/            # lazy, client-only motion components (section 9); no index.ts
     rootMotion/                # page-wide motion: starts Lenis (mounted by app.component.tsx)
-    heroMotion/
+    heroMotion/                # SignFlicker, RoleFlip, window flicker, LetterHop and tricks (task 3.14)
     careerRunMotion/
     entranceMotion/            # Vault, BoardReveal, PasteUp; Section mounts it in every section (task 3.13)
     processMotion/             # GapLeap and its replay button (task 3.12)
@@ -124,7 +124,7 @@ src/
     lenis.ts                   # creates Lenis and syncs it with ScrollTrigger (+ lenis.constants.ts)
     motionLayer/               # loads and mounts the lazy motion components (section 9)
   hooks/                       # shared hooks: useReducedMotion, useIsHydrated, useIsIdle,
-                               # useMediaQuery, useInView, usePageVisible, useFocusTrap,
+                               # useMediaQuery, useInView, useFocusTrap,
                                # useScrollLock, useEscapeKey, useCopyToClipboard
   services/                    # side effects behind a small interface: clipboard, email address
   utils/                       # shared pure functions: math (clamp, lerp), random (seeded rng),
@@ -381,7 +381,9 @@ The rules in brief section 8 are checked by `eslint-plugin-jsx-a11y` and by the 
   - `autoToggle: true`: Lenis stops while `useScrollLock` sets `overflow: hidden` on `<html>` (the mobile menu, a dialog). A link clicked in the open mobile menu therefore jumps, which is right for a full-screen menu.
   - `allowNestedScroll: true`: scrollable boxes, such as a long dialog, keep their native scroll.
   - Its stylesheet (`lenis/dist/lenis.css`, which `autoToggle` needs) is imported by `motion/lenis.ts`, so it ships in the motion chunk.
-- **Paused when not seen.** The hero and every looping animation pause when they are off-screen (`useInView`) or the tab is hidden (`usePageVisible`).
+- **Paused when not seen.** Every looping animation pauses when it is off-screen: a ScrollTrigger on its section plays and pauses the loop (the hero's window flicker, task 3.14). A hidden tab needs no code: GSAP's clock runs on `requestAnimationFrame`, which the browser stops in a hidden tab. One-shot moves (the leap, a jump) are not paused.
+- **Moves drawn from progress** use `progressTween(duration, onProgress)` (`motion/progressTween.ts`): GSAP moves a number from 0 to 1 and a pure function of it draws the frame. GSAP's percentage keyframes are typed in `motion/keyframes.types.ts`.
+- **The hero** (task 3.14): the static page already shows the lit sign and the runner on the Ł when the motion loads, so there is no hop-in on load. Instead the runner greets the viewer once, about 1.8 s after the layer loads: he stands up on the Ł, turns to the viewer, waves three times (`wavePose`, shared with the footer's landing) and crouches back, and the static runner takes over again. The sign flickers on once (it ends lit), the role flips (the visible text is `aria-hidden`; screen readers read a visually hidden copy; the other titles are in the HTML, hidden), and the windows flicker. The runner moves only on a click, a pointer-only easter egg with no focus stops: a letter sends him there, a click on him plays the next trick. The first move hands over from the static runner to a `RunnerRig` at the same spot, found by a pixel scan of each glyph on a canvas. The scan runs in an idle moment after the font has loaded (or on the first click, if that comes sooner) and again after a resize; until then his click target sits on the static runner's box, so mounting the layer costs no canvas work. The role line is clipped at its column (`min-width: 0`, `overflow-x: clip`), so a longer title in the flip never widens the column or moves the sign (layout shift).
 
 ## 10. Code that runs at build time
 
@@ -408,7 +410,7 @@ Every effect in the reference (its comment header names them) mapped to where it
 | Section | Static components | Motion components | Content |
 | --- | --- | --- | --- |
 | `siteHeader` | Brand (monogram, label in name), Nav, MobileMenu (focus trap, Escape, focus return), header state solid once the page moves | – | `nav`, `brand`, `profile.initials` |
-| `hero` | HeroSign (the name as letters, sized by container query units on the first paint; the reference's FitName is not ported, the measured ratios are enough), the Runner perched on the Ł, HeroIntro (role, tagline), HeroFoot with an ActionGroup (Download CV, Get in touch, Start the climb), HeroMeta (the time after hydration), HeroBackdrop (Skyline, floodlight cones, parapet), HeroContent | `heroMotion`: SignFlicker, window flicker, RoleFlip (a split-flap scramble written by us, driven by a GSAP tween; no ScrambleText plugin), LetterHop (letter clicks, tricks on runner clicks) | `profile`, `hero` |
+| `hero` | HeroSign (the name as letters, sized by container query units on the first paint; the reference's FitName is not ported, the measured ratios are enough), the Runner perched on the Ł, HeroIntro (role, tagline), HeroFoot with an ActionGroup (Download CV, Get in touch, Start the climb), HeroMeta (the time after hydration), HeroBackdrop (Skyline, floodlight cones, parapet), HeroContent | `heroMotion`: SignFlicker, window flicker (paused off-screen), RoleFlip (a split-flap scramble written by us, driven by a GSAP tween; no ScrambleText plugin), LetterHop (letter clicks, tricks on runner clicks: backflip, kong vault, front flip, handstand); no hop-in on load, a greeting wave instead | `profile`, `hero` |
 | `about` | Text paragraphs and the facts (`StatList`) | `entranceMotion`: Vault on the title | `about` |
 | `stack` | AiBand, LevelBoard × 3 (the level in the title, the top edge and the chip style, never colour alone) | `entranceMotion`: BoardReveal stagger, Vault | `stack` |
 | `career` | an ordered List of MoveCards (newest first, the unbuilt roof first; MiniBuilding, JobRoles with a Promoted badge, PointList, TagList), EducationNote; the skip link comes with the run | `careerRunMotion` (only from 900 px): RooftopRun with ScrollTrigger `pin` + `scrub`, a building per company, a tower per promotion, the job card following the runner, progress bar; `entranceMotion`: Vault | `career` |

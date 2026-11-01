@@ -7,7 +7,7 @@ import styles from './heroBackdrop.module.scss';
 
 // The scene behind the hero text: the city, the cones of light from the floodlights, and the
 // parapet of the roof the sign stands on, with the floodlights on it. Pure decoration, hidden
-// from screen readers, and all static: the window flicker comes with the motion layer.
+// from screen readers, and all static: HeroMotion adds the window flicker.
 export function HeroBackdrop(): ReactElement {
   return (
     <div className={styles.backdrop} aria-hidden="true">

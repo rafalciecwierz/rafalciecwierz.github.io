@@ -74,6 +74,7 @@ export { PointList } from './pointList';
 export type { PosterProps, PosterTone } from './poster';
 export { Poster } from './poster';
 export type {
+  Facing,
   PoseName,
   RigState,
   RunnerBox,
@@ -88,7 +89,7 @@ export { POSES } from './runner';
 export { runnerBox, solvePose } from './runner';
 export { RunnerFigure } from './runner';
 export { RunnerRig } from './runner';
-export { mixPose } from './runner';
+export { mixPose, wavePose } from './runner';
 export type { SectionProps, SectionSpacing, SectionSurface } from './section';
 export { Section } from './section';
 export type {

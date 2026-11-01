@@ -1,6 +1,9 @@
 // A soft dark halo keeps the text readable where a lit window or a light cone of the scene
 // falls behind it (the plain colours alone drop below AA contrast there).
 .heroIntro {
+  // The column never grows with its content: the role flip writes longer titles into the same
+  // line, and a wider column would re-wrap the tagline and move the sign (layout shift).
+  min-width: 0;
   text-shadow:
     0 0 3px var(--color-night),
     0 0 12px var(--color-night);
@@ -14,6 +17,10 @@
   letter-spacing: var(--letter-spacing-xs);
   text-transform: uppercase;
   white-space: nowrap;
+  // A title longer than the column (during the role flip, on phones) is cut at its edge
+  // instead of pushing it wider. The margin keeps the halo of the last letter.
+  overflow-x: clip;
+  overflow-clip-margin: var(--space-3);
 }
 
 .tagline {

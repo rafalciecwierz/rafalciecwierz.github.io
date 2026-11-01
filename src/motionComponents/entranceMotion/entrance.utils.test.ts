@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import type { PercentKeyframes } from './entrance.types';
+import type { PercentKeyframes } from '@/motion/keyframes.types';
+
 import {
   pasteUpKeyframes,
   tiltOf,

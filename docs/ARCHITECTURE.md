@@ -118,7 +118,8 @@ src/
                                # useInView, usePageVisible, useFocusTrap, useScrollLock,
                                # useEscapeKey, useCopyToClipboard
   services/                    # side effects behind a small interface: clipboard, email address
-  utils/                       # shared pure functions: math (clamp, lerp), random (seeded rng)
+  utils/                       # shared pure functions: math (clamp, lerp), random (seeded rng),
+                               # text (splitIntoWords), clock, anchor, media, classNames
   constants/                   # shared named values: breakpoints, section ids, motion timings
   content/
     content.types.ts           # the Content type, the shape of every locale
@@ -363,9 +364,11 @@ Pre-rendering runs every component in Node, where `window`, `document` and `matc
 - **Render is pure.** Browser APIs are used only in effects, event handlers, services and motion components, never while rendering.
 - **Generated graphics are rendered at build time.** The Skyline and the night map of Projects come from a seeded random generator with a fixed `viewBox`, so the build and the browser produce the same SVG and it ships in the HTML.
 - **Values that differ per visitor appear after hydration,** in a slot whose size is reserved so nothing shifts:
-  - the time in the hero meta line,
+  - the time in the hero meta line (last in the line, in a slot reserved from the first paint),
   - the email address, joined from parts (brief section 4.9),
-  - the letter platforms of the sign, found by a canvas scan after the fonts load.
+  - the letter platforms of the sign, found by a canvas scan after the fonts load (the motion layer, task 3.14).
+- **The perched runner is placed with CSS, not measured.** The static runner stands on the top of the Ł's stem, positioned inside the letter in em (`heroSign.module.scss`), so he scales and moves with the name at every width and is in the pre-rendered HTML. The two offsets were measured once in the browser with the reference's pixel scan of the glyph (task 3.8).
+- **The sign's letters are painted in a solid colour.** Their gradient is a copy of the glyph laid over each letter (`::after`, from `data-letter`), because text painted transparent (as `background-clip: text` needs) does not count for Largest Contentful Paint, and the name must be the LCP element (brief section 8).
 
   Without JavaScript, the email channel shows the LinkedIn, GitHub and Calendly links only, as the brief accepts.
 - **The year in the footer is the build year.** Vite's `define` replaces `APP_BUILD_YEAR` with one number in both builds, and `BUILD_YEAR` in `constants/` reads it. A year taken from `new Date()` while rendering could differ between the build and the visit (a build in December, a visit in January) and break hydration. Every merge redeploys the site, so the year stays current.
@@ -379,7 +382,7 @@ Every effect in the reference (its comment header names them) mapped to where it
 | Section | Static components | Motion components | Content |
 | --- | --- | --- | --- |
 | `siteHeader` | Brand (monogram, label in name), Nav, MobileMenu (focus trap, Escape, focus return), header state solid once the page moves | – | `nav`, `brand`, `profile.initials` |
-| `hero` | HeroSign (the name as letters, sized by container query units; FitName fine-tunes it after the fonts load), Role, Tagline, HeroActions (Download CV, Get in touch), HeroMeta, Skyline, Parapet, Runner perched on the Ł | `heroMotion`: SignFlicker, window flicker, RoleFlip (a split-flap scramble written by us, driven by a GSAP tween; no ScrambleText plugin), LetterHop (letter clicks, tricks on runner clicks) | `profile`, `hero` |
+| `hero` | HeroSign (the name as letters, sized by container query units on the first paint; the reference's FitName is not ported, the measured ratios are enough), the Runner perched on the Ł, HeroIntro (role, tagline), HeroFoot with an ActionGroup (Download CV, Get in touch, Start the climb), HeroMeta (the time after hydration), HeroBackdrop (Skyline, floodlight cones, parapet), HeroContent | `heroMotion`: SignFlicker, window flicker, RoleFlip (a split-flap scramble written by us, driven by a GSAP tween; no ScrambleText plugin), LetterHop (letter clicks, tricks on runner clicks) | `profile`, `hero` |
 | `about` | AboutText, Facts (the `StatList` component) | `aboutMotion`: Vault on the title | `about` |
 | `stack` | AiBand, LevelBoard × 3, ToolGroup, level legend with text labels | `stackMotion`: BoardReveal stagger, Vault | `stack` |
 | `career` | CareerList (newest first, a Building per job, promotions highlighted), Education, skip link | `careerRunMotion` (only from 900 px): RooftopRun with ScrollTrigger `pin` + `scrub`, a building per company, a tower per promotion, the job card following the runner, progress bar | `career` |
@@ -398,7 +401,7 @@ Across the page:
 
 - Structure: `Section` (a named region; `surface` plain or concrete, `spacing` padded or none), `Container` (the page's maximum width), `SectionHeading` (kicker with the section number, the title as `KineticText`, an optional intro), `Heading` (`level` for the outline, `size` for the look), `Text`, `List` and `ListItem`.
 - Small parts: `TagList`, `Badge` (solid, caution, muted), `StatList`, `Todo` (the visible marker for a `null` in the content), `VisuallyHidden`, `KineticText` (the real text for screen readers, letters marked `data-kinetic-letter` for the motion layer) and `Icon`.
-- Actions: `ButtonLink` (an `<a>` that looks like a button: primary or secondary, optional download), `Button` (a native `<button type="button">`: outline, strong for Menu and Close, or solid) and `TextLink` (inline or cta). They pass the native attributes through (`aria-*`, `onClick`) but take no `className`, so their look comes only from the variant. Layout primitives (`Section`, `Container`, `Text`, `List`, `ListItem`) take an optional `className` for the parent's layout.
+- Actions: `ActionGroup` (a wrapping row of actions; each `ButtonLink` in it takes the full width below 520 px), `ButtonLink` (an `<a>` that looks like a button: primary or secondary, optional download), `Button` (a native `<button type="button">`: outline, strong for Menu and Close, or solid) and `TextLink` (inline or cta). They pass the native attributes through (`aria-*`, `onClick`) but take no `className`, so their look comes only from the variant. Layout primitives (`Section`, `Container`, `Text`, `List`, `ListItem`) take an optional `className` for the parent's layout.
 
 **Graphics used by several sections:**
 

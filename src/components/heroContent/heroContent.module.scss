@@ -1,0 +1,26 @@
+@use '@/styles/breakpoints' as *;
+
+.heroContent {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  justify-content: flex-end;
+  width: 100%;
+  padding: calc(var(--layout-header-height) + var(--space-5))
+    var(--layout-gutter) var(--space-26);
+  container-type: inline-size;
+
+  // The perched runner's height, shared by the sign (his size) and the meta line (the room it
+  // leaves above the sign). The reference draws him at 0.333 of the name's font size (his crouch
+  // is 61.2 rig units at 0.5/92 of the font size each), capped at about 4rem (scale 1.05).
+  --perched-runner-height: min(calc(var(--font-size-name) * 0.333), 4rem);
+
+  @include from(lg) {
+    --perched-runner-height: min(
+      calc(var(--font-size-name-wide) * 0.333),
+      4rem
+    );
+  }
+}

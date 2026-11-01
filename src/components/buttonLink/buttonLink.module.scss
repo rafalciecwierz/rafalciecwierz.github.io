@@ -1,3 +1,5 @@
+@use '@/styles/breakpoints' as *;
+
 .buttonLink {
   display: inline-flex;
   align-items: center;
@@ -19,6 +21,12 @@
     transform var(--duration-fast),
     box-shadow var(--duration-fast),
     background-color var(--duration-fast);
+
+  // On narrow phones each button in a row (an ActionGroup) takes the full width, so both
+  // are easy to tap and their labels never wrap.
+  @include below(xs) {
+    flex: 1 1 100%;
+  }
 
   // It lifts off the ground on hover and its shadow lands under it, like a step up.
   &:hover {

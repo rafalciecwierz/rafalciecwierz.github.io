@@ -1,0 +1,23 @@
+// A soft dark halo keeps the text readable where a lit window or a light cone of the scene
+// falls behind it (the plain colours alone drop below AA contrast there).
+.heroIntro {
+  text-shadow:
+    0 0 3px var(--color-night),
+    0 0 12px var(--color-night);
+}
+
+.role {
+  font-family: var(--font-display);
+  font-size: var(--font-size-role);
+  font-weight: var(--font-weight-extrabold);
+  line-height: var(--line-height-none);
+  letter-spacing: var(--letter-spacing-xs);
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.tagline {
+  margin-top: var(--space-2);
+  color: var(--color-muted);
+  font-size: var(--font-size-lead-sm);
+}

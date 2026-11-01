@@ -1,0 +1,11 @@
+@use '@/styles/breakpoints' as *;
+
+.heroFoot {
+  display: grid;
+  gap: var(--space-4-5) var(--space-10);
+  align-items: end;
+
+  @include from(lg) {
+    grid-template-columns: 1fr auto;
+  }
+}

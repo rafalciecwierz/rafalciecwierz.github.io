@@ -1,9 +1,9 @@
 import type { ReactElement } from 'react';
 
-import { PageLayout, Placeholder } from '@/components';
+import { PageLayout } from '@/components';
 import { BUILD_YEAR } from '@/constants';
 import { content } from '@/content';
-import { SiteFooter, SiteHeader } from '@/sections';
+import { Hero, SiteFooter, SiteHeader } from '@/sections';
 
 export function HomePage(): ReactElement {
   return (
@@ -18,7 +18,7 @@ export function HomePage(): ReactElement {
       }
       footer={<SiteFooter footer={content.footer} year={BUILD_YEAR} />}
     >
-      <Placeholder profile={content.profile} />
+      <Hero profile={content.profile} hero={content.hero} />
     </PageLayout>
   );
 }

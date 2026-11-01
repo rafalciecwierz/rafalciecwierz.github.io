@@ -51,6 +51,15 @@
   --color-lamp-body: #2a2a30;
   --color-lamp-light: #ffb566;
 
+  // The skyline behind the hero: two rows of buildings and their lit windows.
+  --color-building-far: #12141c;
+  --color-building-near: #191b23;
+  --color-window-warm: #ffb35a;
+  --color-window-cool: #cfdbf5;
+
+  // The runner: his far arm and leg are darker, for depth in profile.
+  --color-runner-far: #a9a398;
+
   // Posters pasted on the wall (testimonials).
   --color-paper: #ece6d8;
   --color-ink: #16161a;
@@ -93,6 +102,12 @@
   ); // intros, leap text, channels
   --font-size-lead-lg: clamp(1.125rem, 1.6vw, 1.3125rem); // about text, quotes
   --font-size-statement: clamp(1.25rem, 2vw, 1.625rem); // availability
+
+  // The name on the hero sign, sized by the width of its container (cqi) so it fills the line
+  // on the first paint. The ratios are the name's measured width in Big Shoulders 900: two
+  // stacked words below 900px, one line from 900px.
+  --font-size-name: min(9.375rem, 24.6cqi);
+  --font-size-name-wide: min(18.125rem, 15.05cqi);
 
   // Fluid display sizes (Big Shoulders), by role, from the largest.
   --font-size-contact-title: clamp(4.5rem, 14.5vw, 15rem);

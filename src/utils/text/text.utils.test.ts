@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest';
 
-import type { KineticWord } from './kineticText.types';
-import { splitIntoWords } from './kineticText.utils';
+import type { TextWord } from './text.types';
+import { splitIntoWords } from './text.utils';
 
-function charactersOf(words: readonly KineticWord[]): string[][] {
-  return words.map((word: KineticWord): string[] =>
+function charactersOf(words: readonly TextWord[]): string[][] {
+  return words.map((word: TextWord): string[] =>
     word.letters.map(
-      (letter: KineticWord['letters'][number]): string => letter.character,
+      (letter: TextWord['letters'][number]): string => letter.character,
     ),
   );
 }
@@ -35,11 +35,11 @@ describe('splitIntoWords', (): void => {
   });
 
   it('gives every word and letter a key that is unique and stays the same for the same text', (): void => {
-    const words: KineticWord[] = splitIntoWords('a a');
-    const keys: string[] = words.flatMap((word: KineticWord): string[] => [
+    const words: TextWord[] = splitIntoWords('a a');
+    const keys: string[] = words.flatMap((word: TextWord): string[] => [
       word.key,
       ...word.letters.map(
-        (letter: KineticWord['letters'][number]): string => letter.key,
+        (letter: TextWord['letters'][number]): string => letter.key,
       ),
     ]);
 

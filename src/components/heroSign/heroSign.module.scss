@@ -1,0 +1,105 @@
+@use '@/styles/breakpoints' as *;
+
+.sign {
+  position: relative;
+  margin-bottom: clamp(1.25rem, 3vw, 2.25rem);
+}
+
+// The steel truss that holds the sign up, fading out downwards. The stroke colour sits inside
+// the SVG data URI (%23 is "#"), where a token cannot reach.
+.truss {
+  position: absolute;
+  inset: 42% -1% -150px;
+  z-index: -1;
+  opacity: 0.9;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64'%3E%3Cpath d='M0 0L64 64M64 0L0 64M0 0H64' stroke='%232C2D35' stroke-width='3' fill='none'/%3E%3C/svg%3E");
+  background-size: 64px 64px;
+  mask-image: linear-gradient(to bottom, var(--color-night) 40%, transparent);
+}
+
+// The size comes from the container's width on the first paint (tokens.scss), so the font swap
+// and the layout never resize it.
+.name {
+  font-family: var(--font-display);
+  font-size: var(--font-size-name);
+  font-weight: var(--font-weight-black);
+  line-height: var(--line-height-display-tight);
+  letter-spacing: var(--letter-spacing-name);
+  text-transform: uppercase;
+  white-space: nowrap;
+
+  @include from(lg) {
+    font-size: var(--font-size-name-wide);
+  }
+}
+
+// Two stacked words on phones, one line from 900px.
+.word {
+  display: block;
+
+  // Room for the acute of the Ć above the tight line.
+  & + & {
+    margin-top: 0.1em;
+  }
+
+  @include from(lg) {
+    display: inline;
+
+    & + & {
+      margin: 0 0 0 0.2em;
+    }
+  }
+}
+
+// Each letter is lit from below: a gradient in the shape of the glyph, with a sodium glow.
+//
+// The letter itself is painted in a solid colour, and the gradient is a copy of the glyph laid
+// over it (::after, from data-letter). Text painted transparent, as background-clip: text needs,
+// does not count for Largest Contentful Paint, and the name must be the page's LCP element
+// (brief section 8). The padding lets the gradient reach the acute of the Ć above the tight
+// line box.
+.letter {
+  position: relative;
+  display: inline-block;
+  margin-top: -0.2em;
+  padding-top: 0.2em;
+  color: var(--color-sign-face);
+  filter: drop-shadow(0 0 22px var(--color-glow));
+
+  &::after {
+    content: attr(data-letter);
+    position: absolute;
+    inset: 0;
+    padding-top: inherit;
+    background: linear-gradient(
+      to top,
+      var(--color-sign-light) 0%,
+      var(--color-sign-face) 46%,
+      var(--color-sign-shade) 100%
+    );
+    background-clip: text;
+    color: transparent;
+  }
+}
+
+// The letter the runner stands on. The runner is its sibling, not its child, so the letter's
+// glow filter does not light him up.
+.perch {
+  position: relative;
+  display: inline-block;
+}
+
+// The runner's feet on the top of the Ł's stem, his hip above its centre. The offsets are in
+// em, so they follow the letter's size at every width. They were measured once in the browser
+// (task 3.8) with the reference's pixel scan of the glyph in Big Shoulders Display 900: the
+// stem's top is 0.188em from the left of this box and 0.006em below its top.
+//
+// His height follows the letter too: --perched-runner-height, set by HeroContent.
+.runner {
+  position: absolute;
+  top: 0.006em;
+  left: 0.188em;
+  height: var(--perched-runner-height);
+  translate: -50% -100%;
+  pointer-events: none;
+}

@@ -11,7 +11,7 @@ export type { Contact } from './contact.types';
 export { PROJECT_STATUSES, STACK_LEVELS } from './content.constants';
 export type { Content } from './content.types';
 export type { Brand, Footer, Nav, NavLink } from './frame.types';
-export type { Hero } from './hero.types';
+export type { Hero, HeroMeta } from './hero.types';
 export type { Process } from './process.types';
 export type { Profile } from './profile.types';
 export type {

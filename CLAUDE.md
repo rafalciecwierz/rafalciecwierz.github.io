@@ -69,5 +69,5 @@ Node 24 (`.nvmrc`) and pnpm. After `pnpm install`, a `commit-msg` hook checks co
 ## Current status (keep this updated)
 
 - Phase: 3, implementation
-- Last completed: 3.7 layout and navigation: `PageLayout` (skip link, landmarks), the `siteHeader` section (Brand, Nav with an accessible mobile menu, a header that turns solid once the page moves), the `siteFooter` section (text part; the street with the runner moved to 3.9), the build year from Vite `define`, and the hooks useFocusTrap, useEscapeKey, useScrollLock, useInView and useMediaQuery
-- Next step: 3.8 hero (static), branch `feat/hero-static`
+- Last completed: 3.8 hero (static): the `hero` section (HeroSign with the runner perched on the Ł by CSS, a seeded Skyline, floodlights and parapet, HeroMeta with the local time after hydration, role, tagline and an ActionGroup), the Runner rig and seeded random utils; the h1 letters are the LCP element and CLS is about 0
+- Next step: 3.9 content sections (static), branch `feat/content-sections`

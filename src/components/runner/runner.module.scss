@@ -1,0 +1,19 @@
+.runner {
+  overflow: visible;
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.near {
+  stroke: var(--color-chalk);
+}
+
+.far {
+  stroke: var(--color-runner-far);
+}
+
+.head {
+  fill: var(--color-chalk);
+  stroke: none;
+}

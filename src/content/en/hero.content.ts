@@ -1,12 +1,9 @@
 import type { Hero } from '../hero.types';
 
 export const hero: Hero = {
-  meta: (time: string): readonly string[] => [
-    'Summit',
-    `Night session · ${time}`,
-    'Rooftop',
-  ],
+  meta: { place: 'Summit', session: 'Night session', spot: 'Rooftop' },
   downloadCv: 'Download CV',
   getInTouch: 'Get in touch',
-  startClimb: 'Start the climb ↓',
+  // The arrow is an icon next to the link, hidden from screen readers.
+  startClimb: 'Start the climb',
 };

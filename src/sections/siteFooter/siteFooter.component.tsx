@@ -1,16 +1,22 @@
 import type { ReactElement } from 'react';
 
-import { FooterMeta, PageFooter, SignOff, Text, TextLink } from '@/components';
+import {
+  FooterMeta,
+  FooterStreet,
+  PageFooter,
+  SignOff,
+  Text,
+  TextLink,
+} from '@/components';
 import { SECTION_IDS } from '@/constants';
 import { anchorHref } from '@/utils';
 
 import type { SiteFooterProps } from './siteFooter.types';
 
-// The text of the footer (brief section 4.10). The street with the runner above it comes with
-// the content sections (task 3.9).
+// The footer (brief section 4.10): the street where the runner lands, then the text.
 export function SiteFooter({ footer, year }: SiteFooterProps): ReactElement {
   return (
-    <PageFooter>
+    <PageFooter scene={<FooterStreet bubble={footer.bubble} />}>
       <SignOff title={footer.sessionOver} line={footer.line} />
       <FooterMeta>
         <TextLink

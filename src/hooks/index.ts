@@ -1,7 +1,11 @@
+export { useActiveSection } from './useActiveSection';
+export type { CopyToClipboard } from './useCopyToClipboard';
+export { useCopyToClipboard } from './useCopyToClipboard';
 export { useCurrentTime } from './useCurrentTime';
 export { useEscapeKey } from './useEscapeKey';
 export type { FocusTrapOptions } from './useFocusTrap';
 export { useFocusTrap } from './useFocusTrap';
 export { useInView } from './useInView';
+export { useIsHydrated } from './useIsHydrated';
 export { useMediaQuery } from './useMediaQuery';
 export { useScrollLock } from './useScrollLock';

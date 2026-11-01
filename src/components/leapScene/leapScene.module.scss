@@ -1,0 +1,69 @@
+@use '@/styles/breakpoints' as *;
+
+// The night sky over the roofs, wide on large screens; on phones the scene is squarer and runs
+// to the screen's edges.
+.frame {
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 16 / 7;
+  border: var(--border-hairline) solid var(--color-line);
+  background: linear-gradient(
+    180deg,
+    var(--color-sky-1),
+    var(--color-sky-2) 70%,
+    var(--color-horizon-leap)
+  );
+
+  @include below(sm) {
+    aspect-ratio: 4 / 3;
+    margin-inline: calc(-1 * var(--layout-gutter));
+    border-width: var(--border-hairline) 0;
+  }
+}
+
+.leapScene {
+  width: 100%;
+  height: 100%;
+}
+
+.distant {
+  fill: var(--color-building-distant);
+}
+
+.roof {
+  fill: var(--color-roof);
+}
+
+.ledge {
+  fill: var(--color-line);
+}
+
+.ledgeGlow {
+  fill: var(--color-lamp-light);
+  opacity: 0.5;
+}
+
+.unlit {
+  fill: var(--color-window-unlit);
+}
+
+.lit {
+  fill: var(--color-window-warm);
+  opacity: 0.5;
+}
+
+.sign {
+  fill: var(--color-chalk);
+  font-family: var(--font-display);
+  font-weight: var(--font-weight-black);
+  text-transform: uppercase;
+}
+
+.fogStop {
+  stop-color: var(--color-fog);
+}
+
+// After the landing the fog has mostly lifted.
+.fog {
+  opacity: 0.2;
+}

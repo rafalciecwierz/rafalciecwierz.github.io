@@ -40,4 +40,12 @@ describe('SiteFooter', (): void => {
       screen.getByRole('link', { name: FOOTER.backToTop }),
     ).toHaveAttribute('href', '#top');
   });
+
+  it('draws the street with the runner and the bubble, hidden from screen readers', (): void => {
+    const { container } = render(<SiteFooter footer={FOOTER} year={2031} />);
+
+    const bubble: HTMLElement = screen.getByText(FOOTER.bubble);
+    expect(bubble.closest('[aria-hidden="true"]')).not.toBeNull();
+    expect(container.querySelector('footer svg')).not.toBeNull();
+  });
 });

@@ -1,0 +1,12 @@
+.emailChannel {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1-5) var(--space-4);
+  align-items: center;
+}
+
+// The height of the address and its button, held before hydration.
+.reserved {
+  display: block;
+  min-block-size: 1.875rem;
+}

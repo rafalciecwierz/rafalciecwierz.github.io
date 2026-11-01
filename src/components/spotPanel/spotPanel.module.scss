@@ -1,0 +1,78 @@
+.top {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3-5) var(--space-dialog-inline);
+  border-bottom: var(--border-hairline) solid var(--color-line);
+  background: var(--color-concrete);
+}
+
+.label {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1-5) var(--space-2-5);
+  color: var(--color-muted);
+  font-family: var(--font-display);
+  font-size: var(--font-size-3xs);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-none);
+  letter-spacing: var(--letter-spacing-2xl);
+  text-transform: uppercase;
+}
+
+.body {
+  padding: 0 var(--space-dialog-inline) var(--space-9);
+}
+
+// The map runs edge to edge under the top bar.
+.zoom {
+  aspect-ratio: 16 / 9;
+  margin: 0 calc(-1 * var(--space-dialog-inline));
+  border-bottom: var(--border-hairline) solid var(--color-line);
+  background: var(--color-map);
+}
+
+.title {
+  margin: var(--space-6) 0 var(--space-3);
+  font-family: var(--font-display);
+  font-size: var(--font-size-dialog-title);
+  font-weight: var(--font-weight-black);
+  line-height: var(--line-height-display);
+  text-transform: uppercase;
+}
+
+.note {
+  margin-bottom: var(--space-2-5);
+  color: var(--color-muted);
+  font-size: var(--font-size-xs);
+}
+
+.heading {
+  margin: var(--space-6-5) 0 var(--space-2-5);
+  color: var(--color-sodium);
+  font-family: var(--font-display);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-extrabold);
+  line-height: var(--line-height-none);
+  letter-spacing: var(--letter-spacing-2xl);
+  text-transform: uppercase;
+}
+
+.text {
+  max-width: 60ch;
+  font-size: var(--font-size-md);
+}
+
+.screenshot {
+  width: 100%;
+  height: auto;
+}
+
+.links {
+  margin-top: var(--space-6-5);
+}

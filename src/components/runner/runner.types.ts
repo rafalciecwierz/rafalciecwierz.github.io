@@ -47,8 +47,18 @@ export type RunnerBox = {
   height: number;
 };
 
+// profile: seen from the side, the far arm and leg darker for depth. front: facing the viewer,
+// both sides in one tone.
+export type RunnerTone = 'profile' | 'front';
+
+export type RunnerFigureProps = {
+  pose: PoseName;
+  tone?: RunnerTone | undefined;
+};
+
 export type RunnerProps = {
   pose: PoseName;
+  tone?: RunnerTone | undefined;
   // Where and how big, from the parent's CSS Module.
   className?: string | undefined;
 };

@@ -14,10 +14,12 @@ export const projects: Projects = {
     archived: 'Archived',
   },
   tagsLabel: 'Tags',
-  repoLink: 'Repository ↗',
-  demoLink: 'Live demo ↗',
+  // The arrows are icons next to the links, hidden from screen readers.
+  repoLink: 'Repository',
+  demoLink: 'Live demo',
   panel: {
     open: 'Spot details',
+    openFor: (name: string): string => `Spot details: ${name}`,
     close: 'Close',
     description: 'The spot',
     stack: 'Stack',

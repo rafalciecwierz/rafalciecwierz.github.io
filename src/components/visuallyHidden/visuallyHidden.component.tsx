@@ -4,9 +4,14 @@ import styles from './visuallyHidden.module.scss';
 import type { VisuallyHiddenProps } from './visuallyHidden.types';
 
 // Text that screen readers announce but the eye does not see, e.g. the real text behind a
-// title split into animated letters, or the project name after a "Spot details" button.
+// title split into animated letters, or a status such as "Email address copied" (`live`).
 export function VisuallyHidden({
+  live,
   children,
 }: VisuallyHiddenProps): ReactElement {
-  return <span className={styles.visuallyHidden}>{children}</span>;
+  return (
+    <span className={styles.visuallyHidden} aria-live={live}>
+      {children}
+    </span>
+  );
 }

@@ -1,7 +1,8 @@
-import type { ReactElement } from 'react';
+import { type ReactElement, useMemo } from 'react';
 
 import { Button } from '@/components/button';
 import type { NavLink } from '@/content';
+import { useActiveSection } from '@/hooks';
 import { anchorHref, classNames } from '@/utils';
 
 import { NAV_ID } from './nav.constants';
@@ -17,6 +18,12 @@ export function Nav({ nav }: NavProps): ReactElement {
   // whole object as a ref when it holds one).
   const { isOpen, open, close, panelRef, buttonRef }: MobileMenu =
     useMobileMenu();
+  // The link of the section being read is marked; memoised, so the observer starts only once.
+  const sectionIds: string[] = useMemo<string[]>(
+    (): string[] => nav.links.map((link: NavLink): string => link.sectionId),
+    [nav.links],
+  );
+  const activeId: string | null = useActiveSection(sectionIds);
 
   return (
     <>
@@ -43,6 +50,9 @@ export function Nav({ nav }: NavProps): ReactElement {
               <a
                 href={anchorHref(link.sectionId)}
                 className={styles.link}
+                aria-current={
+                  link.sectionId === activeId ? 'location' : undefined
+                }
                 onClick={close}
               >
                 {link.label}

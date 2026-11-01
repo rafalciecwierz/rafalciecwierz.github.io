@@ -18,7 +18,8 @@ export const stack: Stack = {
   ai: {
     title: 'AI in the loop',
     text: 'Every tool on these boards I now use with AI agents alongside me: from specs and code to tests and reviews. I set the direction and check the output.',
-    link: 'How I work with AI ↓',
+    // The arrow is an icon next to the link, hidden from screen readers.
+    link: 'How I work with AI',
   },
   groups: [
     {

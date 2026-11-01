@@ -1,0 +1,80 @@
+.spotCard {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0 var(--space-5-5);
+  padding: var(--space-6-5) 0 var(--space-7-5);
+  border-top: var(--border-medium) solid var(--color-line);
+  transition: border-color var(--duration-quick);
+}
+
+.hot,
+.spotCard:focus-within {
+  border-top-color: var(--color-sodium);
+}
+
+// The number is outlined, not filled; it lights up with its pin.
+.number {
+  min-width: 1.3em;
+  color: transparent;
+  font-family: var(--font-display);
+  font-size: var(--font-size-spot-number);
+  font-weight: var(--font-weight-black);
+  line-height: var(--line-height-display-tight);
+  -webkit-text-stroke: var(--border-thin) var(--color-chalk);
+}
+
+.hot .number,
+.spotCard:focus-within .number {
+  -webkit-text-stroke-color: var(--color-sodium);
+}
+
+.label {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1-5) var(--space-2-5);
+  color: var(--color-muted);
+  font-family: var(--font-display);
+  font-size: var(--font-size-3xs);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-none);
+  letter-spacing: var(--letter-spacing-2xl);
+  text-transform: uppercase;
+}
+
+.name {
+  margin: var(--space-1-5) 0 var(--space-2-5);
+  font-family: var(--font-display);
+  font-size: var(--font-size-spot-title);
+  font-weight: var(--font-weight-black);
+  line-height: var(--line-height-display-loose);
+  text-transform: uppercase;
+}
+
+.note {
+  margin-bottom: var(--space-2);
+  color: var(--color-muted);
+  font-size: var(--font-size-xs);
+}
+
+.description {
+  max-width: var(--layout-text-width);
+  font-size: var(--font-size-sm);
+}
+
+.tags {
+  margin-top: var(--space-4);
+}
+
+.links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4-5);
+  margin-top: var(--space-3-5);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+}
+
+.more {
+  margin-top: var(--space-4);
+}

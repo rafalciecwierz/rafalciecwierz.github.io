@@ -1,0 +1,35 @@
+@use '@/styles/breakpoints' as *;
+
+// The map, then the list; side by side from 960px, the map staying in view while the list
+// scrolls past it.
+.spotBoard {
+  display: grid;
+  gap: var(--space-10);
+
+  @include from(xl) {
+    grid-template-columns: 5fr 7fr;
+    gap: var(--space-16);
+    align-items: start;
+  }
+}
+
+.map {
+  width: 100%;
+  max-width: 32.5rem;
+  aspect-ratio: 1;
+  border: var(--border-hairline) solid var(--color-line);
+  background: var(--color-map);
+
+  @include from(xl) {
+    position: sticky;
+    top: calc(var(--layout-header-height) + var(--space-8));
+  }
+}
+
+.count {
+  margin-top: var(--space-2-5);
+  padding-top: var(--space-4-5);
+  border-top: var(--border-medium) solid var(--color-line);
+  color: var(--color-muted);
+  font-size: var(--font-size-xs);
+}

@@ -1,0 +1,20 @@
+@use '@/styles/breakpoints' as *;
+
+// One poster under another on phones; three across from 900px, hung at uneven heights.
+.wall {
+  display: grid;
+  gap: var(--space-11) var(--space-8);
+
+  @include from(lg) {
+    grid-template-columns: repeat(3, 1fr);
+    align-items: start;
+
+    > :nth-child(3n + 2) {
+      margin-top: var(--space-14);
+    }
+
+    > :nth-child(3n) {
+      margin-top: var(--space-4-5);
+    }
+  }
+}

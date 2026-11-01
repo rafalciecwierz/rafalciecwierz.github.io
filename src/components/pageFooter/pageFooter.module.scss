@@ -1,8 +1,11 @@
 @use '@/styles/breakpoints' as *;
 
 .pageFooter {
-  padding: var(--space-7) var(--layout-gutter) var(--space-9);
   color: var(--color-muted);
+}
+
+.text {
+  padding: var(--space-7) var(--layout-gutter) var(--space-9);
 }
 
 .grid {

@@ -1,0 +1,15 @@
+@use '@/styles/breakpoints' as *;
+
+.boards,
+.side {
+  display: grid;
+  gap: var(--space-6);
+  align-items: start;
+}
+
+// Medium and Low side by side from 1000px, Medium wider: it holds more tools.
+.side {
+  @include from(xxl) {
+    grid-template-columns: 2fr 1fr;
+  }
+}

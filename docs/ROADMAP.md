@@ -218,7 +218,7 @@ The first part (3.1–3.10) produces a usable, deployed site without motion or t
 - **Done when:** name, role and both actions are above the fold at 360 px and 1280 px, and the heading is the LCP element.
 
 ### 3.9 Content sections (static)
-- [ ] **Branch:** `feat/content-sections`
+- [x] **Branch:** `feat/content-sections`
 - **Scope:**
   - About, Stack (levels with a text label), Career (the plain list newest first, with promotions highlighted), testimonials, Projects (extensible list), the AI and process section and Contact (no phone number), all rendered from the content layer.
   - The footer street above the footer text: the runner standing with the "Thanks for training with me!" bubble (moved here from 3.7, because the runner rig comes with 3.8).
@@ -243,7 +243,7 @@ The first part (3.1–3.10) produces a usable, deployed site without motion or t
 
 ### 3.12 Interactive effects
 - [ ] **Branch:** `feat/interactive-effects`
-- **Scope:** the effects used by the chosen design (React Bits, GSAP plugins or other sources), either installed or ported as decided in `docs/ARCHITECTURE.md`, including FooterLanding (the runner drops onto the footer street, rolls, turns and waves). Each effect respects reduced motion and adds no unplanned dependencies.
+- **Scope:** the effects used by the chosen design (React Bits, GSAP plugins or other sources), either installed or ported as decided in `docs/ARCHITECTURE.md`, including FooterLanding (the runner drops onto the footer street, rolls, turns and waves) and clicks on the project map's pins (they sit in an `aria-hidden` SVG; until then each card's button opens the panel). Each effect respects reduced motion and adds no unplanned dependencies.
 - **Done when:** all planned effects work, and each has a decision entry when it adds a dependency.
 
 ### 3.13 Scroll animations

@@ -52,5 +52,7 @@ export type Career = {
   // Newest first, as the list shows them.
   jobs: readonly Job[];
   educationLabel: string;
+  // "Engineer's degree in Computer Science, 2015–2021"
+  educationDetail: (degree: string, years: string) => string;
   education: Education;
 };

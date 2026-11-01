@@ -2,8 +2,9 @@ import type { ComponentProps, ReactNode } from 'react';
 
 import type { IconName } from '@/components/icon';
 
-// outline: the usual look. solid: the same button, lit, e.g. "Copied" after copying the email.
-export type ButtonVariant = 'outline' | 'solid';
+// outline: the usual look. strong: a chalk outline for a button that stands alone in the
+// header (Menu, Close). solid: lit, e.g. "Copied" after copying the email.
+export type ButtonVariant = 'outline' | 'strong' | 'solid';
 
 // The other attributes of a button (onClick, aria-expanded, aria-controls, aria-haspopup) pass
 // through. `type` is always "button", and the look comes only from the variant.

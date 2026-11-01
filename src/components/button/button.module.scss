@@ -24,6 +24,12 @@
   }
 }
 
+.strong {
+  border-color: var(--color-chalk);
+  font-size: var(--font-size-lg);
+  letter-spacing: var(--letter-spacing-sm);
+}
+
 .solid,
 .solid:hover {
   border-color: var(--color-sodium);

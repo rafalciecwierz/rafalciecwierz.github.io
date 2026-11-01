@@ -115,7 +115,8 @@ src/
     lenis.ts                   # creates Lenis and syncs it with ScrollTrigger
     motionLayer/               # loads and mounts the lazy motion components (section 9)
   hooks/                       # shared hooks: useReducedMotion, useIsHydrated, useMediaQuery,
-                               # useInView, usePageVisible, useFocusTrap, useCopyToClipboard
+                               # useInView, usePageVisible, useFocusTrap, useScrollLock,
+                               # useEscapeKey, useCopyToClipboard
   services/                    # side effects behind a small interface: clipboard, email address
   utils/                       # shared pure functions: math (clamp, lerp), random (seeded rng)
   constants/                   # shared named values: breakpoints, section ids, motion timings
@@ -131,7 +132,7 @@ src/
     global.scss                # imports tokens and fonts; the page-wide base (reset, links, focus)
     fonts.scss                 # @font-face rules and the metric-adjusted fallback faces
     _breakpoints.scss          # the breakpoint map and the from()/below() media query mixins
-  types/                       # ambient declarations only (*.d.ts), when one is needed
+  types/                       # ambient declarations only (*.d.ts): APP_BUILD_YEAR from Vite's define
   test/
     setup.ts                   # Vitest and Testing Library setup
 ```
@@ -367,6 +368,8 @@ Pre-rendering runs every component in Node, where `window`, `document` and `matc
   - the letter platforms of the sign, found by a canvas scan after the fonts load.
 
   Without JavaScript, the email channel shows the LinkedIn, GitHub and Calendly links only, as the brief accepts.
+- **The year in the footer is the build year.** Vite's `define` replaces `APP_BUILD_YEAR` with one number in both builds, and `BUILD_YEAR` in `constants/` reads it. A year taken from `new Date()` while rendering could differ between the build and the visit (a build in December, a visit in January) and break hydration. Every merge redeploys the site, so the year stays current.
+- **The mobile menu needs JavaScript.** Below 760 px the links sit behind the Menu button. Without JavaScript the page is still one readable scroll, and the skip link works.
 - **Hydration must match.** The server and the first browser render produce identical HTML. Hooks that read the browser return their server value during hydration, through `useSyncExternalStore`. `suppressHydrationWarning` is not used.
 
 ## 11. Component map
@@ -388,14 +391,14 @@ Every effect in the reference (its comment header names them) mapped to where it
 
 Across the page:
 
-- `PageLayout`: the skip link, the landmarks (`header`, `main`, `footer`) and the root motion layer (Lenis).
+- `PageLayout`: the skip link, the landmarks (`header`, `main`, `footer`) and the root motion layer (Lenis). The page passes the `siteHeader` and `siteFooter` sections in as props, because a component never imports a section. Since task 3.7 the header is `HeaderBar` (solid once a sentinel at the top of the document leaves the screen, seen by `useInView`), `Brand` and `Nav` (one list of links; below 760 px a full-screen menu with `useFocusTrap`, `useEscapeKey` and `useScrollLock`, open only while `useMediaQuery` reports the mobile layout), and the footer is `PageFooter`, `SignOff` and `FooterMeta`.
 - `ConsoleHello`: one effect in `app.component.tsx` that prints `content.console`.
 
 **UI primitives used by several sections** (task 3.6), all in `src/components/`:
 
 - Structure: `Section` (a named region; `surface` plain or concrete, `spacing` padded or none), `Container` (the page's maximum width), `SectionHeading` (kicker with the section number, the title as `KineticText`, an optional intro), `Heading` (`level` for the outline, `size` for the look), `Text`, `List` and `ListItem`.
 - Small parts: `TagList`, `Badge` (solid, caution, muted), `StatList`, `Todo` (the visible marker for a `null` in the content), `VisuallyHidden`, `KineticText` (the real text for screen readers, letters marked `data-kinetic-letter` for the motion layer) and `Icon`.
-- Actions: `ButtonLink` (an `<a>` that looks like a button: primary or secondary, optional download), `Button` (a native `<button type="button">`: outline or solid) and `TextLink` (inline or cta). They pass the native attributes through (`aria-*`, `onClick`) but take no `className`, so their look comes only from the variant. Layout primitives (`Section`, `Container`, `Text`, `List`, `ListItem`) take an optional `className` for the parent's layout.
+- Actions: `ButtonLink` (an `<a>` that looks like a button: primary or secondary, optional download), `Button` (a native `<button type="button">`: outline, strong for Menu and Close, or solid) and `TextLink` (inline or cta). They pass the native attributes through (`aria-*`, `onClick`) but take no `className`, so their look comes only from the variant. Layout primitives (`Section`, `Container`, `Text`, `List`, `ListItem`) take an optional `className` for the parent's layout.
 
 **Graphics used by several sections:**
 

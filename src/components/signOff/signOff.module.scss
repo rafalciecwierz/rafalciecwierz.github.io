@@ -1,0 +1,13 @@
+.title {
+  color: var(--color-chalk);
+  font-family: var(--font-display);
+  font-size: var(--font-size-footer-title);
+  font-weight: var(--font-weight-black);
+  line-height: var(--line-height-display);
+  text-transform: uppercase;
+}
+
+.line {
+  margin-top: var(--space-2-5);
+  font-size: var(--font-size-xs);
+}

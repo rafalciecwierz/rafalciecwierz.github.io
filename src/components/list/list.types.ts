@@ -12,6 +12,6 @@ export type ListProps = {
   // An accessible name, for a list that has no heading of its own.
   label?: string;
   // The layout of the items, from the parent's CSS Module.
-  className?: string;
+  className?: string | undefined;
   children: ReactNode;
 };

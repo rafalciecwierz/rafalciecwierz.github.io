@@ -1,0 +1,56 @@
+// The first 40px of the document: once they scroll away, the header turns solid.
+.sentinel {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 1px;
+  height: var(--space-10);
+  pointer-events: none;
+}
+
+.headerBar {
+  position: fixed;
+  inset: 0 0 auto;
+  z-index: var(--z-header);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  height: var(--layout-header-height);
+  padding: 0 var(--layout-gutter);
+  background: linear-gradient(
+    color-mix(in srgb, var(--color-night) 80%, transparent),
+    transparent
+  );
+  transition: box-shadow var(--duration-base);
+
+  // The solid background is a layer of its own that fades in: a gradient cannot transition
+  // into a colour, but opacity can. It sits on a pseudo-element, not on the header, because
+  // backdrop-filter on the header would make it the containing block of the fixed mobile
+  // menu and clip the menu to 64px.
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: color-mix(in srgb, var(--color-night) 92%, transparent);
+    opacity: 0;
+    transition: opacity var(--duration-base);
+  }
+}
+
+.solid {
+  box-shadow: 0 1px 0 var(--color-line);
+
+  &::before {
+    opacity: 1;
+  }
+}
+
+// Where the browser can blur what scrolls under it, the layer is lighter and blurred.
+@supports (backdrop-filter: blur(8px)) {
+  .headerBar::before {
+    background: color-mix(in srgb, var(--color-night) 78%, transparent);
+    backdrop-filter: blur(8px);
+  }
+}

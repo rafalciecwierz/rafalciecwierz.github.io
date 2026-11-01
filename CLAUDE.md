@@ -69,5 +69,5 @@ Node 24 (`.nvmrc`) and pnpm. After `pnpm install`, a `commit-msg` hook checks co
 ## Current status (keep this updated)
 
 - Phase: 3, implementation
-- Last completed: 3.6 UI primitives: 17 shared components in `src/components/` (Section, Container, SectionHeading, KineticText, Heading, Text, List, ListItem, TagList, Badge, StatList, Todo, VisuallyHidden, Icon, Button, ButtonLink, TextLink) and `classNames()` in `src/utils/`, with tests for the logic and the accessible roles
-- Next step: 3.7 layout and navigation, branch `feat/layout-navigation`
+- Last completed: 3.7 layout and navigation: `PageLayout` (skip link, landmarks), the `siteHeader` section (Brand, Nav with an accessible mobile menu, a header that turns solid once the page moves), the `siteFooter` section (text part; the street with the runner moved to 3.9), the build year from Vite `define`, and the hooks useFocusTrap, useEscapeKey, useScrollLock, useInView and useMediaQuery
+- Next step: 3.8 hero (static), branch `feat/hero-static`

@@ -16,7 +16,7 @@ export type SectionProps = {
   surface?: SectionSurface;
   spacing?: SectionSpacing;
   // The section's own layout, from its CSS Module.
-  className?: string;
+  className?: string | undefined;
   ref?: Ref<HTMLElement>;
   children: ReactNode;
 };

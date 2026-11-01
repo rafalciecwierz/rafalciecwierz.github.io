@@ -8,6 +8,10 @@ export const MOTION_TARGETS = {
   leapFog: 'leap-fog',
   leapRunner: 'leap-runner',
   leapReplay: 'leap-replay',
+  vaultTitle: 'vault-title',
+  board: 'board',
+  boardChip: 'board-chip',
+  poster: 'poster',
 } as const;
 
 // The attribute that carries a motion target's name.

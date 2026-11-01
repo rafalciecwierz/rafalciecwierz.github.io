@@ -13,7 +13,11 @@ import { posterLook } from './team.utils';
 // "Spotters": recommendations from the team at Mood up, pasted on the wall as posters.
 export function Team({ team }: TeamProps): ReactElement {
   return (
-    <Section id={SECTION_IDS.team} labelledBy={TEAM_TITLE_ID}>
+    <Section
+      id={SECTION_IDS.team}
+      labelledBy={TEAM_TITLE_ID}
+      className={styles.team}
+    >
       <Container>
         <SectionHeading
           heading={team.heading}

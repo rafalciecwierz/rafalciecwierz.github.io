@@ -1,5 +1,6 @@
 import type { ReactElement } from 'react';
 
+import { MOTION_TARGETS } from '@/constants';
 import { classNames, hashString, tornEdge } from '@/utils';
 
 import styles from './poster.module.scss';
@@ -21,6 +22,8 @@ export function Poster({
     <figure
       className={classNames(styles.poster, styles[tone])}
       style={{ rotate: `${String(tilt)}deg` }}
+      data-motion-target={MOTION_TARGETS.poster}
+      data-tilt={tilt}
     >
       <div
         className={styles.sheet}

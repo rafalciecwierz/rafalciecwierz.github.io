@@ -30,13 +30,9 @@ body {
   overflow-x: clip;
 }
 
-// Smooth scrolling for anchor links, only when the reader has not asked for less motion.
-// Task 3.11 replaces it with Lenis.
-@media (prefers-reduced-motion: no-preference) {
-  html {
-    scroll-behavior: smooth;
-  }
-}
+// No CSS smooth scrolling: Lenis scrolls smoothly when motion is allowed (src/motion/lenis.ts),
+// and `scroll-behavior: smooth` would fight it on every frame. Without Lenis (reduced motion,
+// or before the motion layer loads), an anchor link jumps.
 
 a {
   color: var(--color-sodium);

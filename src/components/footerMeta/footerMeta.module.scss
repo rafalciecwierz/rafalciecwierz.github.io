@@ -1,0 +1,17 @@
+@use '@/styles/breakpoints' as *;
+
+.footerMeta {
+  display: grid;
+  gap: var(--space-1-5);
+  justify-items: start;
+
+  // Room between the back-to-top link and the small print under it.
+  > :first-child {
+    margin-bottom: var(--space-2-5);
+  }
+
+  @include from(lg) {
+    justify-items: end;
+    text-align: right;
+  }
+}

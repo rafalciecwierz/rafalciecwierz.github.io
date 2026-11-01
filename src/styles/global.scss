@@ -10,6 +10,8 @@
 }
 
 html {
+  // An anchor jump stops below the fixed header instead of under it.
+  scroll-padding-top: var(--layout-header-height);
   background: var(--color-night);
   color: var(--color-chalk);
   -webkit-text-size-adjust: 100%;

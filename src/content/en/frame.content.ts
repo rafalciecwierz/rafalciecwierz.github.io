@@ -28,13 +28,17 @@ export const brand: Brand = {
 
 export const footer: Footer = {
   builtWith: 'Built with React, TypeScript and GSAP',
+  separator: '·',
   repoUrl: 'https://github.com/rafalciecwierz/rafalciecwierz.github.io',
   repoLabel: 'Source on GitHub',
   sign: 'Rafał Ciećwierz',
+  copyright: (year: number, sign: string): string =>
+    `© ${String(year)} ${sign}`,
   bubble: 'Thanks for training with me!',
   sessionOver: 'Session over.',
   line: '22+ years of parkour, and still landing it.',
-  backToTop: 'Back to the summit ↑',
+  // The arrow is an icon next to the link, hidden from screen readers.
+  backToTop: 'Back to the summit',
 };
 
 export const consoleGreeting: string =

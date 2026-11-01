@@ -1,0 +1,16 @@
+@use '@/styles/breakpoints' as *;
+
+.pageFooter {
+  padding: var(--space-7) var(--layout-gutter) var(--space-9);
+  color: var(--color-muted);
+}
+
+.grid {
+  display: grid;
+  gap: var(--space-5-5);
+
+  @include from(lg) {
+    grid-template-columns: 1fr auto;
+    align-items: end;
+  }
+}

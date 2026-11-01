@@ -203,7 +203,7 @@ The first part (3.1–3.10) produces a usable, deployed site without motion or t
 - **Done when:** all primitives used by more than one section exist in `src/components/`.
 
 ### 3.7 Layout and navigation
-- [ ] **Branch:** `feat/layout-navigation`
+- [x] **Branch:** `feat/layout-navigation`
 - **Scope:**
   - Skip-to-content link.
   - Header with anchor navigation.
@@ -219,7 +219,10 @@ The first part (3.1–3.10) produces a usable, deployed site without motion or t
 
 ### 3.9 Content sections (static)
 - [ ] **Branch:** `feat/content-sections`
-- **Scope:** About, Stack (levels with a text label), Career (the plain list newest first, with promotions highlighted), testimonials, Projects (extensible list), the AI and process section and Contact (no phone number), all rendered from the content layer.
+- **Scope:**
+  - About, Stack (levels with a text label), Career (the plain list newest first, with promotions highlighted), testimonials, Projects (extensible list), the AI and process section and Contact (no phone number), all rendered from the content layer.
+  - The footer street above the footer text: the runner standing with the "Thanks for training with me!" bubble (moved here from 3.7, because the runner rig comes with 3.8).
+  - The navigation marks the section on screen with `aria-current` (moved here from 3.7, where the sections did not exist yet).
 - **Done when:** every section from the chosen design is present and readable without JavaScript animations.
 
 ### 3.10 SEO and deployment
@@ -240,7 +243,7 @@ The first part (3.1–3.10) produces a usable, deployed site without motion or t
 
 ### 3.12 Interactive effects
 - [ ] **Branch:** `feat/interactive-effects`
-- **Scope:** the effects used by the chosen design (React Bits, GSAP plugins or other sources), either installed or ported as decided in `docs/ARCHITECTURE.md`. Each effect respects reduced motion and adds no unplanned dependencies.
+- **Scope:** the effects used by the chosen design (React Bits, GSAP plugins or other sources), either installed or ported as decided in `docs/ARCHITECTURE.md`, including FooterLanding (the runner drops onto the footer street, rolls, turns and waves). Each effect respects reduced motion and adds no unplanned dependencies.
 - **Done when:** all planned effects work, and each has a decision entry when it adds a dependency.
 
 ### 3.13 Scroll animations

@@ -9,5 +9,5 @@
     },
     "allowImportingTsExtensions": true
   },
-  "include": ["scripts", "vite.config.ts"]
+  "include": ["scripts", "vite.config.ts", "src/types/buildInfo.d.ts"]
 }

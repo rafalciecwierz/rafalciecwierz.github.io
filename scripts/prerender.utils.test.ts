@@ -40,12 +40,22 @@ describe('outputFileFor', (): void => {
       '/site/dist/design/index.html',
     );
   });
+
+  it('writes a path that names a file (the 404 page) to that file', (): void => {
+    expect(outputFileFor('/site/dist', '/404.html')).toBe(
+      '/site/dist/404.html',
+    );
+  });
 });
 
 describe('isServerEntry', (): void => {
-  it('accepts a module with render() and ROUTE_PATHS', (): void => {
+  it('accepts a module with render(), ROUTE_PATHS and SITEMAP', (): void => {
     expect(
-      isServerEntry({ render: (): RenderResult => RESULT, ROUTE_PATHS: ['/'] }),
+      isServerEntry({
+        render: (): RenderResult => RESULT,
+        ROUTE_PATHS: ['/'],
+        SITEMAP: '<urlset />',
+      }),
     ).toBe(true);
   });
 
@@ -55,5 +65,8 @@ describe('isServerEntry', (): void => {
       isServerEntry({ render: 'not a function', ROUTE_PATHS: ['/'] }),
     ).toBe(false);
     expect(isServerEntry({ render: (): RenderResult => RESULT })).toBe(false);
+    expect(
+      isServerEntry({ render: (): RenderResult => RESULT, ROUTE_PATHS: ['/'] }),
+    ).toBe(false);
   });
 });

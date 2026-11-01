@@ -7,10 +7,11 @@ on:
     branches: [main]
   pull_request:
 
-# A newer push to the same branch or PR makes the older run pointless.
+# A newer push to the same PR makes the older run pointless. On main every run finishes, so a
+# deploy is never cut off halfway; a newer merge waits for it and then deploys on top.
 concurrency:
   group: ci-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 permissions:
   contents: read
@@ -81,6 +82,35 @@ jobs:
           name: dist
           path: dist/
           retention-days: 1
+
+      # On main, the same build is what GitHub Pages serves (brief section 10). Only reached
+      # when every check above passed.
+      - name: Upload the site for GitHub Pages
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: dist/
+
+  deploy:
+    name: Deploy to GitHub Pages
+    # Every merge into main (task 3.10). Pull requests never deploy.
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: verify
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    # Only this job may publish the site. id-token lets deploy-pages prove which workflow sent it.
+    permissions:
+      pages: write
+      id-token: write
+    # The environment GitHub creates for Pages; it shows the live URL on the run and the repo page.
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v5
 
   lighthouse:
     name: Lighthouse

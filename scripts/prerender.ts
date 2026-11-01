@@ -1,5 +1,5 @@
 // Step 4 of `pnpm build` (docs/ARCHITECTURE.md section 2): writes one static HTML file per route
-// from the server build of the React app, then removes the server build. Node 24 runs this file
+// and the sitemap from the server build of the React app, then removes the server build. Node 24 runs this file
 // directly, without a compile step.
 import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { dirname } from 'node:path';
@@ -10,6 +10,7 @@ import {
   DIST_DIRECTORY,
   SERVER_DIRECTORY,
   SERVER_ENTRY_FILE,
+  SITEMAP_FILE,
   TEMPLATE_FILE,
 } from './prerender.constants.ts';
 import {
@@ -24,7 +25,7 @@ const serverEntry: unknown = await import(
 );
 if (!isServerEntry(serverEntry)) {
   throw new Error(
-    `${SERVER_ENTRY_FILE} does not export render() and ROUTE_PATHS.`,
+    `${SERVER_ENTRY_FILE} does not export render(), ROUTE_PATHS and SITEMAP.`,
   );
 }
 
@@ -35,5 +36,8 @@ for (const path of serverEntry.ROUTE_PATHS) {
   await writeFile(file, fillTemplate(template, result));
   console.log(`Pre-rendered ${path} → ${file}`);
 }
+
+await writeFile(SITEMAP_FILE, serverEntry.SITEMAP);
+console.log(`Wrote the sitemap → ${SITEMAP_FILE}`);
 
 await rm(SERVER_DIRECTORY, { recursive: true, force: true });

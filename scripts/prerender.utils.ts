@@ -3,6 +3,7 @@ import { join } from 'node:path';
 import type { RenderResult, ServerEntry } from '../src/app/app.types';
 import {
   HEAD_MARKER,
+  HTML_EXTENSION,
   HTML_MARKER,
   PAGE_FILE_NAME,
 } from './prerender.constants.ts';
@@ -20,10 +21,12 @@ export function fillTemplate(template: string, result: RenderResult): string {
     .replace(HTML_MARKER, result.html);
 }
 
-// "/" becomes dist/index.html and "/design/" becomes dist/design/index.html,
-// which is how GitHub Pages serves a folder URL.
+// "/" becomes dist/index.html and "/design/" becomes dist/design/index.html, which is how
+// GitHub Pages serves a folder URL. A path that names a file, like "/404.html", is that file.
 export function outputFileFor(distDirectory: string, path: string): string {
-  return join(distDirectory, path, PAGE_FILE_NAME);
+  return path.endsWith(HTML_EXTENSION)
+    ? join(distDirectory, path)
+    : join(distDirectory, path, PAGE_FILE_NAME);
 }
 
 // The server entry is loaded with import() at runtime, so its shape is checked, not assumed.
@@ -34,6 +37,8 @@ export function isServerEntry(value: unknown): value is ServerEntry {
     'render' in value &&
     typeof value.render === 'function' &&
     'ROUTE_PATHS' in value &&
-    Array.isArray(value.ROUTE_PATHS)
+    Array.isArray(value.ROUTE_PATHS) &&
+    'SITEMAP' in value &&
+    typeof value.SITEMAP === 'string'
   );
 }

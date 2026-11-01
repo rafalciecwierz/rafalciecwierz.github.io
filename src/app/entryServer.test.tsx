@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 import { content } from '@/content';
 
 import type { RenderResult } from './app.types';
-import { render, ROUTE_PATHS } from './entryServer';
+import { render, ROUTE_PATHS, SITEMAP } from './entryServer';
 
 // Runs in Node, as the pre-render step does: no window and no document.
 describe('render', (): void => {
@@ -14,12 +14,26 @@ describe('render', (): void => {
     }
   });
 
-  it('puts the heading in the HTML and the title in the head of the home page', (): void => {
+  it('puts the heading in the HTML and the title and sharing tags in the head of the home page', (): void => {
     const result: RenderResult = render('/');
 
     expect(result.html).toContain(`<h1`);
     expect(result.html).toContain(content.profile.name);
     expect(result.head).toContain('<title>');
+    expect(result.head).toContain('<meta property="og:image"');
+    expect(result.head).toContain('<link rel="canonical"');
+  });
+
+  it('renders the 404 page with its own heading, kept out of search results', (): void => {
+    const result: RenderResult = render('/404.html');
+
+    expect(result.html).toContain(`<h1`);
+    expect(result.head).toContain('noindex');
+  });
+
+  it('lists only the home page in the sitemap', (): void => {
+    expect(SITEMAP).toContain('<loc>https://rafalciecwierz.github.io/</loc>');
+    expect(SITEMAP).not.toContain('404');
   });
 
   it('keeps the email address out of the HTML, so simple scrapers cannot read it', (): void => {

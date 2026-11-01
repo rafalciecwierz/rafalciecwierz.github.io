@@ -354,6 +354,8 @@ The chosen direction is 08 Ascent, dark variant "Night Session": a parkour night
 - Meta description from the tagline + availability line.
 - Open Graph + Twitter card with a 1200×630 `og-image.png` (important: this is what shows on LinkedIn).
 - `lang="en"`, favicon, theme colour.
+- Canonical link, `robots.txt` and a `sitemap.xml` generated from the indexed pages.
+- A `404.html` page in the site's style, marked `noindex`, served by GitHub Pages for every unknown address.
 - All of the above is in the pre-rendered HTML, because LinkedIn and other link previews do not run JavaScript (section 8).
 
 ---
@@ -362,7 +364,7 @@ The chosen direction is 08 Ascent, dark variant "Night Session": a parkour night
 
 - Repository: `rafalciecwierz.github.io`, default branch `main`.
 - In repo settings → Pages → Source: **GitHub Actions**.
-- Workflow `.github/workflows/deploy.yml`: on push to `main` (every merge) → install → lint → test → build with pre-rendering → upload `dist` → deploy with `actions/deploy-pages`.
+- Workflow `.github/workflows/ci.yml`: on push to `main` (every merge) → install → commitlint, lint, format check, typecheck, test → build with pre-rendering → upload `dist` → the `deploy` job publishes it with `actions/deploy-pages` ([DECISIONS.md](DECISIONS.md) #008).
 - Pull requests run the quality checks and Lighthouse CI against the thresholds in section 1 (roadmap task 3.3).
 - Vite `base: '/'`.
 

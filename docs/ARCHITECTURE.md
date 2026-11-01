@@ -54,15 +54,16 @@ Vite, React 19 and TypeScript, with a pre-render step written in the project (ab
 1. `tsc -b`: type-check the whole project.
 2. `vite build`: the browser bundle and `dist/index.html`, which holds two placeholders: `<!--app-head-->` and `<!--app-html-->`.
 3. `vite build --ssr src/app/entryServer.tsx --outDir dist-server`: the same React tree, built for Node.
-4. `node scripts/prerender.ts`. Node 24 runs TypeScript directly, without a compile step, as long as the code uses only syntax that can be stripped. For each route in `ROUTES` (only `/` for now), the script:
+4. `node scripts/prerender.ts`. Node 24 runs TypeScript directly, without a compile step, as long as the code uses only syntax that can be stripped. For each route in `ROUTES` (`/` and `/404.html`), the script:
    - calls `render(route)` from `dist-server`,
    - writes the returned `head` (title, meta, Open Graph) and `html` into the template,
-   - saves `dist/<route>/index.html`,
-   - deletes `dist-server`.
+   - saves `dist/<route>/index.html`, or `dist/404.html` for a path that names a file.
 
-In the browser, `src/app/entryClient.tsx` calls `hydrateRoot`: React attaches to the HTML that is already on screen instead of rendering it again. The dev server (`pnpm dev`) serves the template without pre-rendered content, so there the same file renders the page with `createRoot` instead.
+   Then it writes `dist/sitemap.xml` from the server entry's `SITEMAP` and deletes `dist-server`.
 
-The head comes from the same content layer as the page (`content.seo`), through a typed function `renderHead(seo: Seo): string`. The title and descriptions are written only once.
+In the browser, `src/app/entryClient.tsx` calls `hydrateRoot`: React attaches to the HTML that is already on screen instead of rendering it again. It picks the route with `routeForLocation`: GitHub Pages serves `404.html` for every unknown address, so any path without a route is the 404 page, and `/index.html` is `/`. The dev server (`pnpm dev`) serves the template without pre-rendered content, so there the same file renders the page with `createRoot` instead.
+
+The head comes from the same content layer as the page (`content.seo`), through a typed function `renderHead(route: AppRoute, imageAlt: string): string`. Each route carries its `seo` (title and description) and `isIndexed`. An indexed page gets a canonical link, Open Graph tags with absolute URLs built from `SITE_URL` (`src/constants/site/`) and a `summary_large_image` Twitter card, and is listed by `renderSitemap`; the 404 page gets `noindex` instead. Tags that are the same on every page and hold no copy (theme colour, favicon, Apple touch icon, font preloads) are written in `index.html`. The title and descriptions are written only once.
 
 ## 3. Folder structure
 
@@ -70,11 +71,13 @@ The head comes from the same content layer as the page (`content.seo`), through 
 public/
   fonts/                       # self-hosted woff2 files and their OFL licences (section 8)
   Rafal_Ciecwierz_CV.pdf
-  favicon.svg
-  og-image.png
+  favicon.svg                  # the RC monogram, drawn as strokes (no font)
+  apple-touch-icon.png         # 180 × 180, rendered from favicon.svg
+  og-image.png                 # 1200 × 630, rendered from design/og-image.html (placeholder until 3.18)
+  robots.txt                   # points to the sitemap the pre-render step writes
 scripts/
   prerender.ts                 # step 4 of the build
-  prerender.utils.ts           # fillTemplate, outputFileFor, isServerEntry (tested)
+  prerender.utils.ts           # fillTemplate, outputFileFor, isServerEntry (tested); writes sitemap.xml too
   prerender.constants.ts       # paths and template markers
   cssModules.utils.ts          # findRawValues: raw values in a stylesheet that have a token (tested)
   cssModules.test.ts           # runs findRawValues on every CSS Module (section 8)
@@ -82,11 +85,12 @@ scripts/
 src/
   app/                         # entry points; nothing imports this folder, so it has no index.ts
     app.component.tsx          # the root: page layout and the motion layer
-    app.constants.ts           # ROUTES (the pages to pre-render) and the root element id
-    app.utils.ts               # findRoute, renderHead
+    app.constants.ts           # ROUTES and NOT_FOUND_ROUTE (the pages to pre-render), the root element id
+    app.utils.ts               # findRoute, routeForLocation, renderHead, renderSitemap
     entryClient.tsx            # hydrateRoot (createRoot on the dev server)
-    entryServer.tsx            # render(path): { head, html }, and ROUTE_PATHS
+    entryServer.tsx            # render(path): { head, html }, ROUTE_PATHS and SITEMAP
   pages/
+    notFound/                  # the 404 page: the NotFound section, no header or footer
     home/
       home.component.tsx       # imports the content and composes the sections in order
       index.ts
@@ -101,6 +105,7 @@ src/
     process/
     contact/
     siteFooter/
+    notFound/                  # the 404 page: the night city, a line and the way home
   components/                  # every component, one folder each, no subgroups
     button/                    # e.g. Button, Heading, Section, List, Runner, Skyline,
     heading/                   #      JobEntry, SpotCard, Poster, LevelBoard (section 11)
@@ -120,7 +125,7 @@ src/
   services/                    # side effects behind a small interface: clipboard, email address
   utils/                       # shared pure functions: math (clamp, lerp), random (seeded rng),
                                # text (splitIntoWords), clock, anchor, media, classNames
-  constants/                   # shared named values: breakpoints, section ids, motion timings
+  constants/                   # shared named values: breakpoints, section ids, site URL and page paths, motion timings
   content/
     content.types.ts           # the Content type, the shape of every locale
     <area>.types.ts            # the shape of one area (career.types.ts, projects.types.ts, …)
@@ -496,7 +501,7 @@ Vitest and React Testing Library, light as in the brief, and aimed where a bug w
 | Content | a test that every id is unique, every link is absolute or a known file, and every `null` is a listed `TODO` |
 | Sections | render each section from fixture content; check headings, landmarks and labels by role, not by class |
 | Reduced motion | with `prefers-reduced-motion: reduce` mocked, no motion component mounts and the static content is complete |
-| Pre-rendering | a smoke test of `render('/')`: the HTML has the `h1`, the meta tags and every section, and does not contain the email address |
+| Pre-rendering | a smoke test of `render('/')` and `render('/404.html')`: the HTML has the `h1` and the meta tags (sharing tags on the home page, `noindex` on the 404 page), the sitemap lists only indexed pages, and nothing contains the email address |
 | Breakpoints | the SCSS and TypeScript values match (section 8) |
 | Design tokens | no CSS Module uses a raw value that has a token (section 8) |
 

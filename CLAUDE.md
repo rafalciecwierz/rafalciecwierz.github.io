@@ -41,7 +41,7 @@ Node 24 (`.nvmrc`) and pnpm. After `pnpm install`, a `commit-msg` hook checks co
 - `pnpm lint`, `pnpm typecheck`, `pnpm test`: run all three before calling code work done
 - `pnpm format` / `pnpm format:check`: Prettier (Markdown is excluded)
 - `pnpm lighthouse`: Lighthouse CI on `dist/` against the brief's thresholds (`lighthouserc.yml`); run `pnpm build` first
-- CI (`.github/workflows/`): `ci.yml` runs all of the above and commitlint on pull requests and on `main`, Lighthouse on pull requests; `pr-title.yml` lints the PR title
+- CI (`.github/workflows/`): `ci.yml` runs all of the above and commitlint on pull requests and on `main`, Lighthouse on pull requests, and deploys `main` to GitHub Pages; `pr-title.yml` lints the PR title
 
 ## Verifying work
 
@@ -69,5 +69,5 @@ Node 24 (`.nvmrc`) and pnpm. After `pnpm install`, a `commit-msg` hook checks co
 ## Current status (keep this updated)
 
 - Phase: 3, implementation
-- Last completed: 3.9 content sections (static): About, Stack, Career, From the team, Projects (seeded map, cards, details in a native dialog), The leap (scene drawn landed), Contact (email joined after hydration, Copy) and the footer street; the nav marks the section being read; sections lay themselves out with `Box`
-- Next step: 3.10 SEO and deployment, branch `ci/github-pages-deploy`
+- Last completed: 3.10 SEO and deployment: head tags from the content layer (canonical, Open Graph, Twitter card), favicon, Apple touch icon, placeholder OG image, robots.txt, generated sitemap, a `noindex` 404 page, and a deploy job in `ci.yml` after the checks (#008)
+- Next step: 3.11 motion foundation, branch `feat/motion-foundation`

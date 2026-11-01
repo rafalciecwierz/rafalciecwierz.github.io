@@ -1,0 +1,6 @@
+# Every page may be crawled. The 404 page asks not to be indexed with its own meta tag.
+# The address repeats SITE_URL in src/constants/site/site.constants.ts.
+User-agent: *
+Allow: /
+
+Sitemap: https://rafalciecwierz.github.io/sitemap.xml

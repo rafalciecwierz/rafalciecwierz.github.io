@@ -253,8 +253,9 @@ The first part (3.1–3.10) produces a usable, deployed site without motion or t
 - **Done when:** all planned effects work, and each has a decision entry when it adds a dependency.
 
 ### 3.13 Scroll animations
-- [ ] **Branch:** `feat/scroll-animations`
+- [x] **Branch:** `feat/scroll-animations`
 - **Scope:** section reveals, staggered groups and the title entrances of the chosen design (the "vault and land" letters), and PasteUp (the posters slapped on the wall, moved here from 3.12), using `useGSAP` with a scope ref.
+  - Agreed during the task: the entrances are the reference's own (Vault on every section title, BoardReveal on the stack boards, PasteUp on the posters), with no general fade-in of other blocks. They live in one shared `EntranceMotion` that `Section` mounts in every section.
 - **Done when:** the animations run at 60 fps on a mid-range phone and are reduced to simple fades or nothing with reduced motion.
 
 ### 3.14 Hero scene

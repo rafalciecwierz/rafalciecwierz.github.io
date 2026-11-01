@@ -12,6 +12,7 @@ export { mediaQueryBelow } from './media';
 export type { Leaf, PlainObject } from './object';
 export { collectLeaves, isPlainObject } from './object';
 export { createRandom, hashString } from './random';
+export { assignRef } from './ref';
 export type { TextLetter, TextWord } from './text';
 export { splitIntoWords } from './text';
 export { tornEdge } from './tornEdge';

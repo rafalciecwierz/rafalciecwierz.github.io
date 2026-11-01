@@ -70,5 +70,5 @@ Node 24 (`.nvmrc`) and pnpm. After `pnpm install`, a `commit-msg` hook checks co
 ## Current status (keep this updated)
 
 - Phase: 3, implementation
-- Last completed: 3.12 interactive effects: FooterLanding and GapLeap (with Replay) as lazy motion components, `RunnerRig` (the runner moved by GSAP through a ref handle), motion targets (`data-motion-target`), and clicks on the project map's pins with focus returned to the card
-- Next step: 3.13 scroll animations, branch `feat/scroll-animations`
+- Last completed: 3.13 scroll animations: one shared `EntranceMotion` that `Section` mounts in every section (Vault on every title, BoardReveal on the stack boards, PasteUp on the posters), off with reduced motion
+- Next step: 3.14 hero scene, branch `feat/hero-scene`

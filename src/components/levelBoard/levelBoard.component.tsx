@@ -1,5 +1,6 @@
 import type { ReactElement } from 'react';
 
+import { MOTION_TARGETS } from '@/constants';
 import { classNames } from '@/utils';
 
 import styles from './levelBoard.module.scss';
@@ -20,6 +21,7 @@ export function LevelBoard({
     <article
       className={classNames(styles.board, styles[level])}
       aria-labelledby={titleId}
+      data-motion-target={MOTION_TARGETS.board}
     >
       <div className={styles.head}>
         <h3 id={titleId} className={styles.title}>
@@ -39,7 +41,11 @@ export function LevelBoard({
           <h4 className={styles.group}>{row.name}</h4>
           <ul className={styles.chips} aria-label={row.label}>
             {row.tools.map((tool: string): ReactElement => (
-              <li key={tool} className={styles.chip}>
+              <li
+                key={tool}
+                className={styles.chip}
+                data-motion-target={MOTION_TARGETS.boardChip}
+              >
                 {tool}
               </li>
             ))}

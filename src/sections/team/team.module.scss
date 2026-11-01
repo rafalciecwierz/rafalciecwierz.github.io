@@ -1,5 +1,11 @@
 @use '@/styles/breakpoints' as *;
 
+// PasteUp starts each poster turned and scaled up, which can reach past the screen's edge on
+// phones; clipping sideways at the section keeps the page from scrolling sideways.
+.team {
+  overflow-x: clip;
+}
+
 // One poster under another on phones; three across from 900px, hung at uneven heights.
 .wall {
   display: grid;

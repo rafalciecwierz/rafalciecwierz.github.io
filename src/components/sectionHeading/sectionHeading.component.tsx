@@ -1,6 +1,7 @@
 import type { ReactElement } from 'react';
 
 import { KineticText } from '@/components/kineticText';
+import { MOTION_TARGETS } from '@/constants';
 import { classNames } from '@/utils';
 
 import styles from './sectionHeading.module.scss';
@@ -23,7 +24,11 @@ export function SectionHeading({
         {number !== null && <span className={styles.number}>{number}</span>}
         <span>{heading.kicker}</span>
       </p>
-      <h2 id={titleId} className={classNames(styles.title, styles[size])}>
+      <h2
+        id={titleId}
+        className={classNames(styles.title, styles[size])}
+        data-motion-target={MOTION_TARGETS.vaultTitle}
+      >
         <KineticText text={heading.title} />
       </h2>
       {intro !== undefined && <p className={styles.intro}>{intro}</p>}

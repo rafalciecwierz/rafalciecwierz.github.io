@@ -9,6 +9,7 @@ import type { HeroProps } from './hero.types';
 const PROFILE: HeroProps['profile'] = {
   name: 'Rafał Ciećwierz',
   role: 'Frontend Engineer',
+  roleFlips: ['Climbing Enjoyer'],
   tagline: 'Tagline',
   cvUrl: '/cv.pdf',
 };
@@ -28,7 +29,8 @@ describe('Hero', (): void => {
       name: PROFILE.name,
     });
     expect(region).toHaveAttribute('id', 'top');
-    expect(screen.getByText(PROFILE.role)).toBeInTheDocument();
+    // Once for screen readers, once (hidden from them) for the eye and the role flip.
+    expect(screen.getAllByText(PROFILE.role)).toHaveLength(2);
     expect(screen.getByText(PROFILE.tagline)).toBeInTheDocument();
   });
 

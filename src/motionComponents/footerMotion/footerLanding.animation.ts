@@ -1,4 +1,5 @@
 import { gsap } from '@/motion/gsap';
+import { progressTween } from '@/motion/progressTween';
 import { mediaQueryBelow } from '@/utils';
 
 import { BUBBLE, DURATIONS } from './footerLanding.constants';
@@ -26,22 +27,14 @@ export function measureStreet(street: HTMLElement): StreetGeometry {
   );
 }
 
-// One part of the landing as a tween: GSAP moves `progress` from 0 to 1 in real time, and every
-// frame draws the rig in the state for that progress. The step functions are pure
-// (footerLanding.utils.ts); this only gives them time.
+// One part of the landing: GSAP gives the pure step function (footerLanding.utils.ts) time.
 function landingPart(
   { rig, geometry }: FooterLandingOptions,
   duration: number,
   step: LandingStep,
 ): gsap.core.Tween {
-  const clock: { progress: number } = { progress: 0 };
-  return gsap.to(clock, {
-    progress: 1,
-    duration,
-    ease: 'none',
-    onUpdate: (): void => {
-      rig.set(step(geometry, clock.progress));
-    },
+  return progressTween(duration, (progress: number): void => {
+    rig.set(step(geometry, progress));
   });
 }
 

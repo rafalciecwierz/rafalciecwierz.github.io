@@ -3,10 +3,13 @@ import { lerp } from '@/utils';
 import {
   DEGREES_TO_RADIANS,
   FOOT_REACH,
+  FULL_CYCLE,
   POSE_LENGTH,
   SCALE_DECIMALS,
   SIDES,
+  WAVE,
 } from './runner.constants';
+import { POSES } from './runner.constants';
 import type {
   Point,
   Pose,
@@ -75,9 +78,11 @@ export function rigFoot(
 }
 
 // The transform that places the figure: its feet (or its lowest point in a roll) at (x, y),
-// scaled. The figure is drawn with its hip at (0, 0), so it is lifted by `foot` first.
+// scaled, and mirrored when he faces left. The figure is drawn with its hip at (0, 0), so it is lifted by `foot` first.
 export function rigTransform(state: RigState, foot: number): string {
-  return `translate(${state.x.toFixed(1)} ${state.y.toFixed(1)}) scale(${state.scale.toFixed(SCALE_DECIMALS)}) translate(0 ${(-foot).toFixed(1)})`;
+  // Facing left mirrors him horizontally around his hip.
+  const scaleX: number = state.scale * (state.facing ?? 1);
+  return `translate(${state.x.toFixed(1)} ${state.y.toFixed(1)}) scale(${scaleX.toFixed(SCALE_DECIMALS)} ${state.scale.toFixed(SCALE_DECIMALS)}) translate(0 ${(-foot).toFixed(1)})`;
 }
 
 // The rotation of a roll or a flip, around the middle of the torso; none when he is upright.
@@ -102,4 +107,22 @@ export function rigPartAttributes(body: RunnerBody): RigPartAttributes {
     nearArm: { points: pointsAttribute(body.nearArm) },
     head: { cx: body.head[0].toFixed(1), cy: body.head[1].toFixed(1) },
   };
+}
+
+// The waving pose at this point of a wave (0 to 1): the raised arm's elbow and shoulder swing on
+// a sine. It starts and ends on POSES.wave, so a wave can follow raising the arm and end on the
+// still pose without a jump. Used by the footer's landing and the hero's greeting.
+export function wavePose(progress: number): Pose {
+  const swing: number = Math.sin(progress * FULL_CYCLE * WAVE.cycles);
+  const [lean, head, nearShoulder, nearElbow, farShoulder, , ...legs] =
+    POSES.wave;
+  return [
+    lean,
+    head,
+    nearShoulder,
+    nearElbow,
+    farShoulder + swing * WAVE.shoulderSwing,
+    swing * WAVE.elbowSwing,
+    ...legs,
+  ];
 }

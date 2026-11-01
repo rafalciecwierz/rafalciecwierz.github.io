@@ -58,3 +58,9 @@ export const RIG_PART_ATTRIBUTE: string = 'data-rig-part';
 export const OPACITY_DECIMALS: number = 3;
 // Scale factors are written with three decimals; positions and angles with one.
 export const SCALE_DECIMALS: number = 3;
+
+// The wave of a raised arm (POSES.wave): three swings, the elbow 38° each way, the shoulder 6°.
+export const WAVE = { cycles: 3, elbowSwing: 38, shoulderSwing: 6 } as const;
+
+// One full sine cycle, in radians.
+export const FULL_CYCLE: number = Math.PI * 2;

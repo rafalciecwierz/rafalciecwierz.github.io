@@ -1,5 +1,6 @@
 import type { ReactElement } from 'react';
 
+import { MOTION_TARGETS } from '@/constants';
 import { classNames } from '@/utils';
 
 import { SKYLINE_HEIGHT, SKYLINE_WIDTH } from './skyline.constants';
@@ -13,7 +14,7 @@ import type {
 import { drawSkyline } from './skyline.utils';
 
 // The city at night behind the hero. Drawn from a seed while rendering, so it ships in the
-// pre-rendered HTML and needs no script. `slice` keeps it filling the box at any width, cut at
+// pre-rendered HTML and needs no script. HeroMotion switches its windows on and off. `slice` keeps it filling the box at any width, cut at
 // the sides, with the buildings standing on the bottom edge. Decorative.
 export function Skyline({ seed, className }: SkylineProps): ReactElement {
   const { buildings, windows }: SkylineDrawing = drawSkyline(seed);
@@ -47,6 +48,7 @@ export function Skyline({ seed, className }: SkylineProps): ReactElement {
           y={window.y}
           width={window.width}
           height={window.height}
+          data-motion-target={MOTION_TARGETS.skylineWindow}
         />
       ))}
     </svg>

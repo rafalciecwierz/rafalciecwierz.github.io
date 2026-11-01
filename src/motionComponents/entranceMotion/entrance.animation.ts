@@ -1,5 +1,6 @@
 import { MOTION_TARGETS } from '@/constants';
 import { gsap } from '@/motion/gsap';
+import type { PercentKeyframes } from '@/motion/keyframes.types';
 import { motionTargets } from '@/motion/motionTarget';
 
 import {
@@ -8,7 +9,6 @@ import {
   PASTE_UP,
   VAULT,
 } from './entrance.constants';
-import type { PercentKeyframes } from './entrance.types';
 import { pasteUpKeyframes, vaultKeyframes, vaultStart } from './entrance.utils';
 
 // The three entrances as GSAP tweens. Each one makes its elements transparent now (they are

@@ -2,6 +2,7 @@ import type { ReactElement } from 'react';
 
 import { Runner } from '@/components/runner';
 import { VisuallyHidden } from '@/components/visuallyHidden';
+import { MOTION_TARGETS } from '@/constants';
 import { splitIntoWords, type TextLetter, type TextWord } from '@/utils';
 
 import styles from './heroSign.module.scss';
@@ -38,7 +39,11 @@ export function HeroSign({
     return (
       <span key={letter.key} className={styles.perch}>
         {glyph}
-        <Runner pose="crouch" className={styles.runner} />
+        <Runner
+          pose="crouch"
+          className={styles.runner}
+          motionTarget={MOTION_TARGETS.heroRunner}
+        />
       </span>
     );
   }

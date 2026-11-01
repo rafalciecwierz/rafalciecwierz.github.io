@@ -1,6 +1,7 @@
 export { Runner } from './runner.component';
 export { POSES } from './runner.constants';
 export type {
+  Facing,
   PoseName,
   RigState,
   RunnerBox,
@@ -13,4 +14,4 @@ export type {
 export { runnerBox, solvePose } from './runner.utils';
 export { RunnerFigure } from './runnerFigure.component';
 export { RunnerRig } from './runnerRig.component';
-export { mixPose } from './runnerRig.utils';
+export { mixPose, wavePose } from './runnerRig.utils';

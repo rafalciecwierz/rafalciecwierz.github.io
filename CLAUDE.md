@@ -70,5 +70,5 @@ Node 24 (`.nvmrc`) and pnpm. After `pnpm install`, a `commit-msg` hook checks co
 ## Current status (keep this updated)
 
 - Phase: 3, implementation
-- Last completed: 3.13 scroll animations: one shared `EntranceMotion` that `Section` mounts in every section (Vault on every title, BoardReveal on the stack boards, PasteUp on the posters), off with reduced motion
-- Next step: 3.14 hero scene, branch `feat/hero-scene`
+- Last completed: 3.14 hero scene: `HeroMotion` with SignFlicker, RoleFlip, the window flicker (paused off-screen), a greeting wave from the Ł, and LetterHop (clicks on letters and on the runner, tricks), the rig placed by a pixel scan of the glyphs
+- Next step: 3.15 career run, branch `feat/career-run`

@@ -18,11 +18,6 @@ export const DROP = {
 // One full turn on the ground; he stays tucked for 80% of it, then opens into a crouch.
 export const ROLL = { turn: 360, tuckShare: 0.8 } as const;
 
-// Three waves of the raised arm: the elbow swings 38° each way, the shoulder 6°.
-export const WAVE = { cycles: 3, elbowSwing: 38, shoulderSwing: 6 } as const;
-// One wave is one full sine cycle.
-export const FULL_CYCLE: number = Math.PI * 2;
-
 // How long each part takes, in seconds.
 export const DURATIONS = {
   drop: 0.62,

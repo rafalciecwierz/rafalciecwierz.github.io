@@ -234,7 +234,7 @@ The first part (3.1–3.10) produces a usable, deployed site without motion or t
 - **Done when:** the site is live at `https://rafalciecwierz.github.io`, a merge into `main` redeploys it, and the served HTML contains the page content and meta tags before any JavaScript runs. **Checkpoint:** the site is good enough to share.
 
 ### 3.11 Motion foundation
-- [ ] **Branch:** `feat/motion-foundation`
+- [x] **Branch:** `feat/motion-foundation`
 - **Scope:**
   - `motion/gsap.ts`, which registers plugins once, and the `MotionLayer` that loads motion components lazily after hydration ([DECISIONS.md](DECISIONS.md) #005).
   - A `useReducedMotion` hook as the single source of truth.

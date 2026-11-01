@@ -89,6 +89,22 @@ const LAZY_MOTION = {
   message:
     'Motion components are loaded only with import() through MotionLayer (section 13).',
 };
+// Section 13: GSAP and Lenis stay in the lazy motion chunks. Code that reaches the initial
+// bundle never imports them, and motion components take GSAP from src/motion/gsap.ts, where
+// its plugins are registered (section 9).
+// A regex, not a `group`: group patterns match like .gitignore, so 'lenis' would also match
+// '@/motion/lenis'.
+const MOTION_CORE = {
+  regex: '^(gsap|@gsap/react|lenis|@/motion/(gsap|lenis))(/.*)?$',
+  message:
+    'GSAP and Lenis are loaded lazily: only src/motion/ and src/motionComponents/ import them (section 13).',
+};
+const GSAP_THROUGH_MOTION = {
+  regex: '^(gsap|@gsap/react|lenis)(/.*)?$',
+  allowTypeImports: true,
+  message:
+    'Import GSAP from @/motion/gsap, where its plugins are registered (section 9).',
+};
 const CONTENT_DATA = {
   group: ['@/content', '@/content/*'],
   allowTypeImports: true,
@@ -286,6 +302,7 @@ export default defineConfig([
       '@typescript-eslint/no-restricted-imports': restrictImports(
         LAZY_MOTION,
         OUT_OF_FOLDER_RELATIVE,
+        MOTION_CORE,
       ),
     },
   },
@@ -295,20 +312,32 @@ export default defineConfig([
       '@typescript-eslint/no-restricted-imports': restrictImports(
         LAZY_MOTION,
         OUT_OF_FOLDER_RELATIVE,
+        MOTION_CORE,
         CONTENT_DATA,
         UPWARD_IMPORTS,
       ),
     },
   },
   {
-    files: [
-      'src/components/**/*.{ts,tsx}',
-      'src/motionComponents/**/*.{ts,tsx}',
-    ],
+    files: ['src/components/**/*.{ts,tsx}'],
     rules: {
       '@typescript-eslint/no-restricted-imports': restrictImports(
         LAZY_MOTION,
         OUT_OF_FOLDER_RELATIVE,
+        MOTION_CORE,
+        CONTENT_DATA,
+        UPWARD_IMPORTS,
+        SECTION_IMPORTS,
+      ),
+    },
+  },
+  {
+    files: ['src/motionComponents/**/*.{ts,tsx}'],
+    rules: {
+      '@typescript-eslint/no-restricted-imports': restrictImports(
+        LAZY_MOTION,
+        OUT_OF_FOLDER_RELATIVE,
+        GSAP_THROUGH_MOTION,
         CONTENT_DATA,
         UPWARD_IMPORTS,
         SECTION_IMPORTS,
@@ -317,9 +346,24 @@ export default defineConfig([
   },
   {
     files: [
-      'src/{hooks,services,utils,constants,motion}/**/*.{ts,tsx}',
+      'src/{hooks,services,utils,constants}/**/*.{ts,tsx}',
+      'src/motion/motionLayer/**/*.{ts,tsx}',
       'src/content/**/*.ts',
     ],
+    rules: {
+      '@typescript-eslint/no-restricted-imports': restrictImports(
+        LAZY_MOTION,
+        OUT_OF_FOLDER_RELATIVE,
+        MOTION_CORE,
+        UPWARD_IMPORTS,
+        SECTION_IMPORTS,
+        COMPONENT_IMPORTS,
+      ),
+    },
+  },
+  // src/motion/ itself (gsap.ts, lenis.ts) is where GSAP and Lenis are imported.
+  {
+    files: ['src/motion/*.{ts,tsx}'],
     rules: {
       '@typescript-eslint/no-restricted-imports': restrictImports(
         LAZY_MOTION,

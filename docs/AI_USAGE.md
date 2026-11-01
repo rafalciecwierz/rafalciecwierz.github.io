@@ -46,6 +46,7 @@ These are the success criteria from the brief, measured rather than assumed. Usa
 | `grilling`, `grill-me` | [mattpocock/skills](https://github.com/mattpocock/skills), MIT | The agent questions my plan until every open decision is settled. |
 | `frontend-design` | [anthropics/skills](https://github.com/anthropics/skills), Apache 2.0 | Guidance against generic, templated "AI look" design. |
 | `tdd` | [mattpocock/skills](https://github.com/mattpocock/skills), MIT | The red → green loop for new logic: one failing test, then just enough code to pass it. |
+| `gsap-react`, `gsap-scrolltrigger`, `gsap-performance` | [greensock/gsap-skills](https://github.com/greensock/gsap-skills), MIT | GSAP's official guidance: `useGSAP` with a scope and cleanup, ScrollTrigger (pinning, scrub, refresh order) and animation performance. Limited with `paths` to the motion code (`src/motion/`, `src/motionComponents/`, `*.animation.ts`), so they load only where GSAP is used. |
 
 Third-party skills are copied from a pinned commit, with the licence and a `NOTICE.md` in each folder. Updates are manual and reviewed, and nothing installs or syncs skills automatically.
 

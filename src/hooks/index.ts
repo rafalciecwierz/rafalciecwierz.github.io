@@ -7,5 +7,7 @@ export type { FocusTrapOptions } from './useFocusTrap';
 export { useFocusTrap } from './useFocusTrap';
 export { useInView } from './useInView';
 export { useIsHydrated } from './useIsHydrated';
+export { useIsIdle } from './useIsIdle';
 export { useMediaQuery } from './useMediaQuery';
+export { useReducedMotion } from './useReducedMotion';
 export { useScrollLock } from './useScrollLock';

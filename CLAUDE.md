@@ -64,10 +64,11 @@ Node 24 (`.nvmrc`) and pnpm. After `pnpm install`, a `commit-msg` hook checks co
   - `grilling`, with `/grill-me` as a shortcut: settle a plan through questions
   - `frontend-design` (Anthropic): distinctive visual design
   - `tdd` (mattpocock): test-first loop for new logic
+  - `gsap-react`, `gsap-scrolltrigger`, `gsap-performance` (GreenSock): GSAP guidance, loaded only for motion code
 - Subagent `site-auditor` (`.claude/agents/`): independent UI audit
 
 ## Current status (keep this updated)
 
 - Phase: 3, implementation
-- Last completed: 3.10 SEO and deployment: head tags from the content layer (canonical, Open Graph, Twitter card), favicon, Apple touch icon, placeholder OG image, robots.txt, generated sitemap, a `noindex` 404 page, and a deploy job in `ci.yml` after the checks (#008)
-- Next step: 3.11 motion foundation, branch `feat/motion-foundation`
+- Last completed: 3.11 motion foundation: `motion/gsap.ts`, the lazy `MotionLayer`, `useReducedMotion` and `useIsIdle`, Lenis synced with ScrollTrigger and off with reduced motion, an ESLint guard that keeps GSAP and Lenis out of the initial bundle, and the official GSAP skills
+- Next step: 3.12 interactive effects, branch `feat/interactive-effects`

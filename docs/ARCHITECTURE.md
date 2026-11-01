@@ -112,16 +112,17 @@ src/
     …
     index.ts                   # re-exports every component
   motionComponents/            # lazy, client-only motion components (section 9); no index.ts
+    rootMotion/                # page-wide motion: starts Lenis (mounted by app.component.tsx)
     heroMotion/
     careerRunMotion/
     …
   motion/
     gsap.ts                    # registers GSAP plugins once
-    lenis.ts                   # creates Lenis and syncs it with ScrollTrigger
+    lenis.ts                   # creates Lenis and syncs it with ScrollTrigger (+ lenis.constants.ts)
     motionLayer/               # loads and mounts the lazy motion components (section 9)
-  hooks/                       # shared hooks: useReducedMotion, useIsHydrated, useMediaQuery,
-                               # useInView, usePageVisible, useFocusTrap, useScrollLock,
-                               # useEscapeKey, useCopyToClipboard
+  hooks/                       # shared hooks: useReducedMotion, useIsHydrated, useIsIdle,
+                               # useMediaQuery, useInView, usePageVisible, useFocusTrap,
+                               # useScrollLock, useEscapeKey, useCopyToClipboard
   services/                    # side effects behind a small interface: clipboard, email address
   utils/                       # shared pure functions: math (clamp, lerp), random (seeded rng),
                                # text (splitIntoWords), clock, anchor, media, classNames
@@ -141,6 +142,7 @@ src/
   types/                       # ambient declarations only (*.d.ts): APP_BUILD_YEAR from Vite's define
   test/
     setup.ts                   # Vitest and Testing Library setup
+    matchMedia.ts, dialog.ts, resizeObserver.ts   # stand-ins for browser APIs jsdom lacks
 ```
 
 A section folder holds the section and nothing else (Career as the example):
@@ -353,7 +355,8 @@ The rules in brief section 8 are checked by `eslint-plugin-jsx-a11y` and by the 
 **How it works:**
 
 - `MotionLayer` renders nothing on the server and during hydration.
-- After hydration, and only when `useReducedMotion()` is false, it loads its motion component with `React.lazy` while the browser is idle, then mounts it.
+- After hydration, and only when `useReducedMotion()` is false, it loads its motion component with `React.lazy` while the browser is idle (`useIsIdle`: `requestIdleCallback` with a 2 s timeout, a short delay where it is missing), then mounts it.
+- A loader is a module-level function that calls `import()` and returns `{ default: Component }`, because `React.lazy` needs a default export and components are exported by name (`loadRootMotion` in `app.component.tsx`).
 - The motion component uses `useGSAP({ scope })`, so every tween and ScrollTrigger is reverted when it unmounts.
 - Its timelines are built by plain functions in `<name>.animation.ts` (`createBoardReveal(boards: HTMLElement[]): gsap.core.Timeline`), with named durations and easings from `constants/motion.constants.ts`.
 
@@ -361,8 +364,12 @@ The rules in brief section 8 are checked by `eslint-plugin-jsx-a11y` and by the 
 
 - **Motion never hides content that is already visible.** An entrance animation applies only to elements below the viewport when the layer loads. Anything already on screen keeps its final state.
 - **One source of truth for reduced motion.** `useReducedMotion` reads `prefers-reduced-motion` through `useSyncExternalStore`, and its server value is "reduce". When it changes to "reduce", the motion components unmount and GSAP reverts the DOM to the static version.
-- **Plugins are registered once,** in `motion/gsap.ts`, which only motion code imports.
-- **Lenis** is created in `motion/lenis.ts` by the root motion layer and synced with ScrollTrigger (`lenis.on('scroll', ScrollTrigger.update)`, with Lenis driven by `gsap.ticker`). It never starts with reduced motion. Anchor links use `lenis.scrollTo` when Lenis is running and a native jump when it is not. See [DECISIONS.md](DECISIONS.md) #004.
+- **Plugins are registered once,** in `motion/gsap.ts`, which only motion code imports. Motion components import `gsap`, `ScrollTrigger` and `useGSAP` from there, never from the packages (section 15).
+- **Lenis** is started by `startSmoothScroll()` in `motion/lenis.ts`, which the root motion component (`rootMotion`, mounted by the root `MotionLayer` in `app.component.tsx`) calls, and synced with ScrollTrigger (every Lenis scroll calls `ScrollTrigger.update`, and `gsap.ticker` drives Lenis, with lag smoothing off while it runs). It never starts with reduced motion. See [DECISIONS.md](DECISIONS.md) #004. Its options:
+  - `anchors: true`: Lenis scrolls smoothly to a same-page link's target and the browser still updates the URL and the focus start point. Lenis reads `scroll-padding-top`, so it stops below the header. Without Lenis, an anchor link jumps: `global.scss` has no `scroll-behavior: smooth`, which would fight Lenis.
+  - `autoToggle: true`: Lenis stops while `useScrollLock` sets `overflow: hidden` on `<html>` (the mobile menu, a dialog). A link clicked in the open mobile menu therefore jumps, which is right for a full-screen menu.
+  - `allowNestedScroll: true`: scrollable boxes, such as a long dialog, keep their native scroll.
+  - Its stylesheet (`lenis/dist/lenis.css`, which `autoToggle` needs) is imported by `motion/lenis.ts`, so it ships in the motion chunk.
 - **Paused when not seen.** The hero and every looping animation pause when they are off-screen (`useInView`) or the tab is hidden (`usePageVisible`).
 
 ## 10. Code that runs at build time
@@ -402,7 +409,7 @@ Every effect in the reference (its comment header names them) mapped to where it
 
 Across the page:
 
-- `PageLayout`: the skip link, the landmarks (`header`, `main`, `footer`) and the root motion layer (Lenis). The page passes the `siteHeader` and `siteFooter` sections in as props, because a component never imports a section. Since task 3.7 the header is `HeaderBar` (solid once a sentinel at the top of the document leaves the screen, seen by `useInView`), `Brand` and `Nav` (one list of links; below 760 px a full-screen menu with `useFocusTrap`, `useEscapeKey` and `useScrollLock`, open only while `useMediaQuery` reports the mobile layout), and the footer is `PageFooter`, `SignOff` and `FooterMeta`.
+- `PageLayout`: the skip link and the landmarks (`header`, `main`, `footer`). The root motion layer (Lenis) sits in `App`, so it covers every page. The page passes the `siteHeader` and `siteFooter` sections in as props, because a component never imports a section. Since task 3.7 the header is `HeaderBar` (solid once a sentinel at the top of the document leaves the screen, seen by `useInView`), `Brand` and `Nav` (one list of links; below 760 px a full-screen menu with `useFocusTrap`, `useEscapeKey` and `useScrollLock`, open only while `useMediaQuery` reports the mobile layout), and the footer is `PageFooter`, `SignOff` and `FooterMeta`.
 - `ConsoleHello`: one effect in `app.component.tsx` that prints `content.console`.
 
 **UI primitives used by several sections** (task 3.6), all in `src/components/`:
@@ -525,7 +532,7 @@ Set up in task 3.2. The `.claude/rules/` file for `src/**` points to this docume
 | No hard-coded copy | `no-restricted-syntax` on text inside JSX and on string literals in `aria-label`, `alt` and `title` |
 | No HTML tags in pages and section roots | `no-restricted-syntax` on lowercase JSX elements in `src/pages/**` and `src/sections/**` |
 | Named exports only | `no-restricted-syntax` on `export default` (config files excepted) |
-| Import direction; content data only in pages; no static import from `src/motionComponents/` | `no-restricted-imports` per folder |
+| Import direction; content data only in pages; no static import from `src/motionComponents/`; GSAP and Lenis (and `motion/gsap.ts`, `motion/lenis.ts`) imported only in `src/motion/` and `src/motionComponents/`, and motion components take GSAP from `motion/gsap.ts` | `no-restricted-imports` per folder (a `regex` pattern for GSAP and Lenis, because `group` patterns match like `.gitignore`) |
 | Import order | `simple-import-sort` |
 | Hooks, accessibility | `react-hooks` (recommended), `jsx-a11y` (strict) |
 | No raw values in CSS Modules | `scripts/cssModules.test.ts` (section 8) |

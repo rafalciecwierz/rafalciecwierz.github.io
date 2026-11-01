@@ -115,6 +115,8 @@ src/
     rootMotion/                # page-wide motion: starts Lenis (mounted by app.component.tsx)
     heroMotion/
     careerRunMotion/
+    processMotion/             # GapLeap and its replay button (task 3.12)
+    footerMotion/              # FooterLanding (task 3.12)
     …
   motion/
     gsap.ts                    # registers GSAP plugins once
@@ -126,7 +128,7 @@ src/
   services/                    # side effects behind a small interface: clipboard, email address
   utils/                       # shared pure functions: math (clamp, lerp), random (seeded rng),
                                # text (splitIntoWords), clock, anchor, media, classNames
-  constants/                   # shared named values: breakpoints, section ids, site URL and page paths, motion timings
+  constants/                   # shared named values: breakpoints, section ids, site URL and page paths, motion target names
   content/
     content.types.ts           # the Content type, the shape of every locale
     <area>.types.ts            # the shape of one area (career.types.ts, projects.types.ts, …)
@@ -357,12 +359,16 @@ The rules in brief section 8 are checked by `eslint-plugin-jsx-a11y` and by the 
 - `MotionLayer` renders nothing on the server and during hydration.
 - After hydration, and only when `useReducedMotion()` is false, it loads its motion component with `React.lazy` while the browser is idle (`useIsIdle`: `requestIdleCallback` with a 2 s timeout, a short delay where it is missing), then mounts it.
 - A loader is a module-level function that calls `import()` and returns `{ default: Component }`, because `React.lazy` needs a default export and components are exported by name (`loadRootMotion` in `app.component.tsx`).
-- The motion component uses `useGSAP({ scope })`, so every tween and ScrollTrigger is reverted when it unmounts.
-- Its timelines are built by plain functions in `<name>.animation.ts` (`createBoardReveal(boards: HTMLElement[]): gsap.core.Timeline`), with named durations and easings from `constants/motion.constants.ts`.
+- The motion component uses `useGSAP`, so every tween and ScrollTrigger is reverted when it unmounts. Code that creates animations later (a ScrollTrigger callback, a click) is wrapped in the `contextSafe` that `useGSAP()` returns, so it is reverted too. A `scope` only limits selector text; motion code that finds its elements as below needs none.
+- Its timelines are built by plain functions in `<name>.animation.ts` (`createBoardReveal(boards: HTMLElement[]): gsap.core.Timeline`), with named durations and easings in the motion folder's `<name>.constants.ts`. The states of a move (where the runner is at progress `t`) are pure functions in `<name>.utils.ts`, with tests.
+- **Where the layer sits and what it finds** (from task 3.12): the section gives the static component a `ref` and passes the `MotionLayer` in as its `children`, so the motion's own drawing is placed inside the scene (`<LeapScene ref={sceneRef}><MotionLayer scope={sceneRef} … /></LeapScene>`). The static component marks the elements motion changes with `data-motion-target="<name>"`, the names listed once in `MOTION_TARGETS` (`constants/motion/`), and the motion component finds them with `motionTarget(scope, name)` (`motion/motionTarget.ts`).
+- **The runner moves through `RunnerRig`** (`components/runner/`): a figure whose `ref` handle has `set(state)` and `setOpacity()`. GSAP tweens a progress value, and every frame calls `set()`, which writes the SVG attributes directly instead of rendering React 60 times a second. The rig maths (blending poses, the ground under a roll, the transforms) are pure functions in `runnerRig.utils.ts`. A motion component draws the rig in its own decorative SVG laid over the scene, hides the static runner while it moves, and ends on the static frame, so the hand-over cannot be seen.
+- **Controls that only exist with motion** (the leap's Replay) are rendered by the static component with their copy from the content, hidden with `display: none`, and shown by the motion component with `gsap.set`, so unmounting hides them again. A motion component takes no content props.
+- **What GSAP does not revert:** attributes written every frame (a camera transform, the fog's opacity) are removed in the cleanup function that the `useGSAP` callback returns.
 
 **Rules:**
 
-- **Motion never hides content that is already visible.** An entrance animation applies only to elements below the viewport when the layer loads. Anything already on screen keeps its final state.
+- **Motion never hides content that is already visible.** An entrance animation applies only to elements below the viewport when the layer loads (`isBelowViewport()` in `motion/motionTarget.ts`). Anything already on screen keeps its final state.
 - **One source of truth for reduced motion.** `useReducedMotion` reads `prefers-reduced-motion` through `useSyncExternalStore`, and its server value is "reduce". When it changes to "reduce", the motion components unmount and GSAP reverts the DOM to the static version.
 - **Plugins are registered once,** in `motion/gsap.ts`, which only motion code imports. Motion components import `gsap`, `ScrollTrigger` and `useGSAP` from there, never from the packages (section 15).
 - **Lenis** is started by `startSmoothScroll()` in `motion/lenis.ts`, which the root motion component (`rootMotion`, mounted by the root `MotionLayer` in `app.component.tsx`) calls, and synced with ScrollTrigger (every Lenis scroll calls `ScrollTrigger.update`, and `gsap.ticker` drives Lenis, with lag smoothing off while it runs). It never starts with reduced motion. See [DECISIONS.md](DECISIONS.md) #004. Its options:
@@ -402,10 +408,10 @@ Every effect in the reference (its comment header names them) mapped to where it
 | `stack` | AiBand, LevelBoard × 3 (the level in the title, the top edge and the chip style, never colour alone) | `stackMotion`: BoardReveal stagger, Vault | `stack` |
 | `career` | an ordered List of MoveCards (newest first, the unbuilt roof first; MiniBuilding, JobRoles with a Promoted badge, PointList, TagList), EducationNote; the skip link comes with the run | `careerRunMotion` (only from 900 px): RooftopRun with ScrollTrigger `pin` + `scrub`, a building per company, a tower per promotion, the job card following the runner, progress bar | `career` |
 | `team` | Poster (with a seeded torn edge) × 3 | `testimonialsMotion`: PasteUp | `team` |
-| `projects` | SpotBoard: SpotMap (seeded SVG, pins), SpotCard list, SpotPanel in a `Dialog` (side panel on desktop, bottom sheet on phones). Pins are not clickable (they sit in an `aria-hidden` SVG); each card's button opens the panel, and hovering a card or a pin highlights both | `projectsMotion`: panel slide, pin highlight | `projects` |
-| `process` | LeapScene drawn landed (LeapRoof × 2, RunnerFigure), two columns of text, StatList, the gallery link (a TODO until task 3.17) | `processMotion`: GapLeap with bullet time, replay button | `process` |
+| `projects` | SpotBoard: SpotMap (seeded SVG, pins), SpotCard list, SpotPanel in a `Dialog` (side panel on desktop, bottom sheet on phones). A pin opens the panel on click, as a pointer shortcut: pins sit in an `aria-hidden` SVG, so each card's button is the keyboard path. When the dialog closes, focus goes back to the card's button. Hovering a card or a pin highlights both | none: the panel slide and the pin highlight are CSS (`dialog.module.scss`, `spotMap.module.scss`), off with reduced motion | `projects` |
+| `process` | LeapScene drawn landed (LeapRoof × 2, RunnerFigure, a camera group around the scene, the Replay button hidden), two columns of text, StatList, the gallery link (a TODO until task 3.17) | `processMotion`: GapLeap with bullet time (camera push-in, three after-images, a vignette, the fog thinning); shows Replay | `process` |
 | `contact` | availability, ChannelList of ChannelRows (EmailChannel with Copy after hydration, LinkedIn, GitHub, Calendly), Download CV and EmailButton | `contactMotion`: Vault | `contact`, `profile` |
-| `siteFooter` | FooterStreet (lamp, Runner waving, bubble), SignOff, FooterMeta (back to top, built-with line, repo link, year) | `footerMotion`: FooterLanding (drop, roll, turn, wave) | `footer` |
+| `siteFooter` | FooterStreet (lamp, Runner waving, bubble), SignOff, FooterMeta (back to top, built-with line, repo link, year) | `footerMotion`: FooterLanding (drop, roll, stand up, turn, wave, the bubble pops in) | `footer` |
 
 Across the page:
 
@@ -420,7 +426,7 @@ Across the page:
 
 **Graphics used by several sections:**
 
-- **Runner**, the SVG pose rig. It is used by the hero, the career run, the leap and the footer. Its poses are data in `runner.constants.ts`, and blending between them is a pure function in `runner.utils.ts`.
+- **Runner**, the SVG pose rig. It is used by the hero, the career run, the leap and the footer. Its poses are data in `runner.constants.ts`, and blending between them is a pure function (`mixPose` in `runnerRig.utils.ts`). `Runner` and `RunnerFigure` draw one still pose; `RunnerRig` is the puppet that motion code moves (section 9).
 - **Skyline and Building**, used by the hero, the career and the process scene.
 - **TornEdge**, a seeded `clip-path` function in `utils/` (posters and concrete edges).
 
@@ -482,7 +488,7 @@ The budget is **initial JS ≤ 150 KB gzipped** (brief section 8). Initial JS me
 | --- | --- | --- |
 | Entry | React, React DOM, the content, the static components | ~85–90 KB |
 | Motion core | GSAP, ScrollTrigger, `@gsap/react`, Lenis, `motion/` | ~55 KB, loaded when the browser is idle after hydration |
-| Per-section motion | each folder in `src/motionComponents/` (career run, leap, footer landing, …) | a few KB each, loaded when allowed and near the viewport |
+| Per-section motion | each folder in `src/motionComponents/` (career run, leap, footer landing, …) | a few KB each (task 3.12: the leap 1.9 KB, the footer landing 1.4 KB), loaded when allowed |
 
 The estimate for our own code follows the prototype's script: 18.8 KB gzipped with all of its content.
 
@@ -491,6 +497,7 @@ The estimate for our own code follows the prototype's script: 18.8 KB gzipped wi
 - every motion component, through `MotionLayer` and `React.lazy`,
 - the career run only from 900 px, so phones never download it,
 - anything else task 3.16 finds worth splitting.
+- known since task 3.12: `RunnerRig` and its maths (under 1 KB gzipped) end up in the entry chunk, because the bundler puts a module shared by two lazy chunks next to the runner code the entry already has. Task 3.16 decides whether that is worth splitting.
 
 **Rules that keep splitting working:**
 

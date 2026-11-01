@@ -42,3 +42,14 @@ export const FOG = { x: 720, y: -100, width: 1100, height: 900 } as const;
 
 // Where he stands after the landing, and how big he is in this scene.
 export const LANDED = { x: 1010, scale: 1.7 } as const;
+
+// What the jump's motion needs to know about this scene: its size, where his feet stand on
+// each roof (on the ledge), where he lands and how big he is.
+export const LEAP_GEOMETRY = {
+  width: SCENE_WIDTH,
+  height: SCENE_HEIGHT,
+  takeOffFeet: TAKE_OFF_ROOF.top - LEDGE.rise,
+  landingFeet: LANDING_ROOF.top - LEDGE.rise,
+  landedX: LANDED.x,
+  scale: LANDED.scale,
+} as const;

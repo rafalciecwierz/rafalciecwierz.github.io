@@ -47,3 +47,14 @@ export const FOOT_REACH: number = LIMB_STROKE / 2;
 export const SIDES: number = 2;
 
 export const DEGREES_TO_RADIANS: number = Math.PI / 180;
+
+// A pose has one angle per joint.
+export const POSE_LENGTH: number = 10;
+
+// The attribute that marks each moving part of the figure for the rig.
+export const RIG_PART_ATTRIBUTE: string = 'data-rig-part';
+
+// Opacity is written with three decimals: finer steps cannot be seen.
+export const OPACITY_DECIMALS: number = 3;
+// Scale factors are written with three decimals; positions and angles with one.
+export const SCALE_DECIMALS: number = 3;

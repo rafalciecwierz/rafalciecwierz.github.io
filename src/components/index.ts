@@ -52,7 +52,7 @@ export { JobRoles } from './jobRoles';
 export type { KineticTextProps } from './kineticText';
 export { KineticText } from './kineticText';
 export type { LeapSceneProps } from './leapScene';
-export { LeapScene } from './leapScene';
+export { LEAP_GEOMETRY, LeapScene } from './leapScene';
 export type { BoardRow, LevelBoardProps } from './levelBoard';
 export { LevelBoard } from './levelBoard';
 export type { ListKind, ListProps } from './list';
@@ -75,15 +75,20 @@ export type { PosterProps, PosterTone } from './poster';
 export { Poster } from './poster';
 export type {
   PoseName,
+  RigState,
   RunnerBox,
   RunnerFigureProps,
   RunnerProps,
+  RunnerRigHandle,
+  RunnerRigProps,
   RunnerTone,
 } from './runner';
 export { Runner } from './runner';
 export { POSES } from './runner';
 export { runnerBox, solvePose } from './runner';
 export { RunnerFigure } from './runner';
+export { RunnerRig } from './runner';
+export { mixPose } from './runner';
 export type { SectionProps, SectionSpacing, SectionSurface } from './section';
 export { Section } from './section';
 export type {

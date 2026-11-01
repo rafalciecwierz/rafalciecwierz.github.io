@@ -70,5 +70,5 @@ Node 24 (`.nvmrc`) and pnpm. After `pnpm install`, a `commit-msg` hook checks co
 ## Current status (keep this updated)
 
 - Phase: 3, implementation
-- Last completed: 3.11 motion foundation: `motion/gsap.ts`, the lazy `MotionLayer`, `useReducedMotion` and `useIsIdle`, Lenis synced with ScrollTrigger and off with reduced motion, an ESLint guard that keeps GSAP and Lenis out of the initial bundle, and the official GSAP skills
-- Next step: 3.12 interactive effects, branch `feat/interactive-effects`
+- Last completed: 3.12 interactive effects: FooterLanding and GapLeap (with Replay) as lazy motion components, `RunnerRig` (the runner moved by GSAP through a ref handle), motion targets (`data-motion-target`), and clicks on the project map's pins with focus returned to the card
+- Next step: 3.13 scroll animations, branch `feat/scroll-animations`

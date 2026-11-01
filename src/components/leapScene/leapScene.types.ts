@@ -1,3 +1,5 @@
+import type { ReactNode, Ref } from 'react';
+
 export type SceneRect = {
   key: string;
   x: number;
@@ -15,6 +17,12 @@ export type RoofSpec = {
 export type LeapSceneProps = {
   // The signs on the two roofs: where he comes from, where he lands.
   signs: readonly [string, string];
+  // "Replay the leap": shown only once the motion layer can play it.
+  replayLabel: string;
+  // The scene's frame, for the motion layer that plays the jump.
+  ref?: Ref<HTMLDivElement> | undefined;
+  // The motion layer, placed inside the frame so its drawing lines up with the scene.
+  children?: ReactNode;
 };
 
 export type LeapRoofProps = {

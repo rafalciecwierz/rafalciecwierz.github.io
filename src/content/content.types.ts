@@ -3,6 +3,7 @@ import type { Career } from './career.types';
 import type { Contact } from './contact.types';
 import type { Brand, Footer, Nav } from './frame.types';
 import type { Hero } from './hero.types';
+import type { NotFound } from './notFound.types';
 import type { Process } from './process.types';
 import type { Profile } from './profile.types';
 import type { Projects } from './projects.types';
@@ -28,6 +29,7 @@ export type Content = {
   process: Process;
   contact: Contact;
   footer: Footer;
+  notFound: NotFound;
   // Printed once in the browser console, for developers who open it.
   console: string;
 };

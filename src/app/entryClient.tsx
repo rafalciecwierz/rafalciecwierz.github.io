@@ -4,9 +4,9 @@ import '@/styles/global.scss';
 import { createRoot, hydrateRoot } from 'react-dom/client';
 
 import { App } from './app.component';
-import { ROOT_ELEMENT_ID, ROUTES } from './app.constants';
+import { NOT_FOUND_ROUTE, ROOT_ELEMENT_ID, ROUTES } from './app.constants';
 import type { AppRoute } from './app.types';
-import { findRoute, hasPrerenderedContent } from './app.utils';
+import { hasPrerenderedContent, routeForLocation } from './app.utils';
 
 const rootElement: HTMLElement | null =
   document.getElementById(ROOT_ELEMENT_ID);
@@ -16,7 +16,11 @@ if (rootElement === null) {
   );
 }
 
-const route: AppRoute = findRoute(ROUTES, window.location.pathname);
+const route: AppRoute = routeForLocation(
+  ROUTES,
+  NOT_FOUND_ROUTE,
+  window.location.pathname,
+);
 
 // A built page already holds the HTML, so React only attaches to it (hydration).
 // The dev server sends the empty template, so React renders the page itself.

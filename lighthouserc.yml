@@ -5,6 +5,10 @@ ci:
   collect:
     # lhci serves dist/ on a local server and audits every HTML file it finds there.
     staticDistDir: ./dist
+    # The 404 page asks search engines not to index it, which Lighthouse scores as an SEO
+    # failure. That is intended, so the page is left out; it is checked in the audits instead.
+    autodiscoverUrlBlocklist:
+      - /404.html
     # One run can be a few points off on a shared CI machine; the assertions below use the median of three.
     numberOfRuns: 3
     # No `preset`: the Lighthouse default is mobile (an emulated phone with a slow network and a 4× slower CPU),

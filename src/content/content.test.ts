@@ -142,8 +142,8 @@ describe('English content', (): void => {
   });
 
   it('builds the meta description from the tagline and the availability (brief 9)', (): void => {
-    expect(en.seo.description).toContain(en.profile.tagline);
-    expect(en.seo.description).toContain(en.profile.availability);
+    expect(en.seo.home.description).toContain(en.profile.tagline);
+    expect(en.seo.home.description).toContain(en.profile.availability);
   });
 
   it('keeps the email address in parts, so it is joined only at runtime', (): void => {

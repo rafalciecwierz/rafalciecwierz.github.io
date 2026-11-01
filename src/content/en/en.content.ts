@@ -4,6 +4,7 @@ import { career } from './career.content';
 import { contact } from './contact.content';
 import { brand, consoleGreeting, footer, nav } from './frame.content';
 import { hero } from './hero.content';
+import { notFound } from './notFound.content';
 import { process } from './process.content';
 import { profile } from './profile.content';
 import { projects } from './projects.content';
@@ -26,5 +27,6 @@ export const en: Content = {
   process,
   contact,
   footer,
+  notFound,
   console: consoleGreeting,
 };

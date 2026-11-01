@@ -15,3 +15,7 @@ export const HEAD_MARKER: string = '<!--app-head-->';
 export const HTML_MARKER: string = '<!--app-html-->';
 
 export const PAGE_FILE_NAME: string = 'index.html';
+export const HTML_EXTENSION: string = '.html';
+
+// Written next to the pages; public/robots.txt points search engines to it.
+export const SITEMAP_FILE: string = `${DIST_DIRECTORY}sitemap.xml`;

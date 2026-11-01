@@ -1,0 +1,44 @@
+// The hero's night sky over the city, filling the screen. Isolation keeps the backdrop's
+// negative z-index layers inside the section (see heroBackdrop.module.scss).
+.notFound {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 100svh;
+  overflow: hidden;
+  isolation: isolate;
+  background: linear-gradient(
+    180deg,
+    var(--color-sky-1) 0%,
+    var(--color-sky-2) 58%,
+    var(--color-horizon) 100%
+  );
+}
+
+// Above the parapet (z-index 1), like the hero text.
+.container {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  padding: var(--space-26) var(--layout-gutter);
+}
+
+// Narrow enough to read in one glance.
+.content {
+  display: grid;
+  gap: var(--space-5);
+  justify-items: start;
+  max-width: 44rem;
+}
+
+.kicker {
+  color: var(--color-sodium);
+  font-size: var(--font-size-3xs);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: var(--letter-spacing-2xl);
+  text-transform: uppercase;
+}
+
+.actions {
+  margin-top: var(--space-3);
+}

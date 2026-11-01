@@ -6,6 +6,8 @@ export type { ContactProps } from './contact';
 export { Contact } from './contact';
 export type { HeroProps } from './hero';
 export { Hero } from './hero';
+export type { NotFoundProps } from './notFound';
+export { NotFound } from './notFound';
 export type { ProcessProps } from './process';
 export { Process } from './process';
 export type { ProjectsProps } from './projects';

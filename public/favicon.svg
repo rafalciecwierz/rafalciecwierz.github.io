@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- The header's monogram: RC in night on a sodium plate. The letters are drawn as strokes in
+       the condensed, heavy style of the display font, so the icon needs no font file. -->
+  <rect width="64" height="64" fill="#ff9f38"/>
+  <g fill="none" stroke="#0b0b0e" stroke-width="7.5" stroke-linejoin="miter" stroke-linecap="butt">
+    <path d="M12.5 52V15.75H24.5Q31.75 15.75 31.75 24.25Q31.75 32.75 24.5 32.75H12.5"/>
+    <path d="M23.5 32.75L32 52"/>
+    <path d="M53 24.5V22.5Q53 15.75 46.25 15.75Q39.5 15.75 39.5 22.5V41.5Q39.5 48.25 46.25 48.25Q53 48.25 53 41.5V39.5"/>
+  </g>
+</svg>

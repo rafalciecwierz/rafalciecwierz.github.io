@@ -226,10 +226,11 @@ The first part (3.1–3.10) produces a usable, deployed site without motion or t
 - **Done when:** every section from the chosen design is present and readable without JavaScript animations.
 
 ### 3.10 SEO and deployment
-- [ ] **Branch:** `ci/github-pages-deploy`
+- [x] **Branch:** `ci/github-pages-deploy`
 - **Scope:**
   - Title, meta description, Open Graph and Twitter tags, placeholder OG image, favicon, theme colour and `lang`.
-  - A GitHub Actions deploy to GitHub Pages using `actions/deploy-pages`, with Vite `base: '/'`: every merge into `main` builds the pre-rendered site and deploys it (brief section 10).
+  - Agreed during the task: a canonical link, an Apple touch icon, `robots.txt`, a generated `sitemap.xml` and a `noindex` 404 page.
+  - A GitHub Actions deploy to GitHub Pages using `actions/deploy-pages`, with Vite `base: '/'`: every merge into `main` builds the pre-rendered site and deploys it (brief section 10). It is a job in `ci.yml` that runs after the checks ([DECISIONS.md](DECISIONS.md) #008).
 - **Done when:** the site is live at `https://rafalciecwierz.github.io`, a merge into `main` redeploys it, and the served HTML contains the page content and meta tags before any JavaScript runs. **Checkpoint:** the site is good enough to share.
 
 ### 3.11 Motion foundation

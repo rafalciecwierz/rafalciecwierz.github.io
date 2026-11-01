@@ -12,6 +12,7 @@ export { PROJECT_STATUSES, STACK_LEVELS } from './content.constants';
 export type { Content } from './content.types';
 export type { Brand, Footer, Nav, NavLink } from './frame.types';
 export type { Hero, HeroMeta } from './hero.types';
+export type { NotFound } from './notFound.types';
 export type { Process } from './process.types';
 export type { Profile } from './profile.types';
 export type {
@@ -20,7 +21,7 @@ export type {
   ProjectStatus,
   Screenshot,
 } from './projects.types';
-export type { Seo } from './seo.types';
+export type { PageSeo, Seo } from './seo.types';
 export type {
   NumberedSectionHeading,
   SectionHeading,

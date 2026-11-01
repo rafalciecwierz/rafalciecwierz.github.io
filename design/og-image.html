@@ -1,0 +1,72 @@
+<!doctype html>
+<!--
+  Source of the placeholder sharing image, public/og-image.png (task 3.10). The final image
+  replaces it in task 3.18.
+
+  To render it again: serve the repository root over HTTP (python3 -m http.server), open
+  /design/og-image.html in Chrome at a 1200 × 630 viewport and device pixel ratio 1, and save a
+  screenshot of the page as public/og-image.png. Colours and fonts are the site's
+  (src/styles/tokens.scss, public/fonts/).
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>OG image source</title>
+<style>
+  @font-face { font-family: 'Big Shoulders Display'; font-weight: 500 900; src: url('../public/fonts/big-shoulders-display-latin.woff2') format('woff2'); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+  @font-face { font-family: 'Big Shoulders Display'; font-weight: 500 900; src: url('../public/fonts/big-shoulders-display-latin-ext.woff2') format('woff2'); unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF; }
+  @font-face { font-family: 'Barlow'; font-weight: 600; src: url('../public/fonts/barlow-600-latin.woff2') format('woff2'); }
+  :root { --night: #0b0b0e; --chalk: #f2efe8; --muted: #a8a49c; --sodium: #ff9f38; --sky-1: #07080b; --sky-2: #121420; --horizon: #2b1b10; --far: #12141c; --near: #191b23; --window: #ffb35a; --glow: rgb(255 159 56 / 32%); }
+  * { margin: 0; box-sizing: border-box; }
+  html, body { width: 1200px; height: 630px; overflow: hidden; background: var(--night); }
+  .card { position: relative; width: 1200px; height: 630px; overflow: hidden; isolation: isolate;
+    background: linear-gradient(180deg, var(--sky-1) 0%, var(--sky-2) 58%, var(--horizon) 100%); }
+  .city { position: absolute; inset: auto 0 0; height: 300px; z-index: -1; }
+  .cone { position: absolute; bottom: 40px; width: 420px; height: 600px; transform-origin: 50% 100%;
+    background: linear-gradient(to top, rgb(255 159 56 / 26%), rgb(255 159 56 / 5%) 45%, transparent 70%);
+    clip-path: polygon(47% 100%, 53% 100%, 100% 0, 0 0); filter: blur(5px); mix-blend-mode: screen; z-index: -1; }
+  .parapet { position: absolute; inset: auto 0 0; height: 40px; background: linear-gradient(180deg, #34343b 0 3px, #232328 3px 12px, #18181c 12px); }
+  .text { position: absolute; left: 72px; right: 72px; bottom: 96px; }
+  .kicker { font: 600 22px/1 'Barlow', sans-serif; letter-spacing: .16em; text-transform: uppercase; color: var(--sodium); }
+  .name { margin-top: 18px; font: 900 136px/.9 'Big Shoulders Display', sans-serif; text-transform: uppercase; color: var(--chalk);
+    text-shadow: 0 0 28px var(--glow), 0 0 2px rgb(255 211 158 / 60%); letter-spacing: .005em; }
+  .role { margin-top: 22px; font: 800 44px/1 'Big Shoulders Display', sans-serif; text-transform: uppercase; letter-spacing: .03em; color: var(--sodium); }
+  .tagline { margin-top: 14px; font: 600 26px/1.3 'Barlow', sans-serif; color: var(--muted); }
+  .mono { position: absolute; top: 56px; left: 72px; font: 900 34px/1 'Big Shoulders Display', sans-serif; background: var(--sodium); color: var(--night); padding: 9px 11px 6px; }
+  .url { position: absolute; top: 66px; right: 72px; font: 600 22px/1 'Barlow', sans-serif; letter-spacing: .08em; color: var(--muted); }
+</style>
+</head>
+<body>
+<div class="card">
+  <svg class="city" viewBox="0 0 1200 300" preserveAspectRatio="none" aria-hidden="true">
+    <g fill="var(--far)">
+      <rect x="0" y="120" width="90" height="180"/><rect x="100" y="70" width="70" height="230"/><rect x="180" y="140" width="110" height="160"/>
+      <rect x="300" y="90" width="80" height="210"/><rect x="560" y="110" width="90" height="190"/><rect x="660" y="60" width="70" height="240"/>
+      <rect x="740" y="130" width="120" height="170"/><rect x="870" y="80" width="80" height="220"/><rect x="960" y="150" width="100" height="150"/>
+      <rect x="1070" y="100" width="130" height="200"/><rect x="390" y="150" width="160" height="150"/>
+    </g>
+    <g fill="var(--near)">
+      <rect x="40" y="190" width="120" height="110"/><rect x="230" y="170" width="90" height="130"/><rect x="460" y="200" width="140" height="100"/>
+      <rect x="700" y="180" width="100" height="120"/><rect x="900" y="200" width="130" height="100"/><rect x="1080" y="175" width="100" height="125"/>
+    </g>
+    <g fill="var(--window)" opacity=".75">
+      
+      
+      <rect x="884" y="102" width="6" height="9"/><rect x="920" y="160" width="6" height="9"/><rect x="1090" y="124" width="6" height="9"/>
+      <rect x="1150" y="150" width="6" height="9"/>
+    </g>
+  </svg>
+  <span class="cone" style="left: 760px; transform: translateX(-50%) rotate(-14deg)"></span>
+  <span class="cone" style="left: 1040px; transform: translateX(-50%) rotate(12deg)"></span>
+  <div class="parapet"></div>
+  <span class="mono">RC</span>
+  <span class="url">rafalciecwierz.github.io</span>
+  <div class="text">
+    <p class="kicker">Portfolio · Interactive CV</p>
+    <p class="name">Rafał Ciećwierz</p>
+    <p class="role">Frontend Engineer</p>
+    <p class="tagline">React &amp; TypeScript · 5+ years building production apps</p>
+  </div>
+</div>
+</body>
+</html>

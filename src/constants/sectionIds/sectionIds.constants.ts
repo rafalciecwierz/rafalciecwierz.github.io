@@ -10,4 +10,5 @@ export const SECTION_IDS = {
   projects: 'projects',
   process: 'process',
   contact: 'contact',
+  notFound: 'not-found',
 } as const;

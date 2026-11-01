@@ -138,3 +138,18 @@ Alternatives considered:
 - Redirect by `navigator.language`. Rejected: it can only run in JavaScript after the page has loaded, it surprises visitors who want the other language, and it hides one version from search engines.
 
 Consequences: no i18n dependency and no runtime cost for choosing the language. Each page should load only its own locale; today the client imports `en` directly, so task 3.21 has to load the copy by route to keep that true. Content files are code, so a translator who is not a developer would need help editing them. Adding Polish means a `content/pl/` folder, a `/pl/` route, a locale-aware head and a switch link (task 3.21), and no change to sections or components, because they already receive content as props. Verified so far only for English: `en` is typed as `Content`, and `src/content/content.test.ts` runs every locale through the same checks.
+
+## 008. Deploy to GitHub Pages from a job in `ci.yml`, after the checks
+
+Date: 01.11.2026
+
+Context: brief section 10 planned a separate `deploy.yml` that installs, lints, tests and builds on every push to `main` and then deploys. Since task 3.3, `ci.yml` already runs commitlint, lint, the format check, typecheck, test and the pre-rendered build on every push to `main`. A second workflow would run the same checks again on the same commit, and the two would not wait for each other, so a deploy could go out while commitlint or the format check fails in `ci.yml`.
+
+Decision: `ci.yml` gets a `deploy` job that runs only on a push to `main` and `needs: verify`. The `verify` job uploads the `dist/` it has just built and checked with `actions/upload-pages-artifact@v5`, and `deploy` publishes it with `actions/deploy-pages@v5` to the `github-pages` environment. Only the deploy job has `pages: write` and `id-token: write`; the workflow default stays `contents: read`. On `main`, runs are no longer cancelled by a newer push, so a deploy is never cut off halfway; pull requests still cancel their older runs.
+
+Alternatives considered:
+
+- A separate `deploy.yml` that repeats the checks (the brief's plan). Rejected: every merge builds and checks twice, and the deploy does not depend on the full `ci.yml` result (commitlint, the format check).
+- A separate `deploy.yml` started by `workflow_run` after `ci.yml` succeeds, downloading its build. Rejected: no duplication, but `workflow_run` runs from the default branch's copy of the file, cannot be tested from a pull request, and passes artifacts between workflows, which is harder to follow and to explain.
+
+Consequences: one build per merge, and what is deployed is exactly the build that passed the checks. `ci.yml` now has two jobs that run only on `main` (the Pages upload step and `deploy`), so a pull request cannot test them; the first real run is the merge of task 3.10. The repository setting Pages → Source must be "GitHub Actions". Brief section 10 is updated to match.

@@ -1,0 +1,33 @@
+@use '@/styles/breakpoints' as *;
+
+// The night warming to the street lights below, where the footer's street continues it.
+.contact {
+  overflow: hidden;
+  background: linear-gradient(
+    180deg,
+    var(--color-night) 0%,
+    var(--color-dusk) 55%,
+    var(--color-street) 100%
+  );
+}
+
+.layout {
+  display: grid;
+  gap: var(--space-10);
+
+  @include from(lg) {
+    grid-template-columns: 5fr 7fr;
+    gap: var(--space-18);
+  }
+}
+
+.availability {
+  max-width: 26ch;
+  font-size: var(--font-size-statement);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-snug);
+}
+
+.actions {
+  margin-top: var(--space-7);
+}

@@ -1,0 +1,42 @@
+@use '@/styles/breakpoints' as *;
+
+.moveCard {
+  display: grid;
+  grid-template-columns: 3.5rem 1fr;
+  gap: var(--space-4-5);
+
+  @include below(sm) {
+    grid-template-columns: 1.875rem 1fr;
+    gap: var(--space-2-5);
+  }
+}
+
+.card {
+  padding: var(--space-5-5) var(--space-panel-inline) var(--space-6);
+  border-left: var(--border-heavy) solid var(--color-sodium);
+  background: color-mix(in srgb, var(--color-wall) 92%, transparent);
+}
+
+.marks {
+  color: var(--color-sodium);
+  font-family: var(--font-display);
+  font-size: var(--font-size-2xs);
+  font-weight: var(--font-weight-extrabold);
+  line-height: var(--line-height-none);
+  letter-spacing: var(--letter-spacing-2xl);
+  text-transform: uppercase;
+}
+
+// A promoted job covers two moves: "Move 03 · New roof / Move 04 · The crux".
+.mark + .mark::before {
+  content: ' / ';
+}
+
+.title {
+  margin-top: var(--space-2-5);
+  font-family: var(--font-display);
+  font-size: var(--font-size-card-title);
+  font-weight: var(--font-weight-black);
+  line-height: var(--line-height-display-loose);
+  text-transform: uppercase;
+}

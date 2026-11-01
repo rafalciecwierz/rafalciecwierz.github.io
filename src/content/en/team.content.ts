@@ -8,6 +8,7 @@ export const team: Team = {
     'In parkour, a spotter watches your back on a hard move. These are mine from Mood up: LinkedIn recommendations, pasted up word for word.',
   posterHeading: 'From the team',
   source: 'Mood up, 2024',
+  caption: (role: string, source: string): string => `${role} · ${source}`,
   quotes: [
     {
       id: 'wiktoriaW',

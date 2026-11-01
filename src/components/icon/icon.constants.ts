@@ -10,4 +10,6 @@ export const ICON_PATHS: Readonly<Record<IconName, string>> = {
   arrowRight: 'M4 12h15m0 0-6-6m6 6-6 6',
   arrowUp: 'M12 20V5m0 0-6 6m6-6 6 6',
   arrowDown: 'M12 4v15m0 0-6-6m6 6 6-6',
+  arrowUpRight: 'M7 17 17 7m0 0H8m9 0v9',
+  replay: 'M4 12a8 8 0 1 0 2.3-5.6M4 4v4.5h4.5',
 };

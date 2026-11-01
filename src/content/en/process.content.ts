@@ -7,7 +7,7 @@ export const process: Process = {
   intro:
     'Working with AI felt like a leap of faith: a jump to a roof I could not quite see from where I stood. This is what the other side looks like.',
   sceneSigns: ['Frontend', 'AI'],
-  replay: 'Replay the leap ↺',
+  replay: 'Replay the leap',
   how: {
     title: 'How I work with AI',
     paragraphs: null, // TODO (task 3.18)

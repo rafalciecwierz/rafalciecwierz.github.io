@@ -69,5 +69,5 @@ Node 24 (`.nvmrc`) and pnpm. After `pnpm install`, a `commit-msg` hook checks co
 ## Current status (keep this updated)
 
 - Phase: 3, implementation
-- Last completed: 3.8 hero (static): the `hero` section (HeroSign with the runner perched on the Ł by CSS, a seeded Skyline, floodlights and parapet, HeroMeta with the local time after hydration, role, tagline and an ActionGroup), the Runner rig and seeded random utils; the h1 letters are the LCP element and CLS is about 0
-- Next step: 3.9 content sections (static), branch `feat/content-sections`
+- Last completed: 3.9 content sections (static): About, Stack, Career, From the team, Projects (seeded map, cards, details in a native dialog), The leap (scene drawn landed), Contact (email joined after hydration, Copy) and the footer street; the nav marks the section being read; sections lay themselves out with `Box`
+- Next step: 3.10 SEO and deployment, branch `ci/github-pages-deploy`

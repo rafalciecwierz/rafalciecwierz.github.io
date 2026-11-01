@@ -1,5 +1,12 @@
 // `inline` adds nothing: the link keeps the global style.
 
+// A link with an icon keeps the icon on the label's line.
+.withIcon {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3em;
+}
+
 .cta {
   display: inline-flex;
   align-items: center;

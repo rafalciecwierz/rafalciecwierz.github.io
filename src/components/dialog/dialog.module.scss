@@ -1,0 +1,53 @@
+@use '@/styles/breakpoints' as *;
+
+.dialog {
+  position: fixed;
+  inset: 0 0 0 auto;
+  width: min(35rem, 100%);
+  max-width: none;
+  height: 100%;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  border: 0;
+  border-left: var(--border-heavy) solid var(--color-sodium);
+  background: var(--color-concrete);
+  color: var(--color-chalk);
+
+  &::backdrop {
+    background: color-mix(in srgb, var(--color-backdrop) 72%, transparent);
+  }
+
+  &[open] {
+    animation: slide-in var(--duration-slow) var(--ease-out);
+  }
+
+  @include below(md) {
+    inset: auto 0 0;
+    width: 100%;
+    height: auto;
+    max-height: 90svh;
+    border-top: var(--border-heavy) solid var(--color-sodium);
+    border-left: 0;
+
+    &[open] {
+      animation-name: rise-in;
+    }
+  }
+}
+
+@keyframes slide-in {
+  from {
+    opacity: 0;
+    transform: translateX(3rem);
+  }
+}
+
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(3rem);
+  }
+}

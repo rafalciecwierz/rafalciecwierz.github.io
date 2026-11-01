@@ -1,0 +1,99 @@
+.poster {
+  --paper: var(--color-paper);
+  --ink-soft: var(--color-ink-soft);
+
+  position: relative;
+  filter: drop-shadow(
+    0 16px 26px color-mix(in srgb, var(--color-shadow) 55%, transparent)
+  );
+}
+
+.sodium {
+  --paper: var(--color-sodium);
+  --ink-soft: var(--color-ink-soft-on-sodium);
+}
+
+// The sheet of paper: a fold down the middle, a light sheen at the top and a grain of noise.
+.sheet {
+  position: relative;
+  padding: var(--space-6-5) clamp(1.25rem, 2.2vw, 1.75rem) var(--space-8);
+  background-color: var(--paper);
+  background-image:
+    linear-gradient(
+      97deg,
+      transparent 47%,
+      color-mix(in srgb, var(--color-shadow) 6%, transparent) 48.5%,
+      color-mix(in srgb, var(--color-chalk) 18%, transparent) 49.5%,
+      transparent 51%
+    ),
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--color-chalk) 22%, transparent),
+      transparent 30%,
+      color-mix(in srgb, var(--color-shadow) 6%, transparent)
+    );
+  color: var(--color-ink);
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.55;
+    mix-blend-mode: multiply;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .3 0 0 0 0 .25 0 0 0 0 .2 0 0 0 .16 0'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+}
+
+.head {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4-5);
+  padding-bottom: var(--space-3);
+  border-bottom: var(--border-thick) solid var(--color-ink);
+  font-family: var(--font-display);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-extrabold);
+  line-height: var(--line-height-none);
+  letter-spacing: var(--letter-spacing-xl);
+  text-transform: uppercase;
+}
+
+.quote p {
+  font-size: var(--font-size-lead-lg);
+  font-weight: var(--font-weight-medium);
+  line-height: var(--line-height-normal);
+}
+
+.quote p + p {
+  margin-top: 0.6em;
+}
+
+.quote .lead {
+  font-family: var(--font-display);
+  font-size: var(--font-size-quote-title);
+  font-weight: var(--font-weight-black);
+  line-height: var(--line-height-display-loose);
+  text-transform: uppercase;
+}
+
+.caption {
+  display: grid;
+  gap: var(--space-1);
+  margin-top: var(--space-5-5);
+}
+
+.author {
+  font-family: var(--font-display);
+  font-size: var(--font-size-4xl);
+  font-weight: var(--font-weight-black);
+  line-height: var(--line-height-none);
+  letter-spacing: var(--letter-spacing-xs);
+  text-transform: uppercase;
+}
+
+.role {
+  color: var(--ink-soft);
+  font-size: var(--font-size-xs);
+}

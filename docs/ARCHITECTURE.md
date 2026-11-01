@@ -146,6 +146,8 @@ sections/career/
   career.types.ts              # CareerProps
   career.module.scss           # the section's own layout only
   career.test.tsx              # renders the section from fixture content
+  career.constants.ts          # its title id and fixed data (e.g. BUILDING_HEIGHTS)
+  career.utils.ts              # data shaping for the section (e.g. jobMoveNames), with a test
   index.ts                     # exports Career and CareerProps
 ```
 
@@ -269,6 +271,7 @@ export function Button({ variant, children, onClick }: ButtonProps): ReactElemen
 - Sections and pages use components only. Plain HTML tags appear only in `src/components/`.
 - The semantic tags still reach the HTML: `Section` renders `<section aria-labelledby>`, `Heading` renders `<h1>`–`<h3>` from a `level` prop, `List` renders `<ul>` or `<ol>`.
 - The goal is a section file that reads like an outline of the section.
+- A section's own layout (a grid, a gap between parts) is a `Box`, a plain block with a class from the section's CSS Module. Shaping content for the section (which tools go on which board, which moves belong to which job) is a pure function in the section's `.utils.ts`.
 
 **Props design** (adapted from Vercel's composition patterns, section 16):
 
@@ -362,7 +365,7 @@ The rules in brief section 8 are checked by `eslint-plugin-jsx-a11y` and by the 
 Pre-rendering runs every component in Node, where `window`, `document` and `matchMedia` do not exist ([DECISIONS.md](DECISIONS.md) #002). Rules:
 
 - **Render is pure.** Browser APIs are used only in effects, event handlers, services and motion components, never while rendering.
-- **Generated graphics are rendered at build time.** The Skyline and the night map of Projects come from a seeded random generator with a fixed `viewBox`, so the build and the browser produce the same SVG and it ships in the HTML.
+- **Generated graphics are rendered at build time.** The Skyline, the career's MiniBuildings, the night map of Projects, the leap and the posters' torn edges come from a seeded random generator with a fixed `viewBox`, so the build and the browser produce the same SVG and it ships in the HTML. Rows of identical unlit windows are one SVG `<pattern>` each, and only the lit windows are elements of their own, which keeps the DOM small.
 - **Values that differ per visitor appear after hydration,** in a slot whose size is reserved so nothing shifts:
   - the time in the hero meta line (last in the line, in a slot reserved from the first paint),
   - the email address, joined from parts (brief section 4.9),
@@ -383,14 +386,14 @@ Every effect in the reference (its comment header names them) mapped to where it
 | --- | --- | --- | --- |
 | `siteHeader` | Brand (monogram, label in name), Nav, MobileMenu (focus trap, Escape, focus return), header state solid once the page moves | – | `nav`, `brand`, `profile.initials` |
 | `hero` | HeroSign (the name as letters, sized by container query units on the first paint; the reference's FitName is not ported, the measured ratios are enough), the Runner perched on the Ł, HeroIntro (role, tagline), HeroFoot with an ActionGroup (Download CV, Get in touch, Start the climb), HeroMeta (the time after hydration), HeroBackdrop (Skyline, floodlight cones, parapet), HeroContent | `heroMotion`: SignFlicker, window flicker, RoleFlip (a split-flap scramble written by us, driven by a GSAP tween; no ScrambleText plugin), LetterHop (letter clicks, tricks on runner clicks) | `profile`, `hero` |
-| `about` | AboutText, Facts (the `StatList` component) | `aboutMotion`: Vault on the title | `about` |
-| `stack` | AiBand, LevelBoard × 3, ToolGroup, level legend with text labels | `stackMotion`: BoardReveal stagger, Vault | `stack` |
-| `career` | CareerList (newest first, a Building per job, promotions highlighted), Education, skip link | `careerRunMotion` (only from 900 px): RooftopRun with ScrollTrigger `pin` + `scrub`, a building per company, a tower per promotion, the job card following the runner, progress bar | `career` |
-| `testimonials` | Poster (with a seeded torn edge) × 3 | `testimonialsMotion`: PasteUp | `team` |
-| `projects` | SpotMap (seeded SVG, pins), SpotCard list, SpotPanel (`Dialog`: side panel on desktop, bottom sheet on phones) | `projectsMotion`: panel slide, pin highlight | `projects` |
-| `process` | Leap scene drawn landed, the "1 → 16" headline, Stats, links (gallery, `docs/AI_USAGE.md`, both repositories) | `processMotion`: GapLeap with bullet time, replay button | `process` |
-| `contact` | Availability, Channels (Email with CopyButton, LinkedIn, GitHub, Calendly), Download CV | `contactMotion`: Vault | `contact`, `profile` |
-| `siteFooter` | Built-with line, repo link, year, Runner standing with the bubble, back to top | `footerMotion`: FooterLanding (drop, roll, turn, wave) | `footer` |
+| `about` | Text paragraphs and the facts (`StatList`) | `aboutMotion`: Vault on the title | `about` |
+| `stack` | AiBand, LevelBoard × 3 (the level in the title, the top edge and the chip style, never colour alone) | `stackMotion`: BoardReveal stagger, Vault | `stack` |
+| `career` | an ordered List of MoveCards (newest first, the unbuilt roof first; MiniBuilding, JobRoles with a Promoted badge, PointList, TagList), EducationNote; the skip link comes with the run | `careerRunMotion` (only from 900 px): RooftopRun with ScrollTrigger `pin` + `scrub`, a building per company, a tower per promotion, the job card following the runner, progress bar | `career` |
+| `team` | Poster (with a seeded torn edge) × 3 | `testimonialsMotion`: PasteUp | `team` |
+| `projects` | SpotBoard: SpotMap (seeded SVG, pins), SpotCard list, SpotPanel in a `Dialog` (side panel on desktop, bottom sheet on phones). Pins are not clickable (they sit in an `aria-hidden` SVG); each card's button opens the panel, and hovering a card or a pin highlights both | `projectsMotion`: panel slide, pin highlight | `projects` |
+| `process` | LeapScene drawn landed (LeapRoof × 2, RunnerFigure), two columns of text, StatList, the gallery link (a TODO until task 3.17) | `processMotion`: GapLeap with bullet time, replay button | `process` |
+| `contact` | availability, ChannelList of ChannelRows (EmailChannel with Copy after hydration, LinkedIn, GitHub, Calendly), Download CV and EmailButton | `contactMotion`: Vault | `contact`, `profile` |
+| `siteFooter` | FooterStreet (lamp, Runner waving, bubble), SignOff, FooterMeta (back to top, built-with line, repo link, year) | `footerMotion`: FooterLanding (drop, roll, turn, wave) | `footer` |
 
 Across the page:
 

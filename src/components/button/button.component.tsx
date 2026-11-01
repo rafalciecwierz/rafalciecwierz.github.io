@@ -10,6 +10,7 @@ import type { ButtonProps } from './button.types';
 // leap. It is always type="button", so it can never submit a form by accident.
 export function Button({
   variant = 'outline',
+  size = 'regular',
   icon,
   children,
   ...buttonProps
@@ -18,7 +19,7 @@ export function Button({
     <button
       {...buttonProps}
       type="button"
-      className={classNames(styles.button, styles[variant])}
+      className={classNames(styles.button, styles[variant], styles[size])}
     >
       {children}
       {icon !== undefined && <Icon name={icon} />}

@@ -1,0 +1,23 @@
+.jobRoles {
+  margin-top: var(--space-2-5);
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-snug);
+}
+
+.arrow {
+  display: inline-block;
+  margin: 0 0.3em;
+  color: var(--color-sodium);
+  vertical-align: -0.1em;
+
+  > svg {
+    display: inline-block;
+  }
+}
+
+.badge {
+  display: inline-block;
+  margin-left: var(--space-2);
+  vertical-align: 2px;
+}

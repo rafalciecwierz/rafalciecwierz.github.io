@@ -1,0 +1,30 @@
+@use '@/styles/breakpoints' as *;
+
+.scene {
+  margin-bottom: var(--space-section-head);
+}
+
+.columns {
+  display: grid;
+  gap: var(--space-10);
+
+  @include from(lg) {
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-18);
+  }
+}
+
+.column {
+  display: grid;
+  gap: var(--space-4);
+  align-content: start;
+}
+
+.text {
+  max-width: 58ch;
+  font-size: var(--font-size-lead-sm);
+}
+
+.facts {
+  margin: var(--space-2-5) 0 0;
+}

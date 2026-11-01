@@ -14,5 +14,7 @@ export type Team = {
   intro: string;
   posterHeading: string;
   source: string;
+  // Under the author's name: "Frontend Developer · Mood up, 2024".
+  caption: (role: string, source: string) => string;
   quotes: readonly Quote[];
 };

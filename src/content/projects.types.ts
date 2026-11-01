@@ -35,6 +35,8 @@ export type Projects = {
   demoLink: string;
   panel: {
     open: string;
+    // The open button's accessible name: it starts with the visible text (WCAG 2.5.3).
+    openFor: (name: string) => string;
     close: string;
     description: string;
     stack: string;

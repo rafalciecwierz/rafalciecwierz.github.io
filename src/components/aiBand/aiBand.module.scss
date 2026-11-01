@@ -1,0 +1,39 @@
+@use '@/styles/breakpoints' as *;
+
+.aiBand {
+  display: grid;
+  gap: var(--space-2) var(--space-7);
+  align-items: center;
+  margin-bottom: var(--space-6);
+  padding: var(--space-5) var(--space-panel-inline);
+  border: var(--border-hairline) solid var(--color-sodium-dim);
+  border-left: var(--border-heavy) solid var(--color-sodium);
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--color-sodium) 13%, transparent),
+    transparent 75%
+  );
+
+  @include from(lg) {
+    grid-template-columns: auto 1fr auto;
+  }
+}
+
+.title {
+  color: var(--color-sodium);
+  font-family: var(--font-display);
+  font-size: var(--font-size-band-title);
+  font-weight: var(--font-weight-black);
+  line-height: var(--line-height-none);
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.text {
+  max-width: var(--layout-text-width);
+  font-size: var(--font-size-md);
+}
+
+.link {
+  justify-self: start;
+}

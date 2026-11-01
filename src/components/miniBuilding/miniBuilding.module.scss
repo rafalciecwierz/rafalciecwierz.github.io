@@ -1,0 +1,38 @@
+@use '@/styles/breakpoints' as *;
+
+.miniBuilding {
+  align-self: end;
+  width: 3.5rem;
+
+  @include below(sm) {
+    width: 1.875rem;
+  }
+}
+
+.body {
+  fill: var(--color-building-body);
+}
+
+.roof {
+  fill: var(--color-building-roof);
+}
+
+.tower {
+  fill: var(--color-building-tower);
+}
+
+.towerCap {
+  fill: var(--color-sodium);
+}
+
+.lit {
+  fill: var(--color-window-warm);
+}
+
+.dark {
+  fill: var(--color-window-dark);
+}
+
+.dim {
+  opacity: 0.8;
+}

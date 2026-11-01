@@ -1,0 +1,23 @@
+@use '@/styles/breakpoints' as *;
+
+// The text, then the facts; side by side from 900px.
+.layout {
+  display: grid;
+  gap: var(--space-12);
+  align-items: start;
+
+  @include from(lg) {
+    grid-template-columns: 7fr 5fr;
+    gap: var(--space-18);
+  }
+}
+
+.text > * + * {
+  margin-top: 1.1em;
+}
+
+// The last paragraph, about parkour and climbing, is lit in sodium.
+.text > :last-child {
+  color: var(--color-sodium);
+  font-weight: var(--font-weight-semibold);
+}

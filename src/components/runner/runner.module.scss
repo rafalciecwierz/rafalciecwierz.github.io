@@ -1,5 +1,8 @@
 .runner {
   overflow: visible;
+}
+
+.figure {
   fill: none;
   stroke-linecap: round;
   stroke-linejoin: round;
@@ -9,8 +12,13 @@
   stroke: var(--color-chalk);
 }
 
-.far {
+// In profile the far limbs are darker, for depth; facing the viewer both sides match.
+.profile {
   stroke: var(--color-runner-far);
+}
+
+.front {
+  stroke: var(--color-chalk);
 }
 
 .head {

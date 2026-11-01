@@ -5,7 +5,7 @@ export const career: Career = {
   heading: { number: '03', kicker: 'The line', title: 'Career' },
   intro:
     'Four companies and two promotions, run as one line across the rooftops. Every roof is higher than the last.',
-  skipRun: 'Skip the run ↓',
+  skipRun: 'Skip the run',
   promoted: 'Promoted',
   stackLabel: 'Stack',
   moveNames: [
@@ -135,6 +135,8 @@ export const career: Career = {
     },
   ],
   educationLabel: 'Before the first roof',
+  educationDetail: (degree: string, years: string): string =>
+    `${degree}, ${years}`,
   education: {
     school: 'Adam Mickiewicz University',
     degree: "Engineer's degree in Computer Science",

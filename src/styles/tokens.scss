@@ -57,6 +57,26 @@
   --color-window-warm: #ffb35a;
   --color-window-cool: #cfdbf5;
 
+  // The small buildings beside the jobs in the career list, and the roofs of the leap.
+  --color-building-body: #1e1f25;
+  --color-building-roof: #3a3b42;
+  --color-building-tower: #24252c;
+  --color-building-distant: #10121a; // the city far behind the leap
+  --color-roof: #191a20; // the two roofs of the leap
+  --color-window-dark: #2a2c34;
+  --color-window-unlit: #22242b; // on the leap's roofs
+  --color-fog: #171a26; // over the unknown roof of the leap
+
+  // The night map of the projects.
+  --color-river: #121722;
+  --color-street-minor: #1b1c22;
+  --color-street-major: #26272e;
+  --color-road: #2c2d35;
+
+  // The street lamp in the footer, and the dimmed page behind an open dialog.
+  --color-lamp-post: #2e2f36;
+  --color-backdrop: #050507;
+
   // The runner: his far arm and leg are darker, for depth in profile.
   --color-runner-far: #a9a398;
 

@@ -67,3 +67,14 @@
 .fog {
   opacity: 0.2;
 }
+
+// The replay button, in the scene's corner on a dark plate so it reads over the roofs.
+// ProcessMotion shows it; the static scene has nothing to replay.
+.replay {
+  position: absolute;
+  right: var(--space-3-5);
+  bottom: var(--space-3-5);
+  z-index: 1;
+  display: none;
+  background: color-mix(in srgb, var(--color-night) 80%, transparent);
+}

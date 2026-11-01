@@ -243,19 +243,25 @@ The first part (3.1–3.10) produces a usable, deployed site without motion or t
 - **Done when:** GSAP, the motion layer and the reduced-motion hook work, covered by a test, and smooth scroll is off with reduced motion.
 
 ### 3.12 Interactive effects
-- [ ] **Branch:** `feat/interactive-effects`
-- **Scope:** the effects used by the chosen design (React Bits, GSAP plugins or other sources), either installed or ported as decided in `docs/ARCHITECTURE.md`, including FooterLanding (the runner drops onto the footer street, rolls, turns and waves) and clicks on the project map's pins (they sit in an `aria-hidden` SVG; until then each card's button opens the panel). Each effect respects reduced motion and adds no unplanned dependencies.
+- [x] **Branch:** `feat/interactive-effects`
+- **Scope:** the effects used by the chosen design (React Bits, GSAP plugins or other sources), either installed or ported as decided in `docs/ARCHITECTURE.md`:
+  - FooterLanding: the runner drops onto the footer street, rolls, turns and waves.
+  - GapLeap: the jump in "The leap" with bullet time at the apex, and its replay button.
+  - Clicks on the project map's pins open the panel (the pins sit in an `aria-hidden` SVG, so each card's button stays the keyboard path).
+  - Agreed during the task: RoleFlip, the runner's click tricks and the skyline's window flicker move to 3.14 (they belong to the hero's motion and its runner), and PasteUp moves to 3.13 (it is an entrance on scroll). The panel slide and the pin highlight were already done in CSS in 3.9.
+  - Each effect respects reduced motion and adds no unplanned dependencies.
 - **Done when:** all planned effects work, and each has a decision entry when it adds a dependency.
 
 ### 3.13 Scroll animations
 - [ ] **Branch:** `feat/scroll-animations`
-- **Scope:** section reveals, staggered groups and the title entrances of the chosen design (the "vault and land" letters), using `useGSAP` with a scope ref.
+- **Scope:** section reveals, staggered groups and the title entrances of the chosen design (the "vault and land" letters), and PasteUp (the posters slapped on the wall, moved here from 3.12), using `useGSAP` with a scope ref.
 - **Done when:** the animations run at 60 fps on a mid-range phone and are reduced to simple fades or nothing with reduced motion.
 
 ### 3.14 Hero scene
 - [ ] **Branch:** `feat/hero-scene`
 - **Scope:**
   - The animated hero of the chosen design: the rooftop sign flickering on, the generated skyline, and the SVG free-runner (a pose rig) hopping between letters and perching on the Ł.
+  - Moved here from 3.12: RoleFlip (the split-flap role), the tricks on clicks on the runner, and the skyline's window flicker. The runner moves with `RunnerRig` (built in 3.12).
   - Animation paused when the hero is off-screen or the tab is hidden.
   - With reduced motion: the sign lit and the runner perched still.
 - **Done when:** the scene adds no dependency, is `aria-hidden`, causes no layout shift, and the hero heading stays the LCP element.

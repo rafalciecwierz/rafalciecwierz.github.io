@@ -1,4 +1,4 @@
-import type { ReactElement } from 'react';
+import { type ReactElement, type RefObject, useRef } from 'react';
 
 import {
   ActionGroup,
@@ -14,15 +14,25 @@ import {
   Todo,
 } from '@/components';
 import { SECTION_IDS } from '@/constants';
+import { MotionLayer, type MotionModule } from '@/motion/motionLayer';
 
 import { PROCESS_TITLE_ID } from './process.constants';
 import styles from './process.module.scss';
 import type { ProcessProps } from './process.types';
 
+// Loads the leap's jump as its own chunk (docs/ARCHITECTURE.md section 13).
+async function loadProcessMotion(): Promise<MotionModule> {
+  const { ProcessMotion } =
+    await import('@/motionComponents/processMotion/processMotion.component');
+  return { default: ProcessMotion };
+}
+
 // "The leap": AI and process (brief 4.8). The scene, then two columns: how Rafał works with AI
 // (still a TODO) and how this site was made, with the numbers from the repository.
 export function Process({ process }: ProcessProps): ReactElement {
   const { how, site } = process;
+  const sceneRef: RefObject<HTMLDivElement | null> =
+    useRef<HTMLDivElement>(null);
 
   return (
     <Section id={SECTION_IDS.process} labelledBy={PROCESS_TITLE_ID}>
@@ -33,7 +43,13 @@ export function Process({ process }: ProcessProps): ReactElement {
           intro={process.intro}
         />
         <Box className={styles.scene}>
-          <LeapScene signs={process.sceneSigns} />
+          <LeapScene
+            ref={sceneRef}
+            signs={process.sceneSigns}
+            replayLabel={process.replay}
+          >
+            <MotionLayer load={loadProcessMotion} scope={sceneRef} />
+          </LeapScene>
         </Box>
         <Box className={styles.columns}>
           <Box className={styles.column}>

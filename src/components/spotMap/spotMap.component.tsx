@@ -15,12 +15,14 @@ import { mapStreets, zoomViewBox } from './spotMap.utils';
 
 // The night map of the projects: a seeded street grid, a river, and one numbered pin per
 // project. It is a picture of the list beside it, so it is hidden from screen readers; every
-// action is on the cards. Pointing at a pin highlights its card, and the reverse.
+// action is also on the cards. Pointing at a pin highlights its card, and the reverse, and
+// clicking a pin opens the project like the card's button does.
 export function SpotMap({
   pins,
   hotIndex,
   zoomIndex,
   onPinHover,
+  onPinClick,
 }: SpotMapProps): ReactElement {
   const zoomPin: MapPoint | undefined =
     zoomIndex === undefined ? undefined : pins[zoomIndex];
@@ -55,9 +57,11 @@ export function SpotMap({
           className={classNames(
             styles.pin,
             index === (zoomIndex ?? hotIndex) && styles.hot,
+            onPinClick !== undefined && styles.clickable,
           )}
           onPointerEnter={(): void => onPinHover?.(index)}
           onPointerLeave={(): void => onPinHover?.(null)}
+          onClick={(): void => onPinClick?.(index)}
         >
           <circle
             className={styles.ring}

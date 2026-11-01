@@ -39,6 +39,11 @@
   transform: scale(1.3);
 }
 
+// On the projects map a pin opens its project; in the detail panel's zoom it does not.
+.clickable {
+  cursor: pointer;
+}
+
 .drop {
   fill: var(--color-sodium);
 }

@@ -92,4 +92,26 @@ describe('Projects', (): void => {
       screen.getByRole('button', { name: 'Spot details: Project Two' }),
     ).toHaveFocus();
   });
+
+  it('opens a project from its pin on the map, and gives focus to its card’s button on close', async (): Promise<void> => {
+    const { container } = render(<Projects projects={PROJECTS} />);
+    // The map is hidden from screen readers, so its pins are found in the DOM: one group each.
+    const pins: SVGGElement[] = [
+      ...container.querySelectorAll<SVGGElement>('svg > g'),
+    ];
+    const secondPin: SVGGElement | undefined = pins[1];
+    if (secondPin === undefined) {
+      throw new Error('The map has no second pin.');
+    }
+
+    await userEvent.click(secondPin);
+
+    expect(screen.getByRole('dialog', { name: 'Project Two' })).toHaveAttribute(
+      'open',
+    );
+    await userEvent.click(screen.getByRole('button', { name: 'Close' }));
+    expect(
+      screen.getByRole('button', { name: 'Spot details: Project Two' }),
+    ).toHaveFocus();
+  });
 });

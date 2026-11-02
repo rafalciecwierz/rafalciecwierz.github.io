@@ -8,7 +8,7 @@ export { joinEmail } from './email';
 export { displayUrl, padNumber } from './format';
 export { escapeHtml } from './html';
 export { clamp, easeInOutQuad, lerp, smoothstep } from './math';
-export { mediaQueryBelow } from './media';
+export { mediaQueryBelow, mediaQueryFrom } from './media';
 export type { Leaf, PlainObject } from './object';
 export { collectLeaves, isPlainObject } from './object';
 export { createRandom, hashString } from './random';

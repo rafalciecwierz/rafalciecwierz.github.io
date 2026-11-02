@@ -153,3 +153,37 @@ Alternatives considered:
 - A separate `deploy.yml` started by `workflow_run` after `ci.yml` succeeds, downloading its build. Rejected: no duplication, but `workflow_run` runs from the default branch's copy of the file, cannot be tested from a pull request, and passes artifacts between workflows, which is harder to follow and to explain.
 
 Consequences: one build per merge, and what is deployed is exactly the build that passed the checks. `ci.yml` now has two jobs that run only on `main` (the Pages upload step and `deploy`), so a pull request cannot test them; the first real run is the merge of task 3.10. The repository setting Pages → Source must be "GitHub Actions". Brief section 10 is updated to match.
+
+## 009. Hold the career run on screen with CSS `position: sticky` and scrub it with ScrollTrigger, without a ScrollTrigger pin
+
+Date: 02.11.2026
+
+Status: **Partly superseded by #010.** The sticky stage and the scrub stay; the run's layout and length now come from CSS and the HTML, not from `CareerRunMotion`.
+
+Context: the career run (task 3.15) keeps one screen of the Career section in place for about five screens of scroll while the runner crosses the roofs. The brief and the architecture planned a ScrollTrigger `pin` + `scrub`. With the default pin, Chrome reported a layout shift of 1.0 when the section switched to `position: fixed` and 0.95 when it switched back (measured with a `layout-shift` observer and a DevTools trace at 1280 × 800). Scrolling does not exempt a shift from CLS, so visitors' CLS would show it, even though Lighthouse's page-load run does not scroll.
+
+Decision: the section grows by the run's length (`--career-run-distance`, in vh, set by `CareerRunMotion`), and a `stage` box inside it is `position: sticky; top: 0; height: 100vh` while `data-career-run` is set. ScrollTrigger only scrubs a progress value from the section's top reaching the top of the window to its bottom reaching the bottom (`start: 'top top'`, `end: 'bottom bottom'`, `scrub: true`). Chosen by Rafał during task 3.15.
+
+Alternatives considered:
+
+- ScrollTrigger `pin` with `position: fixed` (the default). Rejected: a layout shift of about 1.0 on entering and on leaving the run.
+- ScrollTrigger `pin` with `pinType: 'transform'`. Rejected: the shift drops to 0.001, but the transform is set on the main thread, so it can lag a frame behind scrolling that the browser animates on its own (the keyboard, the scrollbar). GSAP uses fixed pinning for the page scroller for that reason.
+
+Consequences: the browser holds the stage in place itself, so there is no shift and no lag with any way of scrolling: CLS 0.002 over the whole run, and 289 frames averaging 16.7 ms (max 22 ms, no long tasks) at 1280 × 800 with a 4× CPU slowdown. ScrollTrigger does not wrap the React-rendered `<section>` in a pin spacer. The page length is plain CSS, so a resize needs no measuring. The cost: no ancestor of the section may become a scroll container (`overflow: hidden`), or sticky stops working; `body` uses `overflow-x: clip` for that reason.
+
+## 010. Lay the career run out with CSS from the first frame, and let the motion only bring it to life
+
+Date: 02.11.2026
+
+Context: until now `CareerRunMotion` turned the Career list into the run by setting `data-career-run` and the run's length on the section. Motion loads after hydration, when the browser is idle, so the run could only start when the section was still below the screen; anywhere else it would have replaced the list in front of the reader. A reload on Career (the browser keeps the scroll) or a link to `#career` therefore showed the list, while scrolling down from the top showed the run, so the same place on the page looked different after a reload. Starting it anyway made the list flash and then turn into the run.
+
+Decision: CSS decides when the career is the run: `@media (width >= 900px) and (prefers-reduced-motion: no-preference) and (scripting: enabled)` (the `career-run` mixin in `src/styles/_careerRun.scss`). `RunTrack` puts `data-career-run` and the run's distance (`--career-run-distance`, worked out at build time from the number of roles) in the HTML. Before the motion has loaded, the run shows its frame: the sky, the heading and the progress bar. The city, the runner and the card for the scroll position fade in when `CareerRunMotion` has placed them (`data-career-run-live`). If the motion is not live after 1.5 s, CSS shows the first stage's card (the oldest job, only its first move named), so the career never stays without content. Chosen by Rafał; the wait for the card was added after the audit, which saw the first stage's card shown for about 0.4–0.6 s before the right one on a reload mid-run.
+
+Alternatives considered:
+
+- Keep the list until the motion loads, and start the run only below the screen (the rule until now). Rejected: after a reload on Career the page shows a different component than before it.
+- Start the run wherever the reader is once the motion loads. Rejected: the list shows for a moment and then turns into the run.
+- Show the first stage's card at once, before the motion. Rejected after the audit: on a reload mid-run that card showed for about 0.4–0.6 s and was then swapped, which reads as a jump in the content.
+- Show no card until the motion loads, with no fallback. Rejected: if the motion were slow or failed, the career would show no content.
+
+Consequences: a reload anywhere in the run shows the run from the first frame. Measured at 1280 × 800: the stage is sticky in the first frame, the motion attached after about 0.4 s, and the CLS of the reload was 0. The motion no longer changes the layout, so its start is lighter and the code that guarded it (start only below the screen, keep the reader's place) is gone. Without JavaScript, with reduced motion and below 900 px the career is still the list, as the brief requires (sections 4 and 8). Browsers without the `scripting` media feature (before Chrome 120, Safari 17, Firefox 113) also get the list. The costs: when the window widens past 900 px, CSS switches to the run at once, so the reader lands wherever their scroll falls in the longer page. If the motion chunk fails to load, a desktop reader sees only the first stage's card (after 1.5 s), while the other cards stay in the HTML for screen readers and search engines. Measured after the change: a reload mid-run shows no card until the motion is live (about 0.45 s) and then only the right one, with CLS 0; with the motion blocked, the first card appeared at 1.5 s.

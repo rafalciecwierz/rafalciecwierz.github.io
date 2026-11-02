@@ -5,3 +5,9 @@ import { type BreakpointName, BREAKPOINTS } from '@/constants';
 export function mediaQueryBelow(name: BreakpointName): string {
   return `(width < ${String(BREAKPOINTS[name])}px)`;
 }
+
+// The media query for "the breakpoint and wider", the same as from() in
+// src/styles/_breakpoints.scss.
+export function mediaQueryFrom(name: BreakpointName): string {
+  return `(width >= ${String(BREAKPOINTS[name])}px)`;
+}

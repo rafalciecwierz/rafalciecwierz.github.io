@@ -1,0 +1,205 @@
+@use '@/styles/careerRun' as *;
+
+// The city of the career run, laid over the run's whole screen. Hidden in the list; shown
+// when the career is the run (the career-run mixin, src/styles/_careerRun.scss). Its two
+// layers stay invisible until CareerRunMotion has placed them and set data-career-run-live,
+// then fade in.
+.careerRunScene {
+  position: absolute;
+  inset: 0;
+  display: none;
+  overflow: hidden;
+  pointer-events: none;
+
+  @include career-run {
+    :global([data-career-run]) & {
+      display: block;
+    }
+  }
+
+  // The street fades into the page at the bottom, under the progress bar.
+  &::after {
+    content: '';
+    position: absolute;
+    inset: auto 0 0;
+    z-index: 2;
+    height: 6.875rem;
+    background: linear-gradient(
+      transparent,
+      color-mix(in srgb, var(--color-night) 92%, transparent) 60%
+    );
+  }
+}
+
+// The run's part of the page: one screen plus the run's distance, so its stage stays on
+// screen while the page scrolls that far.
+.runTrack {
+  @include career-run {
+    height: calc(
+      max(100vh, #{$career-run-min-height}) + var(--career-run-distance)
+    );
+  }
+}
+
+// Each layer is drawn at 1 px per unit from its top left corner. The motion moves it with a
+// transform, which the browser does on its own compositor layer, without repainting the SVG.
+.layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  overflow: visible;
+  opacity: 0;
+  transform-origin: 0 0;
+  transition: opacity var(--duration-slow) var(--ease-out);
+  will-change: transform;
+
+  :global([data-career-run-live]) & {
+    opacity: 1;
+  }
+}
+
+.farBuilding {
+  fill: var(--color-building-far);
+}
+
+.farWindow {
+  fill: var(--color-window-warm);
+  opacity: 0.3;
+}
+
+.street {
+  fill: var(--color-night);
+}
+
+.glowStop {
+  stop-color: var(--color-lamp-light);
+}
+
+.glowEnd {
+  stop-color: var(--color-sodium);
+}
+
+.lampPost {
+  fill: none;
+  stroke: var(--color-lamp-post);
+}
+
+.lampHead {
+  fill: var(--color-lamp-light);
+}
+
+.wall {
+  fill: var(--color-roof);
+}
+
+.ledge {
+  fill: var(--color-line);
+}
+
+.ledgeGlow {
+  fill: var(--color-lamp-light);
+  opacity: 0.5;
+}
+
+.unlit {
+  fill: var(--color-window-unlit);
+}
+
+.lit {
+  fill: var(--color-window-warm);
+  opacity: 0.55;
+}
+
+.cool {
+  fill: var(--color-window-cool);
+}
+
+.roofBox {
+  fill: var(--color-building-tower);
+}
+
+.antenna {
+  stroke: var(--color-lamp-post);
+}
+
+.plate {
+  fill: var(--color-wall);
+}
+
+.sign {
+  fill: var(--color-chalk);
+  opacity: 0.9;
+  font-family: var(--font-display);
+  font-weight: var(--font-weight-black);
+  text-transform: uppercase;
+}
+
+.dates {
+  fill: var(--color-muted);
+  font-family: var(--font-text);
+  font-weight: var(--font-weight-semibold);
+}
+
+.towerLabel {
+  fill: var(--color-sodium);
+  font-family: var(--font-display);
+  font-weight: var(--font-weight-extrabold);
+  text-transform: uppercase;
+}
+
+.nextOutline {
+  fill: none;
+  stroke: var(--color-sodium-dim);
+  stroke-width: 3;
+}
+
+.scaffold {
+  stroke: color-mix(in srgb, var(--color-sodium-dim) 25%, var(--color-night));
+  stroke-width: 2;
+}
+
+.crane {
+  fill: none;
+  stroke: var(--color-sodium-dim);
+  stroke-width: 3;
+  stroke-linejoin: round;
+}
+
+.craneLattice {
+  fill: none;
+  stroke: var(--color-sodium-dim);
+  stroke-width: 1.5;
+}
+
+.craneTies {
+  fill: none;
+  stroke: color-mix(in srgb, var(--color-sodium-dim) 60%, var(--color-night));
+  stroke-width: 1.5;
+}
+
+.cranePart {
+  fill: var(--color-sodium-dim);
+}
+
+.craneCab {
+  fill: var(--color-window-warm);
+  stroke: var(--color-sodium-dim);
+  stroke-width: 2;
+}
+
+.craneLoad {
+  fill: var(--color-sodium);
+}
+
+.hook {
+  fill: none;
+  stroke: var(--color-sodium-dim);
+  stroke-width: 2;
+}
+
+.nextLabel {
+  fill: var(--color-sodium);
+  font-family: var(--font-display);
+  font-weight: var(--font-weight-black);
+  text-transform: uppercase;
+}

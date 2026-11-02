@@ -1,1 +1,1 @@
-export { mediaQueryBelow } from './media.utils';
+export { mediaQueryBelow, mediaQueryFrom } from './media.utils';

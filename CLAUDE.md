@@ -70,5 +70,5 @@ Node 24 (`.nvmrc`) and pnpm. After `pnpm install`, a `commit-msg` hook checks co
 ## Current status (keep this updated)
 
 - Phase: 3, implementation
-- Last completed: 3.14 hero scene: `HeroMotion` with SignFlicker, RoleFlip, the window flicker (paused off-screen), a greeting wave from the Ł, and LetterHop (clicks on letters and on the runner, tricks), the rig placed by a pixel scan of the glyphs
-- Next step: 3.15 career run, branch `feat/career-run`
+- Last completed: 3.15 career run: from 900 px CSS lays Career out as the run from the first frame (`RunTrack`, the `career-run` mixin, DECISIONS #010) and `CareerRunMotion` brings it to life (a sticky stage scrubbed by ScrollTrigger, #009), the city from `CareerRunScene`, the skip link and progress bar from `RunBar`, layers moved by transforms only
+- Next step: 3.16 performance and accessibility pass, branch `perf/lighthouse-pass`

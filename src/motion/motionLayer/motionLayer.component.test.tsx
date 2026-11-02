@@ -62,6 +62,19 @@ describe('MotionLayer', (): void => {
     expect(onMount).not.toHaveBeenCalled();
   });
 
+  it('never loads its motion component when its media query does not match', async (): Promise<void> => {
+    const { load, onMount } = createFakeMotion();
+
+    // The stand-in answers every query with "no": reduced motion is off, the media is wrong.
+    render(<MotionLayer load={load} media="(width >= 900px)" />);
+    await new Promise<void>((resolve: () => void): void => {
+      setTimeout(resolve, 400);
+    });
+
+    expect(load).not.toHaveBeenCalled();
+    expect(onMount).not.toHaveBeenCalled();
+  });
+
   it('unmounts its motion component when reduced motion is turned on', async (): Promise<void> => {
     const { load, onMount, onUnmount } = createFakeMotion();
     render(<MotionLayer load={load} />);

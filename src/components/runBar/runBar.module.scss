@@ -1,0 +1,68 @@
+@use '@/styles/careerRun' as *;
+
+// Along the bottom of the pinned run: the bar fills the width, the skip link sits at its
+// right end (it comes first in the HTML, so the keyboard reaches it first).
+.runBar {
+  position: absolute;
+  right: var(--layout-gutter);
+  bottom: var(--space-6-5);
+  left: var(--layout-gutter);
+  z-index: 3;
+  display: none;
+  flex-direction: row-reverse;
+  align-items: center;
+  gap: var(--space-5-5);
+
+  @include career-run {
+    :global([data-career-run]) & {
+      display: flex;
+    }
+  }
+}
+
+.track {
+  position: relative;
+  flex: 1;
+  height: var(--border-medium);
+  background: var(--color-line);
+}
+
+// CareerRunMotion scales it from 0 to the run's progress; a transform needs no layout.
+.fill {
+  position: absolute;
+  inset: 0;
+  background: var(--color-sodium);
+  transform: scaleX(0);
+  transform-origin: left;
+}
+
+.tick {
+  position: absolute;
+  top: var(--space-2-5);
+  color: var(--color-muted);
+  font-family: var(--font-display);
+  font-size: var(--font-size-3xs);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-none);
+  letter-spacing: var(--letter-spacing-lg);
+  text-transform: uppercase;
+  transform: translateX(-50%);
+  transition: color var(--duration-base);
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: calc(-1 * var(--space-3-5));
+    left: 50%;
+    width: var(--border-medium);
+    height: var(--space-2);
+    background: currentcolor;
+  }
+
+  // Reached: the runner has got to this stage. The first one always is, so it is lit before
+  // the motion has loaded too.
+  &:first-child,
+  &[data-reached] {
+    color: var(--color-sodium);
+  }
+}

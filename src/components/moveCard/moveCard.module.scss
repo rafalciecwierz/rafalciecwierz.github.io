@@ -1,4 +1,5 @@
 @use '@/styles/breakpoints' as *;
+@use '@/styles/careerRun' as *;
 
 .moveCard {
   display: grid;
@@ -39,4 +40,36 @@
   font-weight: var(--font-weight-black);
   line-height: var(--line-height-display-loose);
   text-transform: uppercase;
+}
+
+// In the career run (the career-run mixin, src/styles/_careerRun.scss) the card floats over
+// the city on its own: the run draws the real buildings, so the small one goes, the card is
+// opaque (no sign shows through the text) and casts a shadow, and only the move the runner
+// is on (data-current) is named, without the slash.
+@include career-run {
+  :global([data-career-run]) {
+    .moveCard {
+      display: block;
+    }
+
+    .moveCard > :not(.card) {
+      display: none;
+    }
+
+    .card {
+      background: var(--color-wall);
+      box-shadow: 0 20px 60px
+        color-mix(in srgb, var(--color-shadow) 50%, transparent);
+    }
+
+    .marks:has([data-current]) {
+      .mark:not([data-current]) {
+        display: none;
+      }
+
+      .mark + .mark::before {
+        content: none;
+      }
+    }
+  }
 }

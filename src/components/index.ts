@@ -12,6 +12,18 @@ export type { ButtonProps, ButtonSize, ButtonVariant } from './button';
 export { Button } from './button';
 export type { ButtonLinkProps, ButtonLinkVariant } from './buttonLink';
 export { ButtonLink } from './buttonLink';
+export type {
+  CareerRunLayout,
+  CareerRunSceneProps,
+  RunSegment,
+  RunTrackProps,
+} from './careerRunScene';
+export {
+  careerRunLayout,
+  CareerRunScene,
+  RunTrack,
+  STAGE_SWITCH,
+} from './careerRunScene';
 export type { ChannelListProps } from './channelList';
 export { ChannelList } from './channelList';
 export type { ChannelRowProps } from './channelRow';
@@ -73,6 +85,8 @@ export type { PointListProps } from './pointList';
 export { PointList } from './pointList';
 export type { PosterProps, PosterTone } from './poster';
 export { Poster } from './poster';
+export type { RunBarProps, RunTick } from './runBar';
+export { RunBar } from './runBar';
 export type {
   Facing,
   PoseName,

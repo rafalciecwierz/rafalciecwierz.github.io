@@ -1,0 +1,16 @@
+@use 'breakpoints' as *;
+
+// The shortest screen the run is laid out for (620 px, as the reference).
+$career-run-min-height: 38.75rem;
+
+// When the career is the run, not the list (DECISIONS.md #010): from 900 px, with motion
+// allowed and JavaScript on. CSS alone turns the run's layout on, so the page already has it
+// when it loads, wherever the reader is, and the motion only brings it to life. Without
+// JavaScript, with reduced motion and on narrower screens the career stays the plain list.
+// Inside it, the parts of the run answer to their ancestor with `:global([data-career-run])`
+// (RunTrack puts the attribute in the HTML).
+@mixin career-run {
+  @media (width >= #{breakpoint(lg)}) and (prefers-reduced-motion: no-preference) and (scripting: enabled) {
+    @content;
+  }
+}

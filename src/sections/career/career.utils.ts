@@ -1,3 +1,8 @@
+import {
+  type CareerRunLayout,
+  careerRunLayout,
+  type RunTick,
+} from '@/components';
 import type { Job } from '@/content';
 
 import { BUILDING_HEIGHTS } from './career.constants';
@@ -27,4 +32,29 @@ export function nextMoveName(moveNames: readonly string[]): string {
 // The height of the building beside the job at this position (newest first).
 export function buildingHeight(index: number): number {
   return BUILDING_HEIGHTS[index] ?? BUILDING_HEIGHTS.at(-1) ?? 0;
+}
+
+// The ticks on the career run's progress bar: the year each job started, where its first roof
+// starts, and the next roof's sign at the end. A promotion's roof gets no tick of its own.
+export function runTicks(jobs: readonly Job[], nextSign: string): RunTick[] {
+  const oldestFirst: Job[] = [...jobs].reverse();
+  const layout: CareerRunLayout = careerRunLayout(
+    oldestFirst.map((job: Job): number => job.roles.length),
+  );
+  const ticks: RunTick[] = [];
+  let stage: number = 0;
+  for (const job of oldestFirst) {
+    ticks.push({
+      key: job.id,
+      label: String(job.period.start.year),
+      at: layout.stageStarts[stage] ?? 0,
+    });
+    stage += job.roles.length;
+  }
+  ticks.push({
+    key: 'next',
+    label: nextSign,
+    at: layout.stageStarts[stage] ?? 1,
+  });
+  return ticks;
 }

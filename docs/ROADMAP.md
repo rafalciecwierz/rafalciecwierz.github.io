@@ -269,8 +269,9 @@ The first part (3.1–3.10) produces a usable, deployed site without motion or t
 - **Done when:** the scene adds no dependency, is `aria-hidden`, causes no layout shift, and the hero heading stays the LCP element.
 
 ### 3.15 Career run
-- [ ] **Branch:** `feat/career-run`
-- **Scope:** the pinned scrollytelling career from the chosen design (ScrollTrigger `pin` and `scrub`): one building per company, a tower per promotion, the job card that follows the runner, and a way to skip the scene. Below the desktop breakpoint and with reduced motion, the plain list from 3.9 stays.
+- [x] **Branch:** `feat/career-run`
+- **Scope:** the pinned scrollytelling career from the chosen design (ScrollTrigger `pin` and `scrub`; built as a sticky stage scrubbed by ScrollTrigger, see below): one building per company, a tower per promotion, the job card that follows the runner, and a way to skip the scene. Below the desktop breakpoint and with reduced motion, the plain list from 3.9 stays.
+  - Agreed during the task: the stage is held with CSS `position: sticky` and ScrollTrigger only scrubs, because the ScrollTrigger pin caused a layout shift of about 1.0 ([DECISIONS.md](DECISIONS.md) #009). The city is generated from the number of roles per job (no fixed table), and it is static HTML hidden until the run plays, because its signs and dates are copy. From 900 px, with motion allowed and JavaScript on, CSS lays the career out as the run from the first frame, and the motion only brings it to life, so a reload on Career shows the run too ([DECISIONS.md](DECISIONS.md) #010, Rafał's choice). "Skip the run" is first in the tab order and jumps without Lenis; focusing a hidden card jumps to its stage. On a short window a long card scrolls inside instead of covering the skip link (the reference let it overflow).
 - **Done when:** the run is smooth on a mid-range phone profile, can be skipped with the keyboard, and is off with reduced motion.
 
 ### 3.16 Performance and accessibility pass

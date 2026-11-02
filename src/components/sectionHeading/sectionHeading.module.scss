@@ -1,3 +1,5 @@
+@use '@/styles/careerRun' as *;
+
 .sectionHeading {
   margin-bottom: var(--space-section-head);
 }
@@ -46,4 +48,19 @@
   margin-top: var(--space-5);
   color: var(--color-muted);
   font-size: var(--font-size-lead);
+}
+
+// In the career run (the career-run mixin, src/styles/_careerRun.scss) the heading sits over
+// the city in the top left corner, so its title is smaller and its intro shorter.
+@include career-run {
+  :global([data-career-run]) {
+    .regular {
+      font-size: var(--font-size-section-title-pinned);
+    }
+
+    .intro {
+      max-width: 34ch;
+      font-size: var(--font-size-md);
+    }
+  }
 }

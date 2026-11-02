@@ -137,7 +137,7 @@ Data is in section 5.
 ### 4.5 Career
 - The baseline is a vertical list, newest first. It is what phones, reduced motion and no-JavaScript visitors get.
 - Each entry: company, role (show promotions with "→"), dates, 2–4 bullet points, stack tags.
-- On desktop, the chosen design adds a pinned scene (GSAP ScrollTrigger `pin` + `scrub`): scrolling runs a parkour line from roof to roof, one building per company, a tower per promotion. It can be skipped with a link and the navigation.
+- On desktop, the chosen design adds a pinned scene (a sticky stage scrubbed by GSAP ScrollTrigger, [DECISIONS.md](DECISIONS.md) #009, laid out by CSS from the first frame, #010): scrolling runs a parkour line from roof to roof, one building per company, a tower per promotion. It can be skipped with a link and the navigation.
 - Promotions (QA → Developer at mTab, Developer → Team Leader at Mood up) get a visual highlight.
 
 ### 4.6 Testimonials

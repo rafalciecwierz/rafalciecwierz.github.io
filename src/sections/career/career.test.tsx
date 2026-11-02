@@ -73,7 +73,12 @@ describe('Career', (): void => {
   it('says a promotion in words and names the moves of each job', (): void => {
     render(<Career career={CAREER} availability="Open to roles." />);
 
-    expect(screen.getByText('Promoted')).toBeInTheDocument();
+    // The run's city paints "Promoted" on the tower too, but it is hidden from screen readers.
+    expect(
+      screen.getByText('Promoted', {
+        ignore: 'script, style, [aria-hidden="true"] *',
+      }),
+    ).toBeInTheDocument();
     expect(screen.getByText('Move 01')).toBeInTheDocument();
     expect(screen.getByText('Move 02')).toBeInTheDocument();
     expect(screen.getByText('Move 03')).toBeInTheDocument();
@@ -87,6 +92,15 @@ describe('Career', (): void => {
     expect(screen.getByRole('link', { name: 'Get in touch' })).toHaveAttribute(
       'href',
       '#contact',
+    );
+  });
+
+  it('has the link that skips the run to the next section', (): void => {
+    render(<Career career={CAREER} availability="Open to roles." />);
+
+    expect(screen.getByRole('link', { name: 'Skip the run' })).toHaveAttribute(
+      'href',
+      '#team',
     );
   });
 });

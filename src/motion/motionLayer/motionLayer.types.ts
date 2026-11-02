@@ -17,4 +17,8 @@ export type MotionLoader = () => Promise<MotionModule>;
 export type MotionLayerProps = {
   load: MotionLoader;
   scope?: RefObject<HTMLElement | null>;
+  // A media query the motion needs (the career run: 900 px and wider). While it does not
+  // match, the motion component is not loaded, or is unmounted, so its chunk is never
+  // downloaded on screens that do not use it. Left out, the motion runs at every size.
+  media?: string;
 };

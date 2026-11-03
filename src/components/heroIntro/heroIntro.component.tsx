@@ -7,8 +7,8 @@ import styles from './heroIntro.module.scss';
 import type { HeroIntroProps } from './heroIntro.types';
 import { taglineLines } from './heroIntro.utils';
 
-// The role under the sign and the tagline. On phones the tagline is always two lines, split
-// after its middle dot: left to wrap freely, it fitted one line in Barlow but not in the
+// The role under the sign and the tagline. The tagline breaks only after its middle dot, and
+// on phones it is always two lines: left to wrap freely, it fitted one line in Barlow but not in the
 // fallback font at about 410 px, so the hero jumped when Barlow arrived (task 3.16). The static page reads the real role.
 // HeroMotion flips the visible role through the other titles once (RoleFlip), so the visible
 // text is hidden from screen readers, which get the real role once, whole. The other titles

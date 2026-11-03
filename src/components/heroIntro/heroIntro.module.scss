@@ -31,9 +31,14 @@
   font-size: var(--font-size-lead-sm);
 }
 
-// One line each on phones, so the line count is the same in Barlow and in its fallback.
+// Each part is a unit, so a line that does not fit breaks only after the middle dot (at
+// 900–1021 px the column is narrow). On phones each part takes its own line, so the line count
+// is the same in Barlow and in its fallback. Inline-block, not block, so screen readers still
+// read the paragraph as one sentence.
 .taglineLine {
+  display: inline-block;
+
   @include below(md) {
-    display: block;
+    width: 100%;
   }
 }

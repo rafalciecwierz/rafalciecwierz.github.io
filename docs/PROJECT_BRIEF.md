@@ -308,7 +308,7 @@ For the section in 4.8. Written in roadmap task 2.6 from Rafał's answers and th
 - Rafał's role: he set the requirements in the brief, answered the discovery session, approved the directions, judged every prototype and chose the design. Every change reached `main` through a pull request he merged (15 by 26.10.2026).
 - Do not state working hours: commit times show when something was made, not how long it took.
 
-**Links:** the prototype gallery (`design/index.html`), `docs/AI_USAGE.md`, this repository and Ashen Contracts.
+**Links:** the prototype gallery (`design/index.html`, published at `/design/`), `docs/AI_USAGE.md`, this repository and Ashen Contracts.
 
 ---
 

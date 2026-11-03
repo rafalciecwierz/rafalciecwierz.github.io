@@ -19,7 +19,7 @@ const PROCESS: ProcessContent = {
     role: null,
     roleTodo: 'Role to come',
     galleryLabel: 'See all 16 prototypes',
-    galleryUrl: null,
+    galleryUrl: '/design/',
   },
 };
 
@@ -39,15 +39,8 @@ describe('Process', (): void => {
     expect(screen.getByRole('term')).toHaveTextContent('16');
   });
 
-  it('links the gallery once it has an address', (): void => {
-    render(
-      <Process
-        process={{
-          ...PROCESS,
-          site: { ...PROCESS.site, galleryUrl: '/design/' },
-        }}
-      />,
-    );
+  it('links the prototype gallery', (): void => {
+    render(<Process process={PROCESS} />);
 
     expect(
       screen.getByRole('link', { name: 'See all 16 prototypes' }),

@@ -15,6 +15,7 @@ export type Process = {
     role: string | null;
     roleTodo: string;
     galleryLabel: string;
-    galleryUrl: string | null;
+    // The static prototype gallery, published outside the React bundle (scripts/gallery.ts).
+    galleryUrl: string;
   };
 };

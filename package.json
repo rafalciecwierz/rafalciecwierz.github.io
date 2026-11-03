@@ -9,7 +9,7 @@
   },
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build && vite build --ssr src/app/entryServer.tsx --outDir dist-server && node scripts/prerender.ts",
+    "build": "tsc -b && vite build && vite build --ssr src/app/entryServer.tsx --outDir dist-server && node scripts/prerender.ts && node scripts/gallery.ts",
     "preview": "vite preview",
     "lint": "eslint .",
     "typecheck": "tsc -b",

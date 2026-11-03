@@ -29,6 +29,6 @@ export const process: Process = {
     roleTodo:
       'Task 2.6: what AI did, what Rafał decided and how the work was checked.',
     galleryLabel: 'See all 16 prototypes',
-    galleryUrl: null, // TODO: the gallery's path on the live site (task 3.17)
+    galleryUrl: '/design/',
   },
 };

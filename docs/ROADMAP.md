@@ -280,7 +280,7 @@ The first part (3.1–3.10) produces a usable, deployed site without motion or t
 - **Done when:** Lighthouse mobile scores are Performance ≥ 90, Accessibility ≥ 95, Best Practices ≥ 95 and SEO ≥ 95, and initial JS is ≤ 150 KB gzipped.
 
 ### 3.17 Prototype gallery
-- [ ] **Branch:** `feat/prototype-gallery`
+- [x] **Branch:** `feat/prototype-gallery`
 - **Scope:** the 16 prototypes, the approved iterations and `design/index.html` published with the site (for example under `/design/`), and linked from the AI and process section. They stay static files outside the React bundle.
 - **Done when:** the gallery opens from the live site, every link in it works, and the initial JS budget is unaffected.
 

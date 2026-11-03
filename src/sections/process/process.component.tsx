@@ -82,17 +82,11 @@ export function Process({ process }: ProcessProps): ReactElement {
             </Box>
             <Text variant="muted">{site.source}</Text>
             <Text>{site.role ?? <Todo>{site.roleTodo}</Todo>}</Text>
-            {site.galleryUrl === null ? (
-              <Text>
-                <Todo>{site.galleryLabel}</Todo>
-              </Text>
-            ) : (
-              <ActionGroup>
-                <ButtonLink href={site.galleryUrl} variant="primary">
-                  {site.galleryLabel}
-                </ButtonLink>
-              </ActionGroup>
-            )}
+            <ActionGroup>
+              <ButtonLink href={site.galleryUrl} variant="primary">
+                {site.galleryLabel}
+              </ButtonLink>
+            </ActionGroup>
           </Box>
         </Box>
       </Container>

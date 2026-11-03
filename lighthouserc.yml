@@ -3,12 +3,15 @@
 # Decision and alternatives: docs/DECISIONS.md #006.
 ci:
   collect:
-    # lhci serves dist/ on a local server and audits every HTML file it finds there.
+    # lhci serves dist/ on a local server and audits the pages listed in `url`.
     staticDistDir: ./dist
+    # Listed, not discovered: discovery would also pick up the prototype gallery in dist/design/
+    # (task 3.17), an archive of the design process held to no thresholds, and it stops at five
+    # pages. A new page of the site (the Polish one, task 3.21) is added here.
     # The 404 page asks search engines not to index it, which Lighthouse scores as an SEO
     # failure. That is intended, so the page is left out; it is checked in the audits instead.
-    autodiscoverUrlBlocklist:
-      - /404.html
+    url:
+      - /index.html
     # One run can be a few points off on a shared CI machine; the assertions below use the median of three.
     numberOfRuns: 3
     # No `preset`: the Lighthouse default is mobile (an emulated phone with a slow network and a 4× slower CPU),

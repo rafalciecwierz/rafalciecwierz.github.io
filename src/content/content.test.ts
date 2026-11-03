@@ -12,17 +12,17 @@ const LOCALES: readonly { locale: string; content: Content }[] = [
   { locale: 'en', content: en },
 ];
 
-// Files served from public/ that a link may point to.
-const KNOWN_FILES: readonly string[] = ['/Rafal_Ciecwierz_CV.pdf'];
+// Files served from public/, and the prototype gallery the build copies to dist/design/
+// (scripts/gallery.ts), that a link may point to.
+const KNOWN_FILES: readonly string[] = ['/Rafal_Ciecwierz_CV.pdf', '/design/'];
 
-// Every `null` in the content is one of these TODOs (filled in task 3.17 or 3.18).
+// Every `null` in the content is one of these TODOs (filled in task 3.18).
 const LISTED_TODOS: readonly RegExp[] = [
   /^profile\.linkedinUrl$/,
   /^profile\.calendlyUrl$/,
   /^projects\.items\[\w+\]\.(screenshot|role|learned)$/,
   /^process\.how\.paragraphs$/,
   /^process\.site\.role$/,
-  /^process\.site\.galleryUrl$/,
 ];
 
 function startMonths({ start }: Period): number {

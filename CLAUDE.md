@@ -70,5 +70,5 @@ Node 24 (`.nvmrc`) and pnpm. After `pnpm install`, a `commit-msg` hook checks co
 ## Current status (keep this updated)
 
 - Phase: 3, implementation
-- Last completed: 3.16 performance and accessibility pass: entry JS 96.6 KB gzip (motion has its own ≤ 80 KB budget, brief section 8), Lighthouse mobile median 94 / 100 / 100 / 100 with CLS 0, the CSS inlined by the pre-render (DECISIONS #011), the hero tagline split after its dot on phones, the role flip cut to two titles (under WCAG 2.2.2's 5 s), the page behind the mobile menu `inert`, sections focusable by links (`tabIndex -1`), only the Latin display font preloaded
-- Next step: 3.17 prototype gallery, branch `feat/prototype-gallery`
+- Last completed: 3.17 prototype gallery: `design/index.html`, the 16 prototypes and the iterations published at `/design/` by a build step (`scripts/gallery.ts`) that fails on a broken link, the AI and process section linking it, `/design/` kept out of search (`robots.txt`) and out of Lighthouse CI (pages listed in `lighthouserc.yml`)
+- Next step: 3.18 final content, branch `feat/final-content`

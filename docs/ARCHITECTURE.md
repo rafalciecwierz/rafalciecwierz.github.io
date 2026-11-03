@@ -49,7 +49,7 @@ Rafał's requirements (task 3.1, 29.10.2026). Sections 4–8 turn them into rule
 
 Vite, React 19 and TypeScript, with a pre-render step written in the project (about 40 lines, no extra dependency). Chosen in [DECISIONS.md](DECISIONS.md) #003.
 
-`pnpm build` runs four steps:
+`pnpm build` runs five steps:
 
 1. `tsc -b`: type-check the whole project.
 2. `vite build`: the browser bundle and `dist/index.html`, which holds two placeholders: `<!--app-head-->` and `<!--app-html-->`.
@@ -60,6 +60,7 @@ Vite, React 19 and TypeScript, with a pre-render step written in the project (ab
    - saves `dist/<route>/index.html`, or `dist/404.html` for a path that names a file.
 
    Then it writes `dist/sitemap.xml` from the server entry's `SITEMAP` and deletes `dist-server`.
+5. `node scripts/gallery.ts`: publishes the prototype gallery (task 3.17). It copies `design/index.html`, `design/prototypes/` and `design/iterations/` to `dist/design/` as they are, outside the React bundle, so the gallery adds nothing to the site's JavaScript. `design/og-image.html` stays out. Then it fails the build if a link in the gallery page points to no file in `dist/` (`findBrokenLinks`). Links to the docs go to GitHub, because `docs/` is not published. The gallery is not in the sitemap, `robots.txt` asks search engines to skip it, and Lighthouse CI audits only the pages listed in `lighthouserc.yml`, so the prototypes are not held to the site's thresholds.
 
 In the browser, `src/app/entryClient.tsx` calls `hydrateRoot`: React attaches to the HTML that is already on screen instead of rendering it again. It picks the route with `routeForLocation`: GitHub Pages serves `404.html` for every unknown address, so any path without a route is the 404 page, and `/index.html` is `/`. The dev server (`pnpm dev`) serves the template without pre-rendered content, so there the same file renders the page with `createRoot` instead.
 
@@ -74,11 +75,14 @@ public/
   favicon.svg                  # the RC monogram, drawn as strokes (no font)
   apple-touch-icon.png         # 180 × 180, rendered from favicon.svg
   og-image.png                 # 1200 × 630, rendered from design/og-image.html (placeholder until 3.18)
-  robots.txt                   # points to the sitemap the pre-render step writes
+  robots.txt                   # points to the sitemap the pre-render step writes; keeps /design/ out of search
 scripts/
   prerender.ts                 # step 4 of the build
   prerender.utils.ts           # fillTemplate, outputFileFor, isServerEntry (tested); writes sitemap.xml too
   prerender.constants.ts       # paths and template markers
+  gallery.ts                   # step 5 of the build: the prototype gallery at /design/
+  gallery.utils.ts             # findLocalLinks, resolveLink, findBrokenLinks (tested)
+  gallery.constants.ts         # what is published from design/, and the link patterns
   cssModules.utils.ts          # findRawValues: raw values in a stylesheet that have a token (tested)
   cssModules.test.ts           # runs findRawValues on every CSS Module (section 8)
   breakpoints.test.ts          # the SCSS and TypeScript breakpoints match (section 8)
@@ -417,7 +421,7 @@ Every effect in the reference (its comment header names them) mapped to where it
 | `career` | an ordered List of MoveCards (newest first, the unbuilt roof first; MiniBuilding, JobRoles with a Promoted badge, PointList, TagList), EducationNote; inside RunTrack, shown when CSS makes it the run (#010): CareerRunScene (RunStreet, RunBuilding with RunFacade and a tower per promotion, RunNextRoof, the far city) and RunBar (Skip the run, the progress bar with a tick per job) | `careerRunMotion` (only from 900 px): RooftopRun, a sticky stage scrubbed by ScrollTrigger (#009) on a layout CSS has already set (#010), the city layers moved by transforms, the runner on his line, the job card following him, the bar filling; `entranceMotion`: Vault | `career` |
 | `team` | Poster (with a seeded torn edge) × 3 | `entranceMotion`: PasteUp, Vault | `team` |
 | `projects` | SpotBoard: SpotMap (seeded SVG, pins), SpotCard list, SpotPanel in a `Dialog` (side panel on desktop, bottom sheet on phones). A pin opens the panel on click, as a pointer shortcut: pins sit in an `aria-hidden` SVG, so each card's button is the keyboard path. When the dialog closes, focus goes back to the card's button. Hovering a card or a pin highlights both | `entranceMotion`: Vault; the panel slide and the pin highlight are CSS (`dialog.module.scss`, `spotMap.module.scss`), off with reduced motion | `projects` |
-| `process` | LeapScene drawn landed (LeapRoof × 2, RunnerFigure, a camera group around the scene, the Replay button hidden), two columns of text, StatList, the gallery link (a TODO until task 3.17) | `processMotion`: GapLeap with bullet time (camera push-in, three after-images, a vignette, the fog thinning); shows Replay; `entranceMotion`: Vault | `process` |
+| `process` | LeapScene drawn landed (LeapRoof × 2, RunnerFigure, a camera group around the scene, the Replay button hidden), two columns of text, StatList, the gallery link (`/design/`) | `processMotion`: GapLeap with bullet time (camera push-in, three after-images, a vignette, the fog thinning); shows Replay; `entranceMotion`: Vault | `process` |
 | `contact` | availability, ChannelList of ChannelRows (EmailChannel with Copy after hydration, LinkedIn, GitHub, Calendly), Download CV and EmailButton | `entranceMotion`: Vault | `contact`, `profile` |
 | `siteFooter` | FooterStreet (lamp, Runner waving, bubble), SignOff, FooterMeta (back to top, built-with line, repo link, year) | `footerMotion`: FooterLanding (drop, roll, stand up, turn, wave, the bubble pops in) | `footer` |
 

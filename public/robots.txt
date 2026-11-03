@@ -1,6 +1,9 @@
-# Every page may be crawled. The 404 page asks not to be indexed with its own meta tag.
+# Every page may be crawled, except the prototype gallery: sixteen near-copies of the CV with
+# placeholder copy would compete with the real page in search results (roadmap task 3.17).
+# The 404 page asks not to be indexed with its own meta tag.
 # The address repeats SITE_URL in src/constants/site/site.constants.ts.
 User-agent: *
 Allow: /
+Disallow: /design/
 
 Sitemap: https://rafalciecwierz.github.io/sitemap.xml

@@ -23,9 +23,13 @@
   padding: var(--space-26) var(--layout-gutter);
 }
 
-// Narrow enough to read in one glance.
+// Narrow enough to read in one glance. The hero's dark halo (heroIntro.module.scss) keeps the
+// text readable where a lit window of the skyline falls behind it.
 .content {
   display: grid;
+  text-shadow:
+    0 0 3px var(--color-night),
+    0 0 12px var(--color-night);
   gap: var(--space-5);
   justify-items: start;
   max-width: 44rem;
@@ -41,4 +45,6 @@
 
 .actions {
   margin-top: var(--space-3);
+  // The button has its own solid background; the halo would only blur its dark label.
+  text-shadow: none;
 }

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import { scrambleText } from './roleFlip.utils';
+import { ROLE_FLIP } from './heroMotion.constants';
+import { roleFlipDuration, scrambleText } from './roleFlip.utils';
 
 function alwaysFirstGlyph(): number {
   return 0;
@@ -32,5 +33,18 @@ describe('scrambleText', (): void => {
     expect(scrambleText('Fullstack wannabe', 'Role', 1, alwaysFirstGlyph)).toBe(
       'Role',
     );
+  });
+});
+
+describe('roleFlipDuration', (): void => {
+  it('counts a flip per title plus the flip back to the role, and a hold per title', (): void => {
+    expect(roleFlipDuration(2)).toBeCloseTo(
+      3 * ROLE_FLIP.flipDuration + 2 * ROLE_FLIP.hold,
+    );
+  });
+
+  it('stays under the WCAG 2.2.2 limit with two titles, not with three', (): void => {
+    expect(roleFlipDuration(2)).toBeLessThan(ROLE_FLIP.maxDuration);
+    expect(roleFlipDuration(3)).toBeGreaterThan(ROLE_FLIP.maxDuration);
   });
 });

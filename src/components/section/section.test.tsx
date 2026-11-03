@@ -18,4 +18,17 @@ describe('Section', (): void => {
       'about',
     );
   });
+
+  it('takes focus from a link to it, without joining the Tab order', (): void => {
+    render(
+      <Section id="team" labelledBy="team-title">
+        <h2 id="team-title">{TITLE}</h2>
+      </Section>,
+    );
+
+    expect(screen.getByRole('region', { name: TITLE })).toHaveAttribute(
+      'tabindex',
+      '-1',
+    );
+  });
 });

@@ -70,5 +70,5 @@ Node 24 (`.nvmrc`) and pnpm. After `pnpm install`, a `commit-msg` hook checks co
 ## Current status (keep this updated)
 
 - Phase: 3, implementation
-- Last completed: 3.15 career run: from 900 px CSS lays Career out as the run from the first frame (`RunTrack`, the `career-run` mixin, DECISIONS #010) and `CareerRunMotion` brings it to life (a sticky stage scrubbed by ScrollTrigger, #009), the city from `CareerRunScene`, the skip link and progress bar from `RunBar`, layers moved by transforms only
-- Next step: 3.16 performance and accessibility pass, branch `perf/lighthouse-pass`
+- Last completed: 3.16 performance and accessibility pass: entry JS 96.6 KB gzip (motion has its own ≤ 80 KB budget, brief section 8), Lighthouse mobile median 94 / 100 / 100 / 100 with CLS 0, the CSS inlined by the pre-render (DECISIONS #011), the hero tagline split after its dot on phones, the role flip cut to two titles (under WCAG 2.2.2's 5 s), the page behind the mobile menu `inert`, sections focusable by links (`tabIndex -1`), only the Latin display font preloaded
+- Next step: 3.17 prototype gallery, branch `feat/prototype-gallery`

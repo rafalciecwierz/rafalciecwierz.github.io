@@ -187,3 +187,19 @@ Alternatives considered:
 - Show no card until the motion loads, with no fallback. Rejected: if the motion were slow or failed, the career would show no content.
 
 Consequences: a reload anywhere in the run shows the run from the first frame. Measured at 1280 × 800: the stage is sticky in the first frame, the motion attached after about 0.4 s, and the CLS of the reload was 0. The motion no longer changes the layout, so its start is lighter and the code that guarded it (start only below the screen, keep the reader's place) is gone. Without JavaScript, with reduced motion and below 900 px the career is still the list, as the brief requires (sections 4 and 8). Browsers without the `scripting` media feature (before Chrome 120, Safari 17, Firefox 113) also get the list. The costs: when the window widens past 900 px, CSS switches to the run at once, so the reader lands wherever their scroll falls in the longer page. If the motion chunk fails to load, a desktop reader sees only the first stage's card (after 1.5 s), while the other cards stay in the HTML for screen readers and search engines. Measured after the change: a reload mid-run shows no card until the motion is live (about 0.45 s) and then only the right one, with CLS 0; with the motion blocked, the first card appeared at 1.5 s.
+
+## 011. Put the built CSS into each pre-rendered page as a `<style>` tag
+
+Date: 03.11.2026
+
+Context: task 3.16 measured Lighthouse mobile Performance at a median of 91–93, with single runs at 87–89 against the threshold of 90, so a CI run could fail by chance. The one render-blocking request was the CSS file, 11.8 KB gzipped: on the emulated Slow 4G connection the browser fetches the HTML, finds the link, and draws nothing until a second request returns. The site is a single page, and visitors rarely open a second one. Vite has no option to inline CSS.
+
+Decision: `inlineStylesheets()` in `scripts/prerender.utils.ts` replaces every `<link rel="stylesheet">` in the built `index.html` with a `<style>` tag holding the file, once, before the routes are rendered, so every page gets it. It fails the build when the template has no stylesheet link (a changed Vite output is noticed) or when the CSS holds `</style`. The `.css` file stays in `dist/assets/`, unused. The CSS of the lazy motion chunks is still loaded by Vite with the chunk.
+
+Alternatives considered:
+
+- Keep the link. Rejected: one more round trip before the first paint on every visit, and the chance-failing CI runs.
+- Inline only the critical CSS of the first screen (`beasties`, formerly `critters`). Rejected: a new build dependency (brief section 3) for 11.8 KB, which is small enough to inline whole.
+- `<link rel="preload" as="style">` with an `onload` swap. Rejected: needs JavaScript in the head and shows unstyled content until the CSS arrives.
+
+Consequences: each page's HTML grows by about 11 KB gzipped (the home page from 19 to 29 KB), and the CSS is downloaded again with every page instead of cached once; with the 404 page and a future `/pl/` that is a small, accepted cost. Measured over five runs on a scratch copy before the change: FCP about 150 ms shorter, median 93–95. After the change, together with the tagline fix of the same task (the main cause of the low runs was a layout shift when Barlow loaded), ten runs gave a median of 94, nine of ten at 93–95, and CLS 0.

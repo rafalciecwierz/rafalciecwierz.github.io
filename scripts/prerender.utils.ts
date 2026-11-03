@@ -6,6 +6,8 @@ import {
   HTML_EXTENSION,
   HTML_MARKER,
   PAGE_FILE_NAME,
+  STYLE_END_TAG,
+  STYLESHEET_LINK,
 } from './prerender.constants.ts';
 
 // Puts the rendered head and page into the built index.html. A missing marker is an error,
@@ -19,6 +21,30 @@ export function fillTemplate(template: string, result: RenderResult): string {
   return template
     .replace(HEAD_MARKER, result.head)
     .replace(HTML_MARKER, result.html);
+}
+
+// Puts the built CSS into the page as a <style> tag instead of a link to it, so the browser
+// can draw the page as soon as the HTML arrives, without a second, render-blocking request
+// (docs/DECISIONS.md #011). `readCss` gets the link's href and returns the file's text.
+export function inlineStylesheets(
+  template: string,
+  readCss: (href: string) => string,
+): string {
+  const links: RegExpExecArray[] = [...template.matchAll(STYLESHEET_LINK)];
+  if (links.length === 0) {
+    throw new Error('The template has no stylesheet link to inline.');
+  }
+  let page: string = template;
+  for (const [link, href = ''] of links) {
+    const css: string = readCss(href);
+    if (css.includes(STYLE_END_TAG)) {
+      throw new Error(
+        `${href} holds "${STYLE_END_TAG}", which would end the tag.`,
+      );
+    }
+    page = page.replace(link, (): string => `<style>${css}</style>`);
+  }
+  return page;
 }
 
 // "/" becomes dist/index.html and "/design/" becomes dist/design/index.html, which is how

@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest';
 import type { RenderResult } from '../src/app/app.types';
 import {
   fillTemplate,
+  inlineStylesheets,
   isServerEntry,
   outputFileFor,
 } from './prerender.utils.ts';
@@ -68,5 +69,46 @@ describe('isServerEntry', (): void => {
     expect(
       isServerEntry({ render: (): RenderResult => RESULT, ROUTE_PATHS: ['/'] }),
     ).toBe(false);
+  });
+});
+
+describe('inlineStylesheets', (): void => {
+  const CSS: string = 'body{color:red}';
+
+  function readCss(href: string): string {
+    return href === '/assets/index-abc.css' ? CSS : '';
+  }
+
+  it('replaces the stylesheet link Vite writes with a style tag holding the file', (): void => {
+    const template: string =
+      '<head><link rel="stylesheet" crossorigin href="/assets/index-abc.css"></head>';
+
+    expect(inlineStylesheets(template, readCss)).toBe(
+      `<head><style>${CSS}</style></head>`,
+    );
+  });
+
+  it('leaves other links alone', (): void => {
+    const template: string =
+      '<link rel="icon" href="/favicon.svg" /><link rel="stylesheet" href="/assets/index-abc.css">';
+
+    expect(inlineStylesheets(template, readCss)).toBe(
+      `<link rel="icon" href="/favicon.svg" /><style>${CSS}</style>`,
+    );
+  });
+
+  it('fails when the template has no stylesheet link, so a changed build is noticed', (): void => {
+    expect((): string => inlineStylesheets('<head></head>', readCss)).toThrow(
+      'stylesheet',
+    );
+  });
+
+  it('fails when the CSS would close the style tag early', (): void => {
+    expect((): string =>
+      inlineStylesheets(
+        '<link rel="stylesheet" href="/a.css">',
+        (): string => 'a{}</style><script>',
+      ),
+    ).toThrow('</style');
   });
 });

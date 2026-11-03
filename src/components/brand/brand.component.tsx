@@ -14,6 +14,8 @@ export function Brand({
   return (
     <a href={href} className={styles.brand} aria-label={accessibleName}>
       <span className={styles.monogram}>{initials}</span>
+      {/* A space, so the text reads "RC Portfolio" like the accessible name (WCAG 2.5.3).
+          The link is a flex box, so the space takes no room. */}{' '}
       <span className={styles.label}>{text}</span>
     </a>
   );

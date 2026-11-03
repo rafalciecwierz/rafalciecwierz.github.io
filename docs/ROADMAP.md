@@ -275,7 +275,7 @@ The first part (3.1–3.10) produces a usable, deployed site without motion or t
 - **Done when:** the run is smooth on a mid-range phone profile, can be skipped with the keyboard, and is off with reduced motion.
 
 ### 3.16 Performance and accessibility pass
-- [ ] **Branch:** `perf/lighthouse-pass`
+- [x] **Branch:** `perf/lighthouse-pass`
 - **Scope:** bundle analysis, Lighthouse on mobile, and an accessibility audit (keyboard, screen reader, contrast). Fix any regressions found.
 - **Done when:** Lighthouse mobile scores are Performance ≥ 90, Accessibility ≥ 95, Best Practices ≥ 95 and SEO ≥ 95, and initial JS is ≤ 150 KB gzipped.
 

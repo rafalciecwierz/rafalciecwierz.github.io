@@ -28,6 +28,9 @@ export const ROLE_FLIP = {
   settleStart: 0.3,
   settleSpread: 0.7,
   glyphs: 'ABCDEFGHIJKLMNOPRSTUWZ#/+',
+  // WCAG 2.2.2: content that moves on its own for more than 5 s needs a pause control. The flip
+  // has none, so it must end sooner (roleFlipDuration in roleFlip.utils.ts).
+  maxDuration: 5,
 } as const;
 
 // The window flicker: a random window switches on or off about every 1.3 seconds. A clock

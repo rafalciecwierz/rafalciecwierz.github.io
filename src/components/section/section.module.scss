@@ -1,5 +1,10 @@
 .section {
   position: relative;
+
+  // Focused only by links to it; a ring around the whole section would just be noise.
+  &:focus {
+    outline: none;
+  }
 }
 
 .padded {

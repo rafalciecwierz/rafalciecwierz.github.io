@@ -9,17 +9,11 @@
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <!-- The display font of the hero name, fetched before the CSS asks for it (src/styles/fonts.scss).
-         Both subsets: the name has Ł and Ć. -->
+         Only the Latin file: Latin Extended (30 KB, just Ł and Ć) would compete with the CSS on a
+         slow phone network, and it loads as soon as the CSS asks for it (task 3.16). -->
     <link
       rel="preload"
       href="/fonts/big-shoulders-display-latin.woff2"
-      as="font"
-      type="font/woff2"
-      crossorigin
-    />
-    <link
-      rel="preload"
-      href="/fonts/big-shoulders-display-latin-ext.woff2"
       as="font"
       type="font/woff2"
       crossorigin

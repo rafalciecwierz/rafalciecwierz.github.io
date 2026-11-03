@@ -14,6 +14,12 @@ export const SERVER_ENTRY_FILE: string = `${SERVER_DIRECTORY}entryServer.js`;
 export const HEAD_MARKER: string = '<!--app-head-->';
 export const HTML_MARKER: string = '<!--app-html-->';
 
+// The stylesheet link Vite writes into index.html; its href is the built CSS file.
+export const STYLESHEET_LINK: RegExp =
+  /<link rel="stylesheet"[^>]*\shref="([^"]+)"[^>]*>/g;
+// Text that would end the <style> tag early if the CSS held it.
+export const STYLE_END_TAG: string = '</style';
+
 export const PAGE_FILE_NAME: string = 'index.html';
 export const HTML_EXTENSION: string = '.html';
 

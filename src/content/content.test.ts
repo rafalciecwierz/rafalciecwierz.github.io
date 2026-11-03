@@ -117,6 +117,10 @@ describe.each(LOCALES)(
       expect(new Set<string>(names).size).toBe(names.length);
     });
 
+    it('flips the hero role through at most two titles, so it ends within 5 s (WCAG 2.2.2)', (): void => {
+      expect(content.profile.roleFlips.length).toBeLessThanOrEqual(2);
+    });
+
     it('shows at most three testimonials (brief 4.6)', (): void => {
       expect(content.team.quotes.length).toBeLessThanOrEqual(3);
     });

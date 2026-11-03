@@ -17,6 +17,10 @@ async function loadEntranceMotion(): Promise<MotionModule> {
 // One part of the page. `labelledBy` is required, so every section is a named region that
 // screen reader users can jump to (brief section 8). Every section also gets the entrance
 // motion, which animates the title, boards and posters it finds inside.
+//
+// tabIndex -1, like <main>: a link to the section (the navigation, "Skip the run", "Back to the
+// summit") moves focus here, so a screen reader announces it and the next Tab continues inside
+// it in every browser. It does not add the section to the Tab order.
 export function Section({
   id,
   labelledBy,
@@ -42,6 +46,7 @@ export function Section({
       id={id}
       ref={attachRef}
       aria-labelledby={labelledBy}
+      tabIndex={-1}
       className={classNames(
         styles.section,
         styles[surface],

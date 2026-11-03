@@ -3,6 +3,7 @@ import { type RefObject, useCallback, useRef, useState } from 'react';
 import {
   useEscapeKey,
   useFocusTrap,
+  useInertOutside,
   useMediaQuery,
   useScrollLock,
 } from '@/hooks';
@@ -12,7 +13,7 @@ import { MOBILE_MENU_BREAKPOINT } from './nav.constants';
 import type { MobileMenu } from './nav.types';
 
 // The state of the mobile menu and everything an open full-screen menu needs: focus moves in
-// and is trapped, Escape closes it, the page under it does not scroll, and focus returns to
+// and is trapped, the page behind it is inert (also for screen readers), Escape closes it, the page under it does not scroll, and focus returns to
 // the Menu button when it closes. The menu is closed on the server, so hydration matches.
 //
 // The menu counts as open only while the layout is the mobile one. If the window grows past
@@ -36,6 +37,9 @@ export function useMobileMenu(): MobileMenu {
     setIsOpenRequested(false);
   }, []);
 
+  // Before the focus trap: effects are cleaned up in this order, so the Menu button is no
+  // longer inert when the trap sends focus back to it.
+  useInertOutside(panelRef, isOpen);
   useFocusTrap({
     containerRef: panelRef,
     returnFocusRef: buttonRef,

@@ -1,3 +1,5 @@
+@use '@/styles/breakpoints' as *;
+
 // A soft dark halo keeps the text readable where a lit window or a light cone of the scene
 // falls behind it (the plain colours alone drop below AA contrast there).
 .heroIntro {
@@ -27,4 +29,11 @@
   margin-top: var(--space-2);
   color: var(--color-muted);
   font-size: var(--font-size-lead-sm);
+}
+
+// One line each on phones, so the line count is the same in Barlow and in its fallback.
+.taglineLine {
+  @include below(md) {
+    display: block;
+  }
 }

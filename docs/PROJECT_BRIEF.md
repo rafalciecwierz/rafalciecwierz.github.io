@@ -96,7 +96,7 @@ Single page with anchor navigation. Sections in order:
 
 ### 4.1 Header / navigation
 - Fixed, minimal: name/monogram on the left, anchor links (About, Stack, Career, Projects, Process, Contact) on the right. The monogram's accessible name starts with its visible text (WCAG 2.5.3).
-- Mobile: collapsible menu, keyboard accessible, focus trapped while open.
+- Mobile: collapsible menu, keyboard accessible, focus trapped while open, the page behind it hidden from screen readers.
 - Smooth scroll to sections with Lenis; a native anchor jump with reduced motion or before the motion layer loads.
 
 ### 4.2 Hero
@@ -174,7 +174,7 @@ All content lives in typed files in `src/content/` (see section 6). Use exactly 
 ```ts
 name: "Rafał Ciećwierz"
 role: "Frontend Engineer"
-roleFlips: ["Parkour Old Veteran", "Climbing Enjoyer", "Fullstack Engineer wannabe"]  // Rafał's words, 27.10.2026; shown in the hero before the role
+roleFlips: ["Parkour & Climbing Addict", "Backend Explorer"]  // Rafał's choice, 2.11.2026; shown in the hero before the role. At most two, so the flip ends within 5 s (WCAG 2.2.2)
 tagline: "React & TypeScript · 5+ years building production apps"
 email: "rafal.ciecwierz4@gmail.com"
 github: "https://github.com/rafalciecwierz"
@@ -336,7 +336,7 @@ The chosen direction is 08 Ascent, dark variant "Night Session": a parkour night
 
 ## 8. Performance & accessibility budget
 
-- Initial JS: ≤ 150 KB gzipped.
+- Initial JS: ≤ 150 KB gzipped. Initial JS is the entry chunk the HTML loads, with everything it imports statically ([ARCHITECTURE.md](ARCHITECTURE.md) section 13). The motion chunks, loaded lazily when the browser is idle and never with reduced motion, have their own budget: ≤ 80 KB gzipped together.
 - Pre-rendered HTML: the content, headings and meta tags are in the HTML the server sends, so the page is readable, indexable and previewable before any JavaScript runs ([DECISIONS.md](DECISIONS.md), #002). JavaScript adds the motion on top.
 - LCP element is the hero heading text.
 - No layout shift from fonts or the hero scene (reserve space). The prototype measured CLS 0.20; iteration v2 brought it to 0.01 on mobile with container query units for the name.

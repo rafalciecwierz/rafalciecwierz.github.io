@@ -54,7 +54,7 @@ Vite, React 19 and TypeScript, with a pre-render step written in the project (ab
 1. `tsc -b`: type-check the whole project.
 2. `vite build`: the browser bundle and `dist/index.html`, which holds two placeholders: `<!--app-head-->` and `<!--app-html-->`.
 3. `vite build --ssr src/app/entryServer.tsx --outDir dist-server`: the same React tree, built for Node.
-4. `node scripts/prerender.ts`. Node 24 runs TypeScript directly, without a compile step, as long as the code uses only syntax that can be stripped. For each route in `ROUTES` (`/` and `/404.html`), the script:
+4. `node scripts/prerender.ts`. Node 24 runs TypeScript directly, without a compile step, as long as the code uses only syntax that can be stripped. It first replaces the template's stylesheet link with a `<style>` tag holding the built CSS (`inlineStylesheets`, [DECISIONS.md](DECISIONS.md) #011), so the first paint waits for no second request. Then, for each route in `ROUTES` (`/` and `/404.html`), the script:
    - calls `render(route)` from `dist-server`,
    - writes the returned `head` (title, meta, Open Graph) and `html` into the template,
    - saves `dist/<route>/index.html`, or `dist/404.html` for a path that names a file.
@@ -124,7 +124,7 @@ src/
     lenis.ts                   # creates Lenis and syncs it with ScrollTrigger (+ lenis.constants.ts)
     motionLayer/               # loads and mounts the lazy motion components (section 9)
   hooks/                       # shared hooks: useReducedMotion, useIsHydrated, useIsIdle,
-                               # useMediaQuery, useInView, useFocusTrap,
+                               # useMediaQuery, useInView, useFocusTrap, useInertOutside,
                                # useScrollLock, useEscapeKey, useCopyToClipboard
   services/                    # side effects behind a small interface: clipboard, email address
   utils/                       # shared pure functions: math (clamp, lerp), random (seeded rng),
@@ -340,7 +340,7 @@ The rules in brief section 8 are checked by `eslint-plugin-jsx-a11y` and by the 
 - **How the fonts are set up** (`styles/fonts.scss`):
   - The files are Google Fonts' own Latin and Latin Extended subsets, each with its `unicode-range`. The browser downloads Latin Extended only for characters such as Ł and Ć.
   - Big Shoulders Display is one variable file per subset (weights 500–900). Barlow has one file per weight (400, 500, 600, 700) and subset, and no italics.
-  - `index.html` preloads both Big Shoulders files, because the hero name uses both.
+  - `index.html` preloads only the Latin Big Shoulders file. The Latin Extended one (30 KB, needed for the Ł and Ć of the name) loads when the CSS asks for it: preloaded, it competed with the CSS on a slow phone network, and dropping it raised the median Lighthouse Performance score from 91 to 93 over five runs (task 3.16).
   - The fallback faces are Arial and Arial Bold, adjusted with `size-adjust`, `ascent-override` and `descent-override`. The numbers were measured with fontTools, and `fonts.scss` explains how.
 
 ## 9. Motion layer
@@ -410,8 +410,8 @@ Every effect in the reference (its comment header names them) mapped to where it
 
 | Section | Static components | Motion components | Content |
 | --- | --- | --- | --- |
-| `siteHeader` | Brand (monogram, label in name), Nav, MobileMenu (focus trap, Escape, focus return), header state solid once the page moves | – | `nav`, `brand`, `profile.initials` |
-| `hero` | HeroSign (the name as letters, sized by container query units on the first paint; the reference's FitName is not ported, the measured ratios are enough), the Runner perched on the Ł, HeroIntro (role, tagline), HeroFoot with an ActionGroup (Download CV, Get in touch, Start the climb), HeroMeta (the time after hydration), HeroBackdrop (Skyline, floodlight cones, parapet), HeroContent | `heroMotion`: SignFlicker, window flicker (paused off-screen), RoleFlip (a split-flap scramble written by us, driven by a GSAP tween; no ScrambleText plugin), LetterHop (letter clicks, tricks on runner clicks: backflip, kong vault, front flip, handstand); no hop-in on load, a greeting wave instead | `profile`, `hero` |
+| `siteHeader` | Brand (monogram, label in name), Nav, MobileMenu (focus trap, the page behind it inert, Escape, focus return), header state solid once the page moves | – | `nav`, `brand`, `profile.initials` |
+| `hero` | HeroSign (the name as letters, sized by container query units on the first paint; the reference's FitName is not ported, the measured ratios are enough), the Runner perched on the Ł, HeroIntro (role, tagline; below 760 px the tagline is two lines split after its middle dot, so Barlow and its fallback wrap it alike and the hero does not jump when the font arrives), HeroFoot with an ActionGroup (Download CV, Get in touch, Start the climb), HeroMeta (the time after hydration), HeroBackdrop (Skyline, floodlight cones, parapet), HeroContent | `heroMotion`: SignFlicker, window flicker (paused off-screen), RoleFlip (a split-flap scramble written by us, driven by a GSAP tween; no ScrambleText plugin), LetterHop (letter clicks, tricks on runner clicks: backflip, kong vault, front flip, handstand); no hop-in on load, a greeting wave instead | `profile`, `hero` |
 | `about` | Text paragraphs and the facts (`StatList`) | `entranceMotion`: Vault on the title | `about` |
 | `stack` | AiBand, LevelBoard × 3 (the level in the title, the top edge and the chip style, never colour alone) | `entranceMotion`: BoardReveal stagger, Vault | `stack` |
 | `career` | an ordered List of MoveCards (newest first, the unbuilt roof first; MiniBuilding, JobRoles with a Promoted badge, PointList, TagList), EducationNote; inside RunTrack, shown when CSS makes it the run (#010): CareerRunScene (RunStreet, RunBuilding with RunFacade and a tower per promotion, RunNextRoof, the far city) and RunBar (Skip the run, the progress bar with a tick per job) | `careerRunMotion` (only from 900 px): RooftopRun, a sticky stage scrubbed by ScrollTrigger (#009) on a layout CSS has already set (#010), the city layers moved by transforms, the runner on his line, the job card following him, the bar filling; `entranceMotion`: Vault | `career` |
@@ -423,7 +423,7 @@ Every effect in the reference (its comment header names them) mapped to where it
 
 Across the page:
 
-- `PageLayout`: the skip link and the landmarks (`header`, `main`, `footer`). The root motion layer (Lenis) sits in `App`, so it covers every page. The page passes the `siteHeader` and `siteFooter` sections in as props, because a component never imports a section. Since task 3.7 the header is `HeaderBar` (solid once a sentinel at the top of the document leaves the screen, seen by `useInView`), `Brand` and `Nav` (one list of links; below 760 px a full-screen menu with `useFocusTrap`, `useEscapeKey` and `useScrollLock`, open only while `useMediaQuery` reports the mobile layout), and the footer is `PageFooter`, `SignOff` and `FooterMeta`.
+- `PageLayout`: the skip link and the landmarks (`header`, `main`, `footer`). `main` and every `Section` have `tabIndex={-1}`, so a link to them (the skip link, the navigation, "Skip the run") moves focus there. The root motion layer (Lenis) sits in `App`, so it covers every page. The page passes the `siteHeader` and `siteFooter` sections in as props, because a component never imports a section. Since task 3.7 the header is `HeaderBar` (solid once a sentinel at the top of the document leaves the screen, seen by `useInView`), `Brand` and `Nav` (one list of links; below 760 px a full-screen menu with `useFocusTrap`, `useInertOutside` (the rest of the page is `inert`, because a `nav` cannot be an `aria-modal` dialog), `useEscapeKey` and `useScrollLock`, open only while `useMediaQuery` reports the mobile layout), and the footer is `PageFooter`, `SignOff` and `FooterMeta`.
 - `ConsoleHello`: one effect in `app.component.tsx` that prints `content.console`.
 
 **UI primitives used by several sections** (task 3.6), all in `src/components/`:
@@ -490,23 +490,28 @@ The package manager is pnpm, as in ashen-contracts. When this file is approved, 
 
 ## 13. JavaScript budget and code splitting
 
-The budget is **initial JS ≤ 150 KB gzipped** (brief section 8). Initial JS means the entry chunk and everything it imports statically, which is what the browser must download before the page is interactive.
+The budget is **initial JS ≤ 150 KB gzipped** (brief section 8). Initial JS means the entry chunk and everything it imports statically, which is what the browser must download before the page is interactive. The motion chunks have their own budget of **≤ 80 KB gzipped** together: they load after the page is usable, but a phone still downloads them.
 
-| Chunk | Contents | Estimate (gzip) |
+Measured in task 3.16 (2.11.2026, the sizes `pnpm build` prints):
+
+| Chunk | Contents | Size (gzip) |
 | --- | --- | --- |
-| Entry | React, React DOM, the content, the static components | ~85–90 KB |
-| Motion core | GSAP, ScrollTrigger, `@gsap/react`, Lenis, `motion/` | ~55 KB, loaded when the browser is idle after hydration |
-| Per-section motion | each folder in `src/motionComponents/` (career run, leap, footer landing, …) | a few KB each (task 3.12: the leap 1.9 KB, the footer landing 1.4 KB), loaded when allowed |
+| Entry | React and React DOM (about 70% of it), the content, the static components | 96.4 KB |
+| Motion core | GSAP, ScrollTrigger, `@gsap/react` (the `gsap` chunk), Lenis and Lenis's sync (`rootMotion`) | 44.7 + 5.6 KB, loaded when the browser is idle after hydration |
+| Per-section motion | each folder in `src/motionComponents/`: hero 4.4, career run 2.6, leap 1.9, footer landing 1.3, entrances 1.0, shared helpers 0.5 | 11.7 KB, each loaded when allowed |
 
-The estimate for our own code follows the prototype's script: 18.8 KB gzipped with all of its content.
+Everything fetched without any interaction on a desktop is about 158 KB; on a phone (no career run) about 155 KB, and with reduced motion only the entry. To see what a chunk holds, build with `pnpm exec vite build --sourcemap` into a temporary folder and read the source map; React DOM is most of the entry, so there is nothing large left to split.
 
 **What is lazy-loaded:**
 
 - every motion component, through `MotionLayer` and `React.lazy`,
 - the career run only from 900 px, so phones never download it,
-- anything else task 3.16 finds worth splitting.
-- known since task 3.15: the career run's chunk is 2.5 KB gzipped. Its city is in the HTML (about 3.1 KB gzipped and 357 elements, hidden below 900 px), because its signs and dates are copy; task 3.16 decides whether the DOM size needs it trimmed.
-- known since task 3.12: `RunnerRig` and its maths (under 1 KB gzipped) end up in the entry chunk, because the bundler puts a module shared by two lazy chunks next to the runner code the entry already has. Task 3.16 decides whether that is worth splitting.
+- nothing else: task 3.16 found nothing worth splitting.
+
+**Kept as they are** (task 3.16):
+
+- The career run's city stays in the HTML (about 3.1 KB gzipped and 357 elements, hidden below 900 px), because its signs and dates are copy. The page has about 1,550 elements; Lighthouse does not flag the DOM size, and the largest layout on a 4× slower phone CPU took 63 ms.
+- `RunnerRig` and its maths (under 1 KB gzipped) stay in the entry chunk, where the bundler puts a module shared by two lazy chunks next to the runner code the entry already has. Splitting it would save less than 1 KB.
 
 **Rules that keep splitting working:**
 

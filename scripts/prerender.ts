@@ -1,8 +1,9 @@
 // Step 4 of `pnpm build` (docs/ARCHITECTURE.md section 2): writes one static HTML file per route
 // and the sitemap from the server build of the React app, then removes the server build. Node 24 runs this file
 // directly, without a compile step.
+import { readFileSync } from 'node:fs';
 import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
-import { dirname } from 'node:path';
+import { dirname, join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
 import type { RenderResult } from '../src/app/app.types';
@@ -15,11 +16,17 @@ import {
 } from './prerender.constants.ts';
 import {
   fillTemplate,
+  inlineStylesheets,
   isServerEntry,
   outputFileFor,
 } from './prerender.utils.ts';
 
-const template: string = await readFile(TEMPLATE_FILE, 'utf8');
+// The CSS goes into every page once, before the routes are rendered. The .css file stays in
+// dist/assets/, unused, so nothing that might still point to it breaks.
+const template: string = inlineStylesheets(
+  await readFile(TEMPLATE_FILE, 'utf8'),
+  (href: string): string => readFileSync(join(DIST_DIRECTORY, href), 'utf8'),
+);
 const serverEntry: unknown = await import(
   pathToFileURL(SERVER_ENTRY_FILE).href
 );

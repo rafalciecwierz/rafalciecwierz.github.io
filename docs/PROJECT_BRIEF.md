@@ -155,7 +155,7 @@ A short section after Projects, not a wall of text. Its one job is to show that 
 
 ### 4.9 Contact
 - Short line: "Open to frontend roles (React / TypeScript), remote or hybrid."
-- Email (`mailto:`) with a Copy button, LinkedIn, GitHub, Calendly ("Book a 20-min call"). The address is joined from parts at runtime, so it is not in the HTML source for the simplest scrapers; a contact form was rejected because the site is fully static (section 2) and form services add third parties.
+- Email (`mailto:`) with a Copy button, LinkedIn, GitHub, Calendly ("Book a 30-min call"). The address is joined from parts at runtime, so it is not in the HTML source for the simplest scrapers; a contact form was rejected because the site is fully static (section 2) and form services add third parties.
 - Repeat the **Download CV** button.
 - Do **not** publish the phone number on the site (spam risk). It is in the CV PDF.
 
@@ -178,8 +178,8 @@ roleFlips: ["Parkour & Climbing Addict", "Backend Explorer"]  // Rafał's choice
 tagline: "React & TypeScript · 5+ years building production apps"
 email: "rafal.ciecwierz4@gmail.com"
 github: "https://github.com/rafalciecwierz"
-linkedin: "TODO: Rafał to provide URL"
-calendly: "TODO: Rafał to provide URL"
+linkedin: "https://www.linkedin.com/in/rafalciecwierz/"
+calendly: "https://calendly.com/rafal-ciecwierz4/30min"
 cvFile: "/Rafal_Ciecwierz_CV.pdf"
 availability: "Open to frontend roles (React / TypeScript), remote or hybrid."
 ```
@@ -261,15 +261,21 @@ AI:  // Rafał, 28.10.2026; each backed by this repo or ashen-contracts
 - Tags: React, TypeScript, GSAP, Vite
 - Repo: https://github.com/rafalciecwierz/rafalciecwierz.github.io
 
-**Next.js page transitions** — `archived` (placeholder; may be replaced when the final project list is known)
-- Comparison of three page-transition approaches in Next.js: custom implementation, Framer Motion and GSAP.
-- Repo: https://github.com/rafalciecwierz/Nextjs-page-transition
+**Sky Freerun** — `live` — For Rafał's own parkour group in Poznań (his initiative, 2020)
+- One-page site: who the group is, the training academy for beginners, and contact. Hand-written HTML, SCSS and vanilla JavaScript, with an npm-script build that compiles, prefixes and minifies the CSS.
+- Tags: HTML, SCSS, JavaScript, PostCSS, Glider.js
+- Repo: https://github.com/rafalciecwierz/Sky-Freerun-Website · Live: https://skyfreerun.com/
+- Solo: the design, the code and the deployment. Not his first site: two came before it (one is offline; a 2018 company site is not shown, at his choice).
+
+Shown in this order: Ashen Contracts, this website, Sky Freerun, Ultimate Frisbee. Next.js page transitions was dropped on 3.11.2026 (Rafał's decision).
+
+Each project's role and lesson come from Rafał's answers (3.11.2026, task 3.18) and live in `src/content/en/projects.content.ts`. Facts in them: Ashen Contracts is solo, the spec and the architecture are his (talked through with Claude), and he delegates tasks to an AI agent and reviews every change; CI is new to him and still being learned. On the thesis, two teammates built the Nuxt frontend from his Figma designs. Screenshots: the Ashen Contracts logo (AI-generated, no game design yet), the UltiTracker scorekeeper view from Figma, this site's hero and the Sky Freerun home page.
 
 ### 5.6 Testimonials
 
 From LinkedIn recommendations written by Rafał's team at Mood up (June 2024). Quote them word for word. Shorten them only with "…", and never reword them. Show each author as first name, surname initial and role, with "Mood up, 2024".
 
-**Status:** the authors must agree before the final site is published. This is an open item for Rafał.
+**Status:** shown without asking the authors (Rafał's decision, 3.11.2026): the recommendations are public on LinkedIn, and the site gives no surnames.
 
 - **Wiktoria W.**, Marketing & Communication (another team): "Seriously, I've never met a leader as tuned in and supportive as him." / "Whoever snags him next is super lucky - yeah, I'm a bit envious. 😉"
 - **Rafał H.**, Frontend Developer (on Rafał's team): "His enthusiasm and optimism were contagious, making him a joy to work with."
@@ -307,6 +313,7 @@ For the section in 4.8. Written in roadmap task 2.6 from Rafał's answers and th
 - 26.10.2026: all 16 compared and measured, 08 Ascent dark chosen (`d1072b4`, `docs/DECISIONS.md` #001).
 - Rafał's role: he set the requirements in the brief, answered the discovery session, approved the directions, judged every prototype and chose the design. Every change reached `main` through a pull request he merged (15 by 26.10.2026).
 - Do not state working hours: commit times show when something was made, not how long it took.
+- Pull-ups: Rafał does about 20 a day; since the first commit on 22.10.2026 that is 200+ (his word, shown on the site as such).
 
 **Links:** the prototype gallery (`design/index.html`, published at `/design/`), `docs/AI_USAGE.md`, this repository and Ashen Contracts.
 
@@ -408,10 +415,10 @@ Because tech leads will read it, the setup must be professional:
 
 These are provided near the end of the project. Until then, use `TODO` placeholders.
 
-- [ ] LinkedIn profile URL
-- [ ] Calendly link (free plan, 20–30 min "Intro call" event)
-- [ ] Final CV PDF exported as `Rafal_Ciecwierz_CV.pdf`
-- [ ] Final list of projects
-- [ ] Optional: photo, if the chosen design has a good place for it
-- [ ] Consent from the three testimonial authors (section 5.6); the chosen design shows testimonials
+- [x] LinkedIn profile URL
+- [x] Calendly link (free plan, 30 min)
+- [x] Final CV PDF exported as `Rafal_Ciecwierz_CV.pdf`
+- [x] Final list of projects, with each project's role, what Rafał learned and a screenshot (task 3.18)
+- [x] Optional: photo. Decided against (3.11.2026): the runner is the site's character
+- [x] Testimonials: shown without asking the authors (section 5.6)
 - [x] How Rafał works with AI, for the AI and process section (section 5.7, roadmap task 2.6)

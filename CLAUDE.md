@@ -70,5 +70,5 @@ Node 24 (`.nvmrc`) and pnpm. After `pnpm install`, a `commit-msg` hook checks co
 ## Current status (keep this updated)
 
 - Phase: 3, implementation
-- Last completed: 3.17 prototype gallery: `design/index.html`, the 16 prototypes and the iterations published at `/design/` by a build step (`scripts/gallery.ts`) that fails on a broken link, the AI and process section linking it, `/design/` kept out of search (`robots.txt`) and out of Lighthouse CI (pages listed in `lighthouserc.yml`)
-- Next step: 3.18 final content, branch `feat/final-content`
+- Last completed: 3.18 final content: LinkedIn, Calendly and the CV PDF, three projects with role, lessons and WebP screenshots (`public/projects/`, sized in the content), the AI and process text, the final OG image with the hero's runner; no `TODO` left in the content
+- Next step: 3.19 final polish, branch `fix/final-polish`

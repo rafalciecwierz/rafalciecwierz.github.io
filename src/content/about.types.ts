@@ -1,7 +1,7 @@
-import type { NumberedSectionHeading, Stat } from './shared.types';
+import type { NumberedSectionHeading, RichText, Stat } from './shared.types';
 
 export type About = {
   heading: NumberedSectionHeading;
-  paragraphs: readonly string[];
+  paragraphs: readonly RichText[];
   facts: readonly Stat[];
 };

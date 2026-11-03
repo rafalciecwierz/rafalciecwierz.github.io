@@ -1,6 +1,6 @@
 import type { Projects } from '../projects.types';
 
-// Brief 5.5. The list is a placeholder until Rafał gives the final one (task 3.18).
+// Brief 5.5.
 // Adding, removing or reordering a project only changes `items` below.
 export const projects: Projects = {
   heading: { number: '04', kicker: 'Spots', title: 'Projects' },
@@ -36,7 +36,8 @@ export const projects: Projects = {
       todo: 'Rafał to provide one or two sentences',
     },
   },
-  // TODO (task 3.18): screenshot, role and learned for every project.
+  // Newest first, live before archived. Role and learned: Rafał's answers (3.11.2026).
+  // Screenshots: WebP files in public/projects/.
   items: [
     {
       id: 'ashenContracts',
@@ -54,9 +55,53 @@ export const projects: Projects = {
         'GitHub Actions',
       ],
       repoUrl: 'https://github.com/rafalciecwierz/ashen-contracts',
-      screenshot: null,
-      role: null,
-      learned: null,
+      screenshot: {
+        src: '/projects/ashenContracts.webp',
+        alt: 'The Ashen Contracts logo: the name in carved iron letters under a burning phoenix',
+        width: 1200,
+        height: 639,
+      },
+      role: 'Solo, from the idea to the architecture: my first full-stack project in years. I wrote the spec and designed the architecture, talked through with Claude. I delegate implementation tasks to an AI agent, review every change and keep the docs and the decision log up to date. The goal is to show I can ship a full-stack product on my own, and one you can actually play.',
+      learned:
+        'How to share types across a monorepo, so the frontend and the API cannot drift apart. That with an AI agent, the quality of the result depends on the quality of the spec. And CI, which I had barely touched before and am still getting to grips with.',
+    },
+    {
+      id: 'thisWebsite',
+      name: 'This website',
+      status: 'live',
+      description:
+        'Personal site with a hero scene and character drawn in code (SVG) and scroll-driven storytelling (GSAP), built with a performance and accessibility budget.',
+      tags: ['React', 'TypeScript', 'GSAP', 'Vite'],
+      repoUrl: 'https://github.com/rafalciecwierz/rafalciecwierz.github.io',
+      screenshot: {
+        src: '/projects/thisWebsite.webp',
+        alt: 'The hero of this site: the runner crouched on the name RAFAŁ CIEĆWIERZ under three spotlights, with the Download CV button',
+        width: 1200,
+        height: 750,
+      },
+      role: 'Product owner and reviewer. I wrote the brief and the rules, judged sixteen design prototypes and chose the direction. Claude Code wrote most of the code inside that frame; I reviewed every change as a frontend engineer, sent back fixes where it fell short, and merged each one myself.',
+      learned:
+        'That sixteen quick prototypes find a better design faster than one careful mockup. And how much GSAP and scroll-driven motion can do, when there is a reduced-motion version for everyone who needs one.',
+    },
+    {
+      id: 'skyFreerun',
+      name: 'Sky Freerun',
+      status: 'live',
+      note: 'For my own parkour group in Poznań',
+      description:
+        'One-page site for a parkour and freerunning group: who they are, the training academy for beginners, and contact. Hand-written HTML, SCSS and vanilla JavaScript, with an npm-script build that compiles, prefixes and minifies the CSS.',
+      tags: ['HTML', 'SCSS', 'JavaScript', 'PostCSS', 'Glider.js'],
+      repoUrl: 'https://github.com/rafalciecwierz/Sky-Freerun-Website',
+      demoUrl: 'https://skyfreerun.com/',
+      screenshot: {
+        src: '/projects/skyFreerun.webp',
+        alt: 'The Sky Freerun home page: a photo of a traceur leaping off a wall between blocks of flats, next to the heading SKY FREERUN',
+        width: 1200,
+        height: 750,
+      },
+      role: 'My own initiative, solo: the design, the code and the deployment.',
+      learned:
+        'Building the CSS pipeline by hand taught me what the tools do under the hood. And a plain static site has run since 2020 with no upkeep.',
     },
     {
       id: 'ultimateFrisbee',
@@ -74,33 +119,15 @@ export const projects: Projects = {
         'Nuxt',
         'Figma',
       ],
-      screenshot: null,
-      role: null,
-      learned: null,
-    },
-    {
-      id: 'thisWebsite',
-      name: 'This website',
-      status: 'live',
-      description:
-        'Personal site with a hero scene and character drawn in code (SVG) and scroll-driven storytelling (GSAP), built with a performance and accessibility budget.',
-      tags: ['React', 'TypeScript', 'GSAP', 'Vite'],
-      repoUrl: 'https://github.com/rafalciecwierz/rafalciecwierz.github.io',
-      screenshot: null,
-      role: null,
-      learned: null,
-    },
-    {
-      id: 'nextjsPageTransitions',
-      name: 'Next.js page transitions',
-      status: 'archived',
-      description:
-        'Comparison of three page-transition approaches in Next.js: custom implementation, Framer Motion and GSAP.',
-      tags: ['Next.js', 'Framer Motion', 'GSAP'],
-      repoUrl: 'https://github.com/rafalciecwierz/Nextjs-page-transition',
-      screenshot: null,
-      role: null,
-      learned: null,
+      screenshot: {
+        src: '/projects/ultimateFrisbee.webp',
+        alt: 'The scorekeeper’s tablet view in Figma: the clock, the score of both teams, timeout and score buttons, and a grid of players for each team',
+        width: 1194,
+        height: 834,
+      },
+      role: 'Backend developer and UI designer in a team of four. I built the API and the database and designed every screen, and two teammates built the Nuxt frontend from my designs.',
+      learned:
+        'That a live tournament teaches more than any local test. Real scorekeepers on a tablet by the pitch, real spectators refreshing, and no second take.',
     },
   ],
 };

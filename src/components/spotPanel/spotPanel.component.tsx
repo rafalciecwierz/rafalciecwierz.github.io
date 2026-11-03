@@ -66,6 +66,8 @@ export function SpotPanel({
             className={styles.screenshot}
             src={project.screenshot.src}
             alt={project.screenshot.alt}
+            width={project.screenshot.width}
+            height={project.screenshot.height}
             loading="lazy"
           />
         )}

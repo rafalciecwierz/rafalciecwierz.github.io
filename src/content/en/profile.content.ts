@@ -13,7 +13,7 @@ export const profile: Profile = {
     'Open to frontend roles (React / TypeScript), remote or hybrid.',
   email: { user: 'rafal.ciecwierz4', domain: 'gmail.com' },
   githubUrl: 'https://github.com/rafalciecwierz',
-  linkedinUrl: null, // TODO: Rafał to provide the URL (task 3.18)
-  calendlyUrl: null, // TODO: Rafał to provide the URL (task 3.18)
+  linkedinUrl: 'https://www.linkedin.com/in/rafalciecwierz/',
+  calendlyUrl: 'https://calendly.com/rafal-ciecwierz4/30min',
   cvUrl: '/Rafal_Ciecwierz_CV.pdf',
 };

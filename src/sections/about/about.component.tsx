@@ -3,12 +3,14 @@ import type { ReactElement } from 'react';
 import {
   Box,
   Container,
+  RichText,
   Section,
   SectionHeading,
   StatList,
   Text,
 } from '@/components';
 import { SECTION_IDS } from '@/constants';
+import type { RichText as RichTextContent } from '@/content';
 
 import { ABOUT_TITLE_ID } from './about.constants';
 import styles from './about.module.scss';
@@ -26,11 +28,13 @@ export function About({ about }: AboutProps): ReactElement {
         <SectionHeading heading={about.heading} titleId={ABOUT_TITLE_ID} />
         <Box className={styles.layout}>
           <Box className={styles.text}>
-            {about.paragraphs.map((paragraph: string): ReactElement => (
-              <Text key={paragraph} variant="lead">
-                {paragraph}
-              </Text>
-            ))}
+            {about.paragraphs.map(
+              (paragraph: RichTextContent, index: number): ReactElement => (
+                <Text key={index} variant="lead">
+                  <RichText text={paragraph} />
+                </Text>
+              ),
+            )}
           </Box>
           <StatList stats={about.facts} />
         </Box>

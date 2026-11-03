@@ -74,7 +74,7 @@ public/
   Rafal_Ciecwierz_CV.pdf
   favicon.svg                  # the RC monogram, drawn as strokes (no font)
   apple-touch-icon.png         # 180 × 180, rendered from favicon.svg
-  og-image.png                 # 1200 × 630, rendered from design/og-image.html (placeholder until 3.18)
+  og-image.png                 # 1200 × 630, rendered from design/og-image.html
   robots.txt                   # points to the sitemap the pre-render step writes; keeps /design/ out of search
 scripts/
   prerender.ts                 # step 4 of the build
@@ -325,6 +325,7 @@ The rules in brief section 8 are checked by `eslint-plugin-jsx-a11y` and by the 
 - **The data has ids.** Every job, project and quote has an `id`. Adding, removing or reordering a project changes only `projects.content.ts` (brief section 4.7).
 - **Nothing outside the content layer is copy.** Section ids for the anchors (`SECTION_IDS`) are constants, not content, because they are part of the URL.
 - **Data, not formatted text.** Dates are `{ year, month }` (`Period`), formatted by `formatPeriod` in `src/utils/`, so a test can check the order of the jobs. A promotion is a job with more than one role. A link sits in a field whose name ends in `Url` (`githubUrl`, `repoUrl`), so the content test can find and check every link.
+- **Links inside copy are data.** A sentence with a link is `RichText` (`shared.types.ts`): a plain string, or the sentence cut into parts where a linked part is `{ text, linkUrl }`. The `RichText` component renders it inside a `Text`, with each link as an inline `TextLink`. A plain part may start or end with the space next to its link; the content test allows that only there.
 - **`TODO` values are typed.** A missing LinkedIn or Calendly URL is `null` in the content, and the component renders the "Rafał to provide" state. The `null` is listed in `LISTED_TODOS` in `content.test.ts` and in the summary of task 3.18.
 
 ## 8. Styles
@@ -434,7 +435,7 @@ Across the page:
 
 - Structure: `Section` (a named region; `surface` plain or concrete, `spacing` padded or none), `Container` (the page's maximum width), `SectionHeading` (kicker with the section number, the title as `KineticText`, an optional intro), `Heading` (`level` for the outline, `size` for the look), `Text`, `List` and `ListItem`.
 - Small parts: `TagList`, `Badge` (solid, caution, muted), `StatList`, `Todo` (the visible marker for a `null` in the content), `VisuallyHidden`, `KineticText` (the real text for screen readers, letters marked `data-kinetic-letter` for the motion layer) and `Icon`.
-- Actions: `ActionGroup` (a wrapping row of actions; each `ButtonLink` in it takes the full width below 520 px), `ButtonLink` (an `<a>` that looks like a button: primary or secondary, optional download), `Button` (a native `<button type="button">`: outline, strong for Menu and Close, or solid) and `TextLink` (inline or cta). They pass the native attributes through (`aria-*`, `onClick`) but take no `className`, so their look comes only from the variant. Layout primitives (`Section`, `Container`, `Text`, `List`, `ListItem`) take an optional `className` for the parent's layout.
+- Actions: `ActionGroup` (a wrapping row of actions; each `ButtonLink` in it takes the full width below 520 px), `ButtonLink` (an `<a>` that looks like a button: primary or secondary, optional download), `Button` (a native `<button type="button">`: outline, strong for Menu and Close, or solid) and `TextLink` (inline or cta). `RichText` renders copy with inline links (section 7). They pass the native attributes through (`aria-*`, `onClick`) but take no `className`, so their look comes only from the variant. Layout primitives (`Section`, `Container`, `Text`, `List`, `ListItem`) take an optional `className` for the parent's layout.
 
 **Graphics used by several sections:**
 
@@ -530,7 +531,7 @@ Vitest and React Testing Library, light as in the brief, and aimed where a bug w
 | What | How |
 | --- | --- |
 | Pure functions (`.utils.ts`, seeded random, rig pose blending, sorting jobs, email assembly) | unit tests, written first (the `tdd` skill from task 3.2) |
-| Content | a test that every id is unique, every link is absolute or a known file, and every `null` is a listed `TODO` |
+| Content | a test that every id is unique, every link (a `…Url` or `src` field) is absolute or a file in `public/`, and every `null` is a listed `TODO` |
 | Sections | render each section from fixture content; check headings, landmarks and labels by role, not by class |
 | Reduced motion | with `prefers-reduced-motion: reduce` mocked, no motion component mounts and the static content is complete |
 | Pre-rendering | a smoke test of `render('/')` and `render('/404.html')`: the HTML has the `h1` and the meta tags (sharing tags on the home page, `noindex` on the 404 page), the sitemap lists only indexed pages, and nothing contains the email address |

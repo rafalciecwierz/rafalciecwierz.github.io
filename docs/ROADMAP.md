@@ -285,7 +285,7 @@ The first part (3.1–3.10) produces a usable, deployed site without motion or t
 - **Done when:** the gallery opens from the live site, every link in it works, and the initial JS budget is unaffected.
 
 ### 3.18 Final content
-- [ ] **Branch:** `feat/final-content`
+- [x] **Branch:** `feat/final-content`
 - **Scope:**
   - LinkedIn and Calendly URLs, the CV PDF and the optional photo (images in modern formats, with explicit sizes and lazy loading below the fold).
   - The final project list.
@@ -331,9 +331,9 @@ These are not needed for the site. Pick them up any time, or never.
 
 These are needed by task 3.18 and can arrive at any time before it.
 
-- [ ] LinkedIn profile URL
-- [ ] Calendly link (free plan, 20–30 min intro call)
-- [ ] Final CV PDF, named `Rafal_Ciecwierz_CV.pdf`
-- [ ] Optional: a photo, if the chosen design uses one
-- [ ] Final list of projects
-- [ ] Consent from the testimonial authors (brief section 5.6), if the chosen design shows testimonials
+- [x] LinkedIn profile URL
+- [x] Calendly link (free plan, 30 min)
+- [x] Final CV PDF, named `Rafal_Ciecwierz_CV.pdf`
+- [x] Optional: a photo. Decided against: the runner is the site's character
+- [x] Final list of projects, with each project's role, what Rafał learned and a screenshot
+- [x] Testimonials: shown without asking the authors (brief section 5.6)

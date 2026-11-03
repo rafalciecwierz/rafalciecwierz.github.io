@@ -19,3 +19,12 @@ export type TodoField = {
   label: string;
   todo: string;
 };
+
+// A part of a sentence that is a link. The field ends in "Url", so the content test checks it.
+export type LinkedText = {
+  text: string;
+  linkUrl: string;
+};
+
+// Copy that may hold links: plain text, or the sentence cut into parts, some of them linked.
+export type RichText = string | readonly (string | LinkedText)[];

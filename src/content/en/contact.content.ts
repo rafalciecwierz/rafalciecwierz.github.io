@@ -7,7 +7,7 @@ export const contact: Contact = {
     email: 'Email',
     linkedin: 'LinkedIn',
     github: 'GitHub',
-    calendly: 'Book a 20-min call',
+    calendly: 'Book a 30-min call',
   },
   urlTodo: 'Rafał to provide URL',
   downloadCv: 'Download CV',

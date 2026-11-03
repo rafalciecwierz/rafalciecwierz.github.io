@@ -1,7 +1,8 @@
 <!doctype html>
 <!--
-  Source of the placeholder sharing image, public/og-image.png (task 3.10). The final image
-  replaces it in task 3.18.
+  Source of the sharing image, public/og-image.png (task 3.10, final in task 3.18). The runner
+  is the hero's figure: his points come from solvePose (src/components/runner/) for the "runA"
+  pose, so a change to the rig means rendering this image again.
 
   To render it again: serve the repository root over HTTP (python3 -m http.server), open
   /design/og-image.html in Chrome at a 1200 × 630 viewport and device pixel ratio 1, and save a
@@ -33,6 +34,14 @@
   .role { margin-top: 22px; font: 800 44px/1 'Big Shoulders Display', sans-serif; text-transform: uppercase; letter-spacing: .03em; color: var(--sodium); }
   .tagline { margin-top: 14px; font: 600 26px/1.3 'Barlow', sans-serif; color: var(--muted); }
   .mono { position: absolute; top: 56px; left: 72px; font: 900 34px/1 'Big Shoulders Display', sans-serif; background: var(--sodium); color: var(--night); padding: 9px 11px 6px; }
+  .leap { position: absolute; inset: 0; width: 1200px; height: 630px; overflow: visible; }
+  .arc { fill: none; stroke: var(--sodium); stroke-width: 3; stroke-linecap: round; stroke-dasharray: 2 12; opacity: .7; }
+  .runner { fill: none; stroke-linecap: round; stroke-linejoin: round; filter: drop-shadow(0 0 14px rgb(255 159 56 / 45%)); }
+  .runner .far { stroke: #a9a398; }
+  .runner .near { stroke: var(--chalk); }
+  .runner .head { fill: var(--chalk); stroke: none; }
+  .roof { fill: #1d1f27; }
+  .roof-edge { fill: #34343b; }
   .url { position: absolute; top: 66px; right: 72px; font: 600 22px/1 'Barlow', sans-serif; letter-spacing: .08em; color: var(--muted); }
 </style>
 </head>
@@ -56,8 +65,28 @@
       <rect x="1150" y="150" width="6" height="9"/>
     </g>
   </svg>
-  <span class="cone" style="left: 760px; transform: translateX(-50%) rotate(-14deg)"></span>
-  <span class="cone" style="left: 1040px; transform: translateX(-50%) rotate(12deg)"></span>
+  <span class="cone" style="left: 1060px; height: 560px; transform: translateX(-50%) rotate(-3deg)"></span>
+  <span class="cone" style="left: 700px; height: 520px; transform: translateX(-50%) rotate(26deg); opacity: .55"></span>
+  <svg class="leap" viewBox="0 0 1200 630" aria-hidden="true">
+    <!-- The roof he lands on, on the right. -->
+    <rect class="roof" x="1100" y="410" width="100" height="220"/>
+    <rect class="roof-edge" x="1094" y="404" width="106" height="8"/>
+    <!-- The flight path: off the end of the name, over the gap, onto the roof. -->
+    <path class="arc" d="M 950 296 Q 1035 190 1140 396"/>
+    <!-- The runner in the "runA" pose (a stride), leaning into the leap above the arc, scaled 1.8x. -->
+    <g class="runner" transform="translate(1030 200) rotate(12) scale(1.8)">
+      <g class="far" stroke-width="7">
+        <polyline points="0.0,0.0 -11.0,19.1 -31.9,12.3 -25.9,12.3"/>
+        <polyline points="8.8,-28.7 22.2,-18.2 35.4,-27.2"/>
+      </g>
+      <g class="near">
+        <line x1="0" y1="0" x2="8.8" y2="-28.7" stroke-width="9"/>
+        <polyline points="0.0,0.0 17.3,13.5 27.7,33.0 33.7,33.0" stroke-width="7"/>
+        <polyline points="8.8,-28.7 -3.5,-16.9 5.9,-3.9" stroke-width="7"/>
+        <circle class="head" cx="11.0" cy="-40.0" r="7.5"/>
+      </g>
+    </g>
+  </svg>
   <div class="parapet"></div>
   <span class="mono">RC</span>
   <span class="url">rafalciecwierz.github.io</span>

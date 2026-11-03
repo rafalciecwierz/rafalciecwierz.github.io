@@ -37,7 +37,12 @@ const PROJECTS: ProjectsContent = {
       description: 'The first one.',
       tags: ['React'],
       repoUrl: 'https://github.com/example/one',
-      screenshot: null,
+      screenshot: {
+        src: '/projects/one.webp',
+        alt: 'The first one',
+        width: 1200,
+        height: 640,
+      },
       role: null,
       learned: null,
     },
@@ -91,6 +96,21 @@ describe('Projects', (): void => {
     expect(
       screen.getByRole('button', { name: 'Spot details: Project Two' }),
     ).toHaveFocus();
+  });
+
+  it('shows a screenshot with its size and loads it lazily', async (): Promise<void> => {
+    render(<Projects projects={PROJECTS} />);
+
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Spot details: Project One' }),
+    );
+
+    const screenshot: HTMLElement = screen.getByRole('img', {
+      name: 'The first one',
+    });
+    expect(screenshot).toHaveAttribute('width', '1200');
+    expect(screenshot).toHaveAttribute('height', '640');
+    expect(screenshot).toHaveAttribute('loading', 'lazy');
   });
 
   it('opens a project from its pin on the map, and gives focus to its card’s button on close', async (): Promise<void> => {

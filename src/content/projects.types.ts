@@ -3,9 +3,13 @@ import type { NumberedSectionHeading, TodoField } from './shared.types';
 
 export type ProjectStatus = (typeof PROJECT_STATUSES)[number];
 
+// A WebP in public/projects/. Its size in pixels is written out, so the page keeps its space
+// before the image loads (no layout shift).
 export type Screenshot = {
   src: string;
   alt: string;
+  width: number;
+  height: number;
 };
 
 export type Project = {
@@ -17,7 +21,7 @@ export type Project = {
   tags: readonly string[];
   repoUrl?: string;
   demoUrl?: string;
-  // Shown in the detail panel; TODO until Rafał writes them.
+  // Shown in the detail panel; `null` shows a TODO marker (none is left since task 3.18).
   screenshot: Screenshot | null;
   role: string | null;
   learned: string | null;

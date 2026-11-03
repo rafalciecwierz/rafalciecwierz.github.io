@@ -12,18 +12,24 @@ const LOCALES: readonly { locale: string; content: Content }[] = [
   { locale: 'en', content: en },
 ];
 
-// Files served from public/, and the prototype gallery the build copies to dist/design/
-// (scripts/gallery.ts), that a link may point to.
-const KNOWN_FILES: readonly string[] = ['/Rafal_Ciecwierz_CV.pdf', '/design/'];
+// A local link points to a file in public/ (the CV, the screenshots), or to the prototype
+// gallery, which the build copies to dist/design/ (scripts/gallery.ts).
+const BUILT_PATHS: readonly string[] = ['/design/'];
+// Vite lists the files in public/ by path; nothing is imported, only the keys are read.
+const PUBLIC_FILES: readonly string[] = Object.keys(
+  import.meta.glob('/public/**/*'),
+).map((file: string): string => file.replace(/^\/public/, ''));
 
-// Every `null` in the content is one of these TODOs (filled in task 3.18).
-const LISTED_TODOS: readonly RegExp[] = [
-  /^profile\.linkedinUrl$/,
-  /^profile\.calendlyUrl$/,
-  /^projects\.items\[\w+\]\.(screenshot|role|learned)$/,
-  /^process\.how\.paragraphs$/,
-  /^process\.site\.role$/,
-];
+// The path of a plain-text part of RichText: a string inside an array inside an array.
+const RICH_TEXT_PART: RegExp = /\]\[\d+\]$/;
+
+function isServedFile(link: string): boolean {
+  return BUILT_PATHS.includes(link) || PUBLIC_FILES.includes(link);
+}
+
+// Every `null` in the content is one of these TODOs. None is left since task 3.18; a new one
+// is listed here.
+const LISTED_TODOS: readonly RegExp[] = [];
 
 function startMonths({ start }: Period): number {
   return start.year * 12 + start.month;
@@ -42,7 +48,12 @@ describe.each(LOCALES)(
       for (const { path, value } of leaves) {
         if (typeof value === 'string') {
           expect(value, path).not.toBe('');
-          expect(value, path).toBe(value.trim());
+          expect(value, path).not.toContain('  ');
+          // A plain part of RichText (e.g. "paragraphs[2][0]") may end or start with the space
+          // next to its link.
+          if (!RICH_TEXT_PART.test(path)) {
+            expect(value, path).toBe(value.trim());
+          }
         }
       }
     });
@@ -56,18 +67,19 @@ describe.each(LOCALES)(
       expect(new Set<unknown>(ids).size).toBe(ids.length);
     });
 
-    it('keeps every link in a field named …Url, absolute or pointing to a known file', (): void => {
+    it('keeps every link in a field named …Url or src, absolute or pointing to a served file', (): void => {
       for (const { path, value } of leaves) {
         if (typeof value !== 'string') {
           continue;
         }
-        const isUrlField: boolean = path.endsWith('Url');
+        const isUrlField: boolean =
+          path.endsWith('Url') || path.endsWith('.src');
         const isLinkLike: boolean = /^(https?:|\/)/.test(value);
 
         expect(isLinkLike, path).toBe(isUrlField);
         if (isUrlField) {
           expect(
-            value.startsWith('https://') || KNOWN_FILES.includes(value),
+            value.startsWith('https://') || isServedFile(value),
             path,
           ).toBe(true);
         }

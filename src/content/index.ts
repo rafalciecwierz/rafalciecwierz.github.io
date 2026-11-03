@@ -23,7 +23,9 @@ export type {
 } from './projects.types';
 export type { PageSeo, Seo } from './seo.types';
 export type {
+  LinkedText,
   NumberedSectionHeading,
+  RichText,
   SectionHeading,
   Stat,
   TodoField,

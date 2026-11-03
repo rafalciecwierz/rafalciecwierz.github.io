@@ -4,7 +4,7 @@ import type { Career } from '../career.types';
 export const career: Career = {
   heading: { number: '03', kicker: 'The line', title: 'Career' },
   intro:
-    'Four companies and two promotions, run as one line across the rooftops. Every roof is higher than the last.',
+    'Four companies and two promotions, run as one line across the rooftops.',
   skipRun: 'Skip the run',
   promoted: 'Promoted',
   stackLabel: 'Stack',

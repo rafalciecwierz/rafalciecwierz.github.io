@@ -85,6 +85,8 @@ export type { PointListProps } from './pointList';
 export { PointList } from './pointList';
 export type { PosterProps, PosterTone } from './poster';
 export { Poster } from './poster';
+export type { RichTextProps } from './richText';
+export { RichText } from './richText';
 export type { RunBarProps, RunTick } from './runBar';
 export { RunBar } from './runBar';
 export type {

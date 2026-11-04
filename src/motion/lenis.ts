@@ -11,6 +11,19 @@ import {
   MS_PER_SECOND,
 } from './lenis.constants';
 
+// The running Lenis, or null while smooth scrolling is off (reduced motion, or before it starts).
+let activeLenis: Lenis | null = null;
+
+// A jump to a section that must not be undone by a smooth scroll still easing out. Lenis keeps
+// animating towards its own target for a moment after the wheel stops, and a link's native jump
+// made in that moment was pulled back ("Skip the run" needed two clicks, task 3.19). An
+// immediate Lenis scroll stops that animation and lands on the target at once; the browser's own
+// jump that follows the click then changes the URL and moves the focus, as before. Without
+// Lenis there is no animation to stop, and the browser's jump is enough.
+export function jumpTo(target: Element): void {
+  activeLenis?.scrollTo(target, { immediate: true });
+}
+
 // Starts smooth scrolling and returns the function that stops it (DECISIONS.md #004). Only the
 // root motion component calls it, and only when reduced motion is off.
 //
@@ -34,6 +47,7 @@ export function startSmoothScroll(): () => void {
     ScrollTrigger.update();
   }
   lenis.on('scroll', updateScrollTrigger);
+  activeLenis = lenis;
 
   function tick(time: number): void {
     lenis.raf(time * MS_PER_SECOND);
@@ -46,5 +60,6 @@ export function startSmoothScroll(): () => void {
     gsap.ticker.remove(tick);
     gsap.ticker.lagSmoothing(LAG_THRESHOLD, LAG_ADJUSTED_DELTA);
     lenis.destroy();
+    activeLenis = null;
   };
 }

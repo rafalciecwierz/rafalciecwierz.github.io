@@ -21,7 +21,9 @@ export function HeroIntro({
 }: HeroIntroProps): ReactElement {
   return (
     <div className={styles.heroIntro}>
-      <p className={styles.role}>
+      {/* Job titles stay in English. The flip rewrites the role every frame, and a browser
+          translating it at the same time froze it on a scrambled frame, so translation is off. */}
+      <p className={styles.role} translate="no">
         <VisuallyHidden>{role}</VisuallyHidden>
         <span aria-hidden="true" data-motion-target={MOTION_TARGETS.heroRole}>
           {role}

@@ -21,12 +21,12 @@ export const process: Process = {
     title: 'How this site was made',
     paragraphs: [
       'Before a line of React was written, this site was designed sixteen times: eight design directions, each built as a dark and a light prototype, then compared against the brief and narrowed down to one.',
-      'Pretty was not enough to ship. Every pull request has to pass linting, type checks, tests and Lighthouse on an emulated mid-range phone, and an independent AI auditor checks each UI change for responsiveness, keyboard use and WCAG AA contrast. The targets, both met: Lighthouse scores of at least 90 for performance and 95 for accessibility, best practices and SEO on mobile, and less than 150 KB of JavaScript on load.',
+      'Pretty was not enough to ship. Every pull request has to pass linting, type checks, tests and Lighthouse on an emulated mid-range phone, and an independent AI auditor checks each UI change for responsiveness, keyboard use and WCAG AA contrast. The targets, both met: Lighthouse scores of at least 90 for performance and 95 for accessibility, best practices and SEO on mobile, and less than 150\u00a0KB of JavaScript on load.',
     ],
     facts: [
       { value: '16', label: 'design prototypes' },
       { value: '8', label: 'directions, each dark and light' },
-      { value: '3', label: 'days of prototyping, 24–26.10.2026' },
+      { value: '3', label: 'days of prototyping, 24–\u206026.10.2026' },
       { value: '100+', label: 'pull-ups on the bar while the AI was working' },
     ],
     source:

@@ -11,13 +11,15 @@ import type { KineticTextProps } from './kineticText.types';
 // Screen readers get the text once, whole; the letters are hidden from them, because a reader
 // would otherwise spell the title letter by letter. Without motion, the letters simply read as
 // the text, so the static page is complete.
+// Browser translation (Chrome with Google Translate) mixed up the letters, so they are not
+// translated; the whole text for screen readers still is (task 3.19).
 export function KineticText({ text }: KineticTextProps): ReactElement {
   const words: TextWord[] = splitIntoWords(text);
 
   return (
     <>
       <VisuallyHidden>{text}</VisuallyHidden>
-      <span aria-hidden="true">
+      <span aria-hidden="true" translate="no">
         {words.map((word: TextWord, index: number): ReactElement => (
           <Fragment key={word.key}>
             {index > 0 && WORD_SEPARATOR}

@@ -7,7 +7,7 @@ import type { Content } from './content.types';
 import { en } from './en';
 import type { Tool, ToolGroup } from './stack.types';
 
-// Every locale must pass the same checks; a Polish version is added here.
+// Every locale must pass the same checks; another locale would be added here.
 const LOCALES: readonly { locale: string; content: Content }[] = [
   { locale: 'en', content: en },
 ];

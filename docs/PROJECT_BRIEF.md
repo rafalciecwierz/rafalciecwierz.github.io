@@ -118,11 +118,11 @@ Single page with anchor navigation. Sections in order:
 ### 4.3 About
 Short, human, first person. Draft (Rafał may edit):
 
-> I'm a frontend engineer with 5+ years of commercial experience in React and TypeScript. I started my career in QA automation, moved into frontend development after three months at my team's request, and later led a team of six developers.
+> I'm a frontend engineer with 5+ years of commercial experience in React and TypeScript. I started out in QA automation, and three months in, backed by a great team, I made the switch to frontend development. About a year into my next company, I was promoted to lead its frontend team of six developers.
 >
-> I care about clean architecture, reusable UI and tests that actually protect the product. Lately I've been going deeper into the backend with NestJS and experimenting with motion and 3D in the browser.
+> I enjoy both sides of frontend work: polished, design-led interfaces (design has always been close to my heart) and data-heavy projects where structure and performance matter most. I care about clean architecture, reusable UI and tests that actually protect the product. Lately I've been going deeper into the backend with NestJS and experimenting with motion and 3D in the browser.
 >
-> Outside of code: parkour (for over 22 years) and climbing.
+> Outside of code: parkour for over 22 years (I train with my crew, Sky Freerun) and climbing. Turns out I just like getting over obstacles, whether they're on a city wall or in a codebase.
 
 ### 4.4 Stack
 Grouped technologies with three experience levels (same legend as the CV):
@@ -154,7 +154,7 @@ In the chosen design each project is a pin on a night map ("Spots"); a pin or th
 A short section after Projects, not a wall of text. Its one job is to show that Rafał uses AI tools to their full extent (docs-first specs, skills, MCP servers, subagents, hooks, guardrails) and stays in charge of the work. It is based on two public repositories, this one and Ashen Contracts, and links to both, to `docs/AI_USAGE.md` and to the prototype gallery. Honest and factual, not a claim of expertise. Content is in section 5.7; its form is designed in roadmap task 2.7.
 
 ### 4.9 Contact
-- Short line: "Open to frontend roles (React / TypeScript), remote or hybrid."
+- Short line: "Open to frontend and full-stack roles (React / TypeScript / NestJS), remote or hybrid."
 - Email (`mailto:`) with a Copy button, LinkedIn, GitHub, Calendly ("Book a 30-min call"). The address is joined from parts at runtime, so it is not in the HTML source for the simplest scrapers; a contact form was rejected because the site is fully static (section 2) and form services add third parties.
 - Repeat the **Download CV** button.
 - Do **not** publish the phone number on the site (spam risk). It is in the CV PDF.
@@ -181,7 +181,7 @@ github: "https://github.com/rafalciecwierz"
 linkedin: "https://www.linkedin.com/in/rafalciecwierz/"
 calendly: "https://calendly.com/rafal-ciecwierz4/30min"
 cvFile: "/Rafal_Ciecwierz_CV.pdf"
-availability: "Open to frontend roles (React / TypeScript), remote or hybrid."
+availability: "Open to frontend and full-stack roles (React / TypeScript / NestJS), remote or hybrid."
 ```
 
 ### 5.2 Stack
@@ -229,13 +229,13 @@ AI:  // Rafał, 28.10.2026; each backed by this repo or ashen-contracts
 
 **Mood up** — React Developer → Front-end Team Leader — 10.2022 – 08.2024
 - Built the React/Redux interface for a smart intercom running on an embedded Raspberry Pi device.
-- Promoted to Front-end Team Leader; led a team of 6 developers delivering MVPs for international startup clients.
+- Promoted to Front-end Team Leader after about a year (just under, as Rafał recalls); led a team of 6 developers delivering MVPs for international startup clients.
 - Delivered projects from requirements gathering and estimation with clients through development, testing (Jest) and deployment.
 - Led a headless CMS evaluation (Strapi, Sanity, Contentful, headless WordPress and others), narrowing the shortlist to Strapi and Payload CMS for the company's stack.
 - Stack: React, Gatsby, Next.js, React Native, TypeScript, SCSS, Strapi, Material UI, Ant Design, Webpack, Vite, Figma
 
 **mTab sp. z o.o.** — QA Automation Engineer → JavaScript Developer — 07.2021 – 09.2022
-- Promoted from QA Automation Engineer (Cypress E2E) to front-end developer after 3 months at the product team's request.
+- Promoted from QA Automation Engineer (Cypress E2E) to front-end developer after 3 months.
 - Developed views and features in React for a data visualization platform with dynamic, reactive charts and presentation-style reports.
 - Built Node.js scripts run nightly by Jenkins that aggregated test results into reports and posted them to Slack.
 - Maintained and extended a legacy Backbone.js codebase.
@@ -252,8 +252,9 @@ AI:  // Rafał, 28.10.2026; each backed by this repo or ashen-contracts
 - Tags: Next.js, NestJS, PostgreSQL, Prisma, Storybook, Docker, GitHub Actions
 - Repo: https://github.com/rafalciecwierz/ashen-contracts
 
-**Ultimate Frisbee Tournament Platform** — `archived` — Engineering thesis (team of 4), built for the Polish Ultimate Players Association
-- Owned the entire NestJS + PostgreSQL backend, built live match scoring with Socket.io (scorekeeper tablet view + real-time spectator view), designed the full UI in Figma, deployed to AWS and tested at a live tournament in Szczecin.
+**UltiTracker** (ultimate frisbee tournament platform) — `archived` — Engineering thesis (team of 4), built for the Polish Ultimate Players Association
+- A platform for the ultimate frisbee community: create teams and tournaments, score matches live from a tablet by the pitch while spectators follow in real time, and build up statistics for every team and player. Tested at a live tournament in Szczecin.
+- Rafał's part: owned the entire NestJS + PostgreSQL backend, built live match scoring with Socket.io (scorekeeper tablet view + real-time spectator view), designed the full UI in Figma, deployed to AWS and tested at a live tournament in Szczecin.
 - Tags: NestJS, PostgreSQL, Socket.io, Swagger, AWS, Nuxt, Figma
 
 **This website** — `live`
@@ -298,6 +299,7 @@ For the section in 4.8. Written in roadmap task 2.6 from Rafał's answers and th
 - What he keeps for himself: git operations on the repository (commits, pushes, merges) and access to confidential data.
 - How he checks the output: diff review, manual testing, unit and integration tests passing, sometimes e2e tests.
 - What he watches for: inconsistency and hallucinations.
+- Adapting (Rafał, 4.11.2026): no parkour run goes to plan, you adapt to each obstacle as it comes; the parkour coaching qualification is called ADAPT. AI is still a fairly new obstacle for him, and the way of working with it changes fast, so today's workflow will change too.
 - At work: GitHub Copilot at VML Enterprise Solutions, where it helped with unit tests. At his other employers he worked without AI tools; at the earlier ones they were not allowed.
 
 **The setup, in the repositories** (source: the files named):
@@ -312,6 +314,7 @@ For the section in 4.8. Written in roadmap task 2.6 from Rafał's answers and th
 - 24.10–26.10.2026: the other 15 prototypes, from 01 light (`6832f5a`) to 08 Ascent (`01d6321`). 16 in total, 8 directions × dark and light, 17,572 lines of HTML.
 - 26.10.2026: all 16 compared and measured, 08 Ascent dark chosen (`d1072b4`, `docs/DECISIONS.md` #001).
 - Rafał's role: he set the requirements in the brief, answered the discovery session, approved the directions, judged every prototype and chose the design. Every change reached `main` through a pull request he merged (15 by 26.10.2026).
+- Quality gates (source: `.github/workflows/ci.yml`, `lighthouserc.yml`, section 8, `.claude/agents/site-auditor.md`): every pull request runs lint, format check, typecheck, tests, build and Lighthouse CI on an emulated mid-range phone, failing below the section 1 thresholds; the `site-auditor` subagent audits UI changes (four viewports, keyboard, reduced motion, contrast against WCAG AA). The site states the targets, not measured scores, because a visitor's own Lighthouse run can differ. Both targets met on 4.11.2026: Lighthouse 95 / 100 / 100 / 100, initial JS 95 KB gzipped. The JS budget is checked by hand, not in CI.
 - Do not state working hours: commit times show when something was made, not how long it took.
 - Pull-ups: Rafał does about 20 a day; since the first commit on 22.10.2026 that is 200+ (his word, shown on the site as such).
 

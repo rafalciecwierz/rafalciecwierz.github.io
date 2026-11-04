@@ -20,7 +20,7 @@ export const career: Career = {
   next: {
     sign: 'Next',
     company: 'Your team?',
-    role: 'Frontend Engineer',
+    role: 'Frontend / Full-stack Engineer',
     text: 'The next roof is not built yet.',
     cta: 'Get in touch',
   },
@@ -116,7 +116,7 @@ export const career: Career = {
         end: { year: 2022, month: 9 },
       },
       points: [
-        "Promoted from QA Automation Engineer (Cypress E2E) to front-end developer after 3 months at the product team's request.",
+        'Promoted from QA Automation Engineer (Cypress E2E) to front-end developer after 3 months.',
         'Developed views and features in React for a data visualization platform with dynamic, reactive charts and presentation-style reports.',
         'Built Node.js scripts run nightly by Jenkins that aggregated test results into reports and posted them to Slack.',
         'Maintained and extended a legacy Backbone.js codebase.',

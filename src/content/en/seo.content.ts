@@ -8,7 +8,7 @@ export const seo: Seo = {
   home: {
     title: 'Rafał Ciećwierz — Frontend Engineer (React & TypeScript)',
     description:
-      'React & TypeScript · 5+ years building production apps. Open to frontend roles (React / TypeScript), remote or hybrid.',
+      'React & TypeScript · 5+ years building production apps. Open to frontend and full-stack roles (React / TypeScript / NestJS), remote or hybrid.',
   },
   notFound: {
     title: 'Page not found — Rafał Ciećwierz',

@@ -424,7 +424,7 @@ Every effect in the reference (its comment header names them) mapped to where it
 | `projects` | SpotBoard: SpotMap (seeded SVG, pins), SpotCard list, SpotPanel in a `Dialog` (side panel on desktop, bottom sheet on phones). A pin opens the panel on click, as a pointer shortcut: pins sit in an `aria-hidden` SVG, so each card's button is the keyboard path. When the dialog closes, focus goes back to the card's button. Hovering a card or a pin highlights both | `entranceMotion`: Vault; the panel slide and the pin highlight are CSS (`dialog.module.scss`, `spotMap.module.scss`), off with reduced motion | `projects` |
 | `process` | LeapScene drawn landed (LeapRoof × 2, RunnerFigure, a camera group around the scene, the Replay button hidden), two columns of text, StatList, the gallery link (`/design/`) | `processMotion`: GapLeap with bullet time (camera push-in, three after-images, a vignette, the fog thinning); shows Replay; `entranceMotion`: Vault | `process` |
 | `contact` | availability, ChannelList of ChannelRows (EmailChannel with Copy after hydration, LinkedIn, GitHub, Calendly), Download CV and EmailButton | `entranceMotion`: Vault | `contact`, `profile` |
-| `siteFooter` | FooterStreet (lamp, Runner waving, bubble), SignOff, FooterMeta (back to top, built-with line, repo link, year) | `footerMotion`: FooterLanding (drop, roll, stand up, turn, wave, the bubble pops in) | `footer` |
+| `siteFooter` | FooterStreet (lamp with a squirrel on it, Runner waving, bubble), SignOff, FooterMeta (back to top, built-with line, repo link, year) | `footerMotion`: FooterLanding (drop, roll, stand up, turn, wave, the bubble pops in) | `footer` |
 
 Across the page:
 

@@ -44,7 +44,7 @@ export const projects: Projects = {
       name: 'Ashen Contracts',
       status: 'inProgress',
       description:
-        'Browser-based idle/RPG game built as a full-stack showcase: pnpm monorepo with a Next.js app, NestJS API, shared Storybook UI library and shared TypeScript types. Architecture decisions documented in an ADR-style log.',
+        'Browser-based idle/RPG game built as a full-stack portfolio project: pnpm monorepo with a Next.js app, NestJS API, shared Storybook UI library and shared TypeScript types. Architecture decisions documented in an ADR-style log.',
       tags: [
         'Next.js',
         'NestJS',
@@ -61,7 +61,7 @@ export const projects: Projects = {
         width: 1200,
         height: 639,
       },
-      role: 'Solo, from the idea to the architecture: my first full-stack project in years. I wrote the spec and designed the architecture, talked through with Claude. I delegate implementation tasks to an AI agent, review every change and keep the docs and the decision log up to date. The goal is to show I can ship a full-stack product on my own, and one you can actually play.',
+      role: 'Solo, from the idea to the architecture: my latest full-stack project. I wrote the spec and designed the architecture, talked through with Claude. I delegate implementation tasks to an AI agent, review every change and keep the docs and the decision log up to date. My goal is to ship a full-stack product on my own, and one you can actually play.',
       learned:
         'How to share types across a monorepo, so the frontend and the API cannot drift apart. That with an AI agent, the quality of the result depends on the quality of the spec. And CI, which I had barely touched before and am still getting to grips with.',
     },
@@ -89,7 +89,7 @@ export const projects: Projects = {
       status: 'live',
       note: 'For my own parkour group in Poznań',
       description:
-        'One-page site for a parkour and freerunning group: who they are, the training academy for beginners, and contact. Hand-written HTML, SCSS and vanilla JavaScript, with an npm-script build that compiles, prefixes and minifies the CSS.',
+        'One-page site for my parkour and freerunning group: who we are, the training academy for beginners, and contact. Hand-written HTML, SCSS and vanilla JavaScript, with an npm-script build that compiles, prefixes and minifies the CSS.',
       tags: ['HTML', 'SCSS', 'JavaScript', 'PostCSS', 'Glider.js'],
       repoUrl: 'https://github.com/rafalciecwierz/Sky-Freerun-Website',
       demoUrl: 'https://skyfreerun.com/',
@@ -105,11 +105,11 @@ export const projects: Projects = {
     },
     {
       id: 'ultimateFrisbee',
-      name: 'Ultimate Frisbee Tournament Platform',
+      name: 'UltiTracker',
       status: 'archived',
       note: 'Engineering thesis (team of 4), built for the Polish Ultimate Players Association',
       description:
-        'Owned the entire NestJS + PostgreSQL backend, built live match scoring with Socket.io (scorekeeper tablet view + real-time spectator view), designed the full UI in Figma, deployed to AWS and tested at a live tournament in Szczecin.',
+        'A platform for the ultimate frisbee community: create teams and tournaments, score matches live from a tablet by the pitch while spectators follow in real time, and build up statistics for every team and player. Tested at a live tournament in Szczecin.',
       tags: [
         'NestJS',
         'PostgreSQL',
@@ -125,7 +125,7 @@ export const projects: Projects = {
         width: 1194,
         height: 834,
       },
-      role: 'Backend developer and UI designer in a team of four. I built the API and the database and designed every screen, and two teammates built the Nuxt frontend from my designs.',
+      role: 'Backend developer and UI designer in a team of four. I owned the whole NestJS backend, including live scoring over Socket.io, deployed it to AWS and designed every screen in Figma. Two teammates built the Nuxt frontend from my designs.',
       learned:
         'That a live tournament teaches more than any local test. Real scorekeepers on a tablet by the pitch, real spectators refreshing, and no second take.',
     },

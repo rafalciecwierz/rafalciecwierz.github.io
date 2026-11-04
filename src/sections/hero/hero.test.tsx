@@ -34,6 +34,16 @@ describe('Hero', (): void => {
     expect(screen.getByText(PROFILE.tagline)).toBeInTheDocument();
   });
 
+  // The role flip writes the visible role letter by letter; a browser translating the page at the
+  // same time froze it on a scrambled frame (task 3.19). Job titles stay in English.
+  it('asks browsers not to translate the role the flip rewrites', (): void => {
+    render(<Hero profile={PROFILE} hero={HERO} />);
+
+    for (const role of screen.getAllByText(PROFILE.role)) {
+      expect(role.closest('[translate="no"]')).not.toBeNull();
+    }
+  });
+
   it('offers the CV as a download, the contact section and the career', (): void => {
     render(<Hero profile={PROFILE} hero={HERO} />);
 

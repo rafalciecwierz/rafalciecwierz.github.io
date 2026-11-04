@@ -10,7 +10,7 @@ export const profile: Profile = {
   roleFlips: ['Parkour & Climbing Addict', 'Backend Explorer'],
   tagline: 'React & TypeScript · 5+ years building production apps',
   availability:
-    'Open to frontend roles (React / TypeScript), remote or hybrid.',
+    'Open to frontend and full-stack roles (React / TypeScript / NestJS), remote or hybrid.',
   email: { user: 'rafal.ciecwierz4', domain: 'gmail.com' },
   githubUrl: 'https://github.com/rafalciecwierz',
   linkedinUrl: 'https://www.linkedin.com/in/rafalciecwierz/',

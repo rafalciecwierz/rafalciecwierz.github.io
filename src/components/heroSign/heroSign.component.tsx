@@ -51,7 +51,9 @@ export function HeroSign({
   return (
     <div className={styles.sign}>
       <div className={styles.truss} aria-hidden="true" />
-      <h1 id={titleId} className={styles.name}>
+      {/* A name is not translated. Browser translation (Chrome with Google Translate) rewrote the
+          per-letter spans and mangled the sign, so translation is off for the heading. */}
+      <h1 id={titleId} className={styles.name} translate="no">
         <VisuallyHidden>{name}</VisuallyHidden>
         <span aria-hidden="true">
           {words.map((word: TextWord): ReactElement => (

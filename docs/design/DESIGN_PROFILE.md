@@ -7,7 +7,7 @@ Facts about Rafał's career and skills live in [PROJECT_BRIEF.md](../PROJECT_BRI
 ## 1. Who Rafał is
 
 - **The person:** a positive guy who brings good energy and laughter to a team. Colleagues describe him as reliable, easy to work with, understanding and funny. In a past team-role assessment, most people saw him as a manager.
-- **The path:** QA automation → frontend developer (promoted after three months at the team's request) → frontend team leader of six developers. Next goal: full stack. He is going deeper into the backend (NestJS).
+- **The path:** QA automation → frontend developer (promoted after three months) → frontend team leader of six developers. Next goal: full stack. He is going deeper into the backend (NestJS).
 - **What his team said** (Mood up, 2024). See brief section 5.6 for the quotes, which show:
   - a leader who is "tuned in and supportive",
   - "contagious" enthusiasm and optimism,

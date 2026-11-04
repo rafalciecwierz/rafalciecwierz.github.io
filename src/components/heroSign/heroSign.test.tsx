@@ -14,6 +14,17 @@ describe('HeroSign', (): void => {
     ).toHaveAttribute('id', 'hero-name');
   });
 
+  // Browser translation rewrites text nodes, and on a name split into one span per letter it
+  // mangled the sign on a phone (Chrome with Google Translate, task 3.19). A name is not translated.
+  it('asks browsers not to translate the name', (): void => {
+    render(<HeroSign name={NAME} titleId="hero-name" perchLetter="Ł" />);
+
+    expect(screen.getByRole('heading', { level: 1 })).toHaveAttribute(
+      'translate',
+      'no',
+    );
+  });
+
   it('draws one sign letter per letter, and the runner hidden from screen readers', (): void => {
     const { container } = render(
       <HeroSign name={NAME} titleId="hero-name" perchLetter="Ł" />,

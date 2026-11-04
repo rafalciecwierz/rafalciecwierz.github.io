@@ -126,6 +126,8 @@ Consequences: about 250 packages in `node_modules`, development only; nothing sh
 
 Date: 31.10.2026
 
+Status: **Polish dropped on 4.11.2026** (brief section 2). The typed content layer stands; the `/pl/` route, the switch and task 3.21 will not be built.
+
 Context: v1 is English only, and Polish comes later (brief section 2, roadmap task 3.21). Brief section 3 asks for minimal dependencies, and the initial JS budget is 150 KB gzipped. Every page is pre-rendered to static HTML (#002), so its copy is already in the HTML before any JavaScript runs. Most of the content is data, not sentences: jobs with `{ year, month }` dates, stack levels, projects with ids and statuses, and a few templates such as plurals (`toolCount`). The site sets no cookies (brief section 12). GitHub Pages has no server, so it cannot pick a language from request headers.
 
 Decision: every locale is one TypeScript value of the `Content` type (`src/content/en/`, later `src/content/pl/`), as `docs/ARCHITECTURE.md` section 7 describes. A missing or misshaped translation is a compile error. Plurals and small templates are typed functions in the content, and Polish plurals use the built-in `Intl.PluralRules`. The language comes from the URL: `/` is English and `/pl/` is Polish. Each path is a route, pre-rendered to its own HTML file with its own `<html lang>`, `hreflang` alternates and copy. The language switch is a plain link to the other path. The browser language is not detected and nothing redirects. Nothing stores the choice: the URL is the state.

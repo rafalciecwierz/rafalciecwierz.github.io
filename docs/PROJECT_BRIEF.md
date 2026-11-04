@@ -65,7 +65,7 @@ The site will be linked from a LinkedIn post asking people to recommend Rafał a
 - **Hosting:** GitHub Pages, repository `rafalciecwierz.github.io` (user site → served at the root, so Vite `base` is `/`).
 - **Fully static.** No server, no backend, no environment secrets.
 - **Free.** No paid services. Calendly free plan for scheduling.
-- **Language:** English only for v1. Structure content so Polish can be added later without refactoring (see section 6). Polish comes after v1 at `/pl/`, chosen by the URL, with no i18n library ([DECISIONS.md](DECISIONS.md) #007, roadmap task 3.21).
+- **Language:** English only. A Polish version was planned and dropped on 4.11.2026: the audience is recruiters and tech leads, who expect English, and no Polish clients are expected. The content layer stays typed per locale ([DECISIONS.md](DECISIONS.md) #007), so another language would need no refactoring, but none is planned.
 - **Time box:** two weekends. Prefer finishing over perfecting. On the other hand the product needs to feel polished.
 
 ---
@@ -249,7 +249,7 @@ AI:  // Rafał, 28.10.2026; each backed by this repo or ashen-contracts
 ### 5.5 Projects
 
 **Ashen Contracts** — `in progress`
-- Browser-based idle/RPG game built as a full-stack showcase: pnpm monorepo with a Next.js app, NestJS API, shared Storybook UI library and shared TypeScript types. Architecture decisions documented in an ADR-style log.
+- Browser-based idle/RPG game built as a full-stack portfolio project: pnpm monorepo with a Next.js app, NestJS API, shared Storybook UI library and shared TypeScript types. Architecture decisions documented in an ADR-style log.
 - Tags: Next.js, NestJS, PostgreSQL, Prisma, Storybook, Docker, GitHub Actions
 - Repo: https://github.com/rafalciecwierz/ashen-contracts
 
@@ -317,7 +317,7 @@ For the section in 4.8. Written in roadmap task 2.6 from Rafał's answers and th
 - Rafał's role: he set the requirements in the brief, answered the discovery session, approved the directions, judged every prototype and chose the design. Every change reached `main` through a pull request he merged (15 by 26.10.2026).
 - Quality gates (source: `.github/workflows/ci.yml`, `lighthouserc.yml`, section 8, `.claude/agents/site-auditor.md`): every pull request runs lint, format check, typecheck, tests, build and Lighthouse CI on an emulated mid-range phone, failing below the section 1 thresholds; the `site-auditor` subagent audits UI changes (four viewports, keyboard, reduced motion, contrast against WCAG AA). The site states the targets, not measured scores, because a visitor's own Lighthouse run can differ. Both targets met on 4.11.2026: Lighthouse 95 / 100 / 100 / 100, initial JS 95 KB gzipped. The JS budget is checked by hand, not in CI.
 - Do not state working hours: commit times show when something was made, not how long it took.
-- Pull-ups: Rafał does about 20 a day; since the first commit on 22.10.2026 that is 200+ (his word, shown on the site as such).
+- Pull-ups: Rafał does about 20 a day; since the first commit on 22.10.2026 the site shows 100+ (Rafał's number, set by him in the content).
 
 **Links:** the prototype gallery (`design/index.html`, published at `/design/`), `docs/AI_USAGE.md`, this repository and Ashen Contracts.
 
@@ -327,7 +327,7 @@ For the section in 4.8. Written in roadmap task 2.6 from Rafał's answers and th
 
 The structure, the code conventions, the component map and the dependency plan are in [ARCHITECTURE.md](ARCHITECTURE.md) (task 3.1). In short:
 
-- Pages compose sections, sections compose components, and all copy comes from typed content files in `src/content/`, one folder per locale, so a `pl` variant can be added later.
+- Pages compose sections, sections compose components, and all copy comes from typed content files in `src/content/`, one folder per locale (only `en/`).
 - Every page is pre-rendered; motion is a lazily loaded layer on top of the static HTML ([DECISIONS.md](DECISIONS.md), #003 and #005).
 - All GSAP code uses `useGSAP` with a scope ref, plugins are registered once, and one `useReducedMotion` hook is the single source of truth for GSAP, the hero scene and Lenis.
 - Effects come from the chosen design; all of them are ported onto GSAP, with no extra library.
@@ -341,7 +341,7 @@ The chosen direction is 08 Ascent, dark variant "Night Session": a parkour night
 - **Typography:** one display font for headings, one clean sans for body (self-hosted woff2 files, `font-display: swap`, preload the display font; see `docs/ARCHITECTURE.md` section 8). In the prototype: Big Shoulders Display + Barlow.
 - **Motion:** fewer, better animations. Ease-out reveals, nothing that blocks reading. No animation longer than ~1 s except the scroll-scrubbed career run.
 - **Responsive:** mobile first. Test at 360 px, 768 px, 1280 px, 1920 px.
-- **Character:** the SVG free-runner is the character, in the hero and wherever the design uses him. There is no photo in the hero; a photo of Rafał may appear in About (optional, brief section 14).
+- **Character:** the SVG free-runner is the character, in the hero and wherever the design uses him. There is no photo in the hero; no photo of Rafał is used anywhere (decided 3.11.2026, confirmed 4.11.2026).
 
 ---
 

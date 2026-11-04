@@ -70,5 +70,5 @@ Node 24 (`.nvmrc`) and pnpm. After `pnpm install`, a `commit-msg` hook checks co
 ## Current status (keep this updated)
 
 - Phase: 3, implementation
-- Last completed: 3.18 final content: LinkedIn, Calendly and the CV PDF, three projects with role, lessons and WebP screenshots (`public/projects/`, sized in the content), the AI and process text, the final OG image with the hero's runner; no `TODO` left in the content
-- Next step: 3.19 final polish, branch `fix/final-polish`
+- Last completed: 3.19 final polish: copy fixes (About, full-stack availability, UltiTracker, AI and process), `translate="no"` on per-letter text so browser translation cannot garble it, "Skip the run" fixed during smooth scroll (`jumpTo` in `src/motion/lenis.ts`), a squirrel on the footer lamp
+- Next step: 3.20 gallery draft note, branch `feat/gallery-draft-note`

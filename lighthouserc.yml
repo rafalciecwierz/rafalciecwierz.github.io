@@ -7,7 +7,7 @@ ci:
     staticDistDir: ./dist
     # Listed, not discovered: discovery would also pick up the prototype gallery in dist/design/
     # (task 3.17), an archive of the design process held to no thresholds, and it stops at five
-    # pages. A new page of the site (the Polish one, task 3.21) is added here.
+    # pages. A new page of the site is added here.
     # The 404 page asks search engines not to index it, which Lighthouse scores as an SEO
     # failure. That is intended, so the page is left out; it is checked in the audits instead.
     url:

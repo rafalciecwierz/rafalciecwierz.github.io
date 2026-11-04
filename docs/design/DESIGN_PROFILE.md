@@ -53,7 +53,7 @@ The "Ralph" nickname and the Polish letters (Ł, Ć) are available as playful or
   - a **character built in code**: a clay-like 3D figure made from simple shapes in Three.js, or an SVG drawing in a hand-drawn style; or
   - a **stock face as a placeholder**, marked `TODO`, to be swapped later.
 
-  Reference traits from his photo: short light-brown hair swept up, light stubble, a wide smile, a navy blazer over a white T-shirt, arms crossed. Turning a real photo into a figure or illustration with external tools is an optional side quest (see ROADMAP).
+  Reference traits from his photo: short light-brown hair swept up, light stubble, a wide smile, a navy blazer over a white T-shirt, arms crossed. Turning a real photo into a figure or illustration was considered and dropped (4.11.2026): the runner built in code is the site's character.
 - **Interests as material:** parkour and climbing may shape some prototypes, as metaphors rather than photos. Examples:
   - the career as a climbing route, with promotions as harder moves;
   - movement between sections that flows like parkour.

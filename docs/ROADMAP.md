@@ -294,36 +294,23 @@ The first part (3.1–3.10) produces a usable, deployed site without motion or t
 - **Done when:** no `TODO` is left in the content layer.
 
 ### 3.19 Final polish
-- [ ] **Branch:** `fix/final-polish`
+- [x] **Branch:** `fix/final-polish`, then `fix/translated-section-headings` for a bug found after the merge
+- **Done (4.11.2026):** the About, availability, UltiTracker and AI-and-process copy; browser translation kept off the per-letter text (the hero name, the role flip, the section headings); "Skip the run" working while the smooth scroll still eases; a squirrel on the footer lamp. Lighthouse mobile median 93 / 100 / 100 / 100, initial JS 96 KB gzipped.
 - **Scope:** the small design and behaviour fixes Rafał lists after using the working site. They replace further design iterations (task 2.7 closed with v2). Rafał may make some of them himself.
 - **Done when:** Rafał's list is done, and the Lighthouse thresholds from 3.16 still hold.
 
-### 3.20 README
+### 3.20 Gallery draft note
+- [ ] **Branch:** `feat/gallery-draft-note`
+- **Scope:** the published prototypes in `/design/` still carry the early draft copy: placeholders (`TODO`), old wording and a few sentences about Rafał that are wrong or misleading (for example "moved into frontend development after three months at my team's request, and later led a team of six developers"). The source files in `design/prototypes/` stay unedited (`.claude/rules/design-prototypes.md`); everything happens in the published copy, in `scripts/gallery.ts`:
+  - A small bar at the top of every published prototype: it is a design prototype from 24–26.10.2026, its copy is an early draft kept as built, factual corrections are applied, and a link goes back to the site. The gallery index (`design/index.html`) says the same in one sentence.
+  - Factual corrections: a list of exact sentences, each replaced with the final wording from the brief. Claude drafts the list from all 16 prototypes and the v2 iteration; Rafał approves it before anything is replaced. Only facts are corrected, not style or placeholders.
+  - The build fails when a listed sentence is no longer found, so a correction cannot stop working silently.
+- **Done when:** every published prototype shows the bar, none of the approved sentences is left in `dist/design/`, the source files are unchanged (`git diff design/prototypes` is empty), and the build fails on a missing sentence (covered by a test).
+
+### 3.21 README
 - [ ] **Branch:** `docs/readme`
 - **Scope:** the repository README covering the stack, how to run it, the architecture overview, how the hero works, performance decisions, AI usage (linking `docs/AI_USAGE.md`) and screenshots or a GIF.
 - **Done when:** a tech lead can understand the project from the README alone.
-
-### 3.21 Polish version
-- [ ] **Branch:** `feat/polish-locale`
-- **Scope** (after v1 is live; the mechanism is [DECISIONS.md](DECISIONS.md) #007):
-  - `src/content/pl/`: the whole `Content` in Polish, typed as `Content`, so a missing translation does not compile. Claude drafts the translation and Rafał approves it. Polish plurals use `Intl.PluralRules` (1 narzędzie, 2 narzędzia, 5 narzędzi).
-  - Kept in English: the testimonials, which are quoted word for word (brief section 5.6), with the Polish page marking them as English (`lang="en"`); tool and company names; the prototype gallery and the docs.
-  - A `/pl/` route, pre-rendered to `dist/pl/index.html`. The page gets its locale from the route, not from a fixed import of `en`.
-  - The head for each language: `<html lang>`, title, description, Open Graph locale, and `hreflang` alternates (`en`, `pl`, `x-default`) on both pages.
-  - A language switch: a plain link to the other path, with `hreflang` and an accessible name in the target language. Its place in the header is designed in this task, because the reference design has none.
-  - No browser-language detection, no redirect, no cookie or `localStorage`.
-  - `src/content/content.test.ts` runs every check on `pl` as well.
-- **Done when:** `/` and `/pl/` are both served as complete pre-rendered HTML in their language, the switch works with the keyboard and without JavaScript, the build fails when a Polish string is missing, and the Lighthouse thresholds from 3.16 hold on both pages. Open item for Rafał: a Polish CV PDF, or the English one linked from both pages.
-
----
-
-## Side quests (optional)
-
-These are not needed for the site. Pick them up any time, or never.
-
-- [ ] **Rafał's character from a real photo.** Turn Rafał's photo into a stylised 3D figure or an illustration, to replace the character built in code (see [design/DESIGN_PROFILE.md](design/DESIGN_PROFILE.md), section 6). Options found in October 2026 (check each licence before use; terms change often):
-  - **Image to 3D:** [Tripo AI](https://www.tripo3d.ai) (its free tier is non-commercial and public), [Meshy](https://www.meshy.ai) (its free tier is CC BY 4.0, so it needs attribution), [Rodin](https://hyper3d.ai) (the most realistic, but heavy). The best workflow: stylise the photo into a "figurine" image first, then convert it to 3D, then decimate it in Blender and compress it with Draco to under 300 KB.
-  - **Photo to illustration:** an AI tool such as [OpenArt](https://openart.ai/features/photo-to-avatar/) (fast, but at risk of the generic AI look), or a human illustrator found on Behance, Instagram or Fiverr (paid, and the most authentic).
 
 ---
 
@@ -336,4 +323,3 @@ These are needed by task 3.18 and can arrive at any time before it.
 - [x] Final CV PDF, named `Rafal_Ciecwierz_CV.pdf`
 - [x] Optional: a photo. Decided against: the runner is the site's character
 - [x] Final list of projects, with each project's role, what Rafał learned and a screenshot
-- [x] Testimonials: shown without asking the authors (brief section 5.6)

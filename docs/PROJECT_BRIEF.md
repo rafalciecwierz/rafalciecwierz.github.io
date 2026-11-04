@@ -162,6 +162,7 @@ A short section after Projects, not a wall of text. Its one job is to show that 
 ### 4.10 Footer
 - "Built with React, TypeScript and GSAP" + link to the site's own repo.
 - Year.
+- Easter egg: a small squirrel sits on the street lamp, facing the runner, for Rafał's girlfriend (task 3.19). Drawn in code, decorative, static, on every screen size.
 
 ---
 

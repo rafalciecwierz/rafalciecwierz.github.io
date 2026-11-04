@@ -8,11 +8,15 @@ import {
   LAMP_LIGHT_PATH,
   LAMP_POST_PATH,
   LAMP_VIEW_BOX,
+  SQUIRREL_BODY_PATH,
+  SQUIRREL_EYE,
+  SQUIRREL_TAIL_PATH,
+  SQUIRREL_TRANSFORM,
 } from './footerStreet.constants';
 import styles from './footerStreet.module.scss';
 import type { FooterStreetProps } from './footerStreet.types';
 
-// The street at the bottom of the page: a lamp, and the runner who has come down from the
+// The street at the bottom of the page: a lamp with a squirrel on it, and the runner who has come down from the
 // rooftops, facing the viewer with an arm up and a speech bubble. This is the last frame of
 // his landing, and the whole scene for the static page and reduced motion; FooterMotion
 // animates the drop, the roll and the wave. Decorative.
@@ -27,6 +31,11 @@ export function FooterStreet({
         <path className={styles.light} d={LAMP_LIGHT_PATH} />
         <path className={styles.post} d={LAMP_POST_PATH} />
         <rect className={styles.head} {...LAMP_HEAD} />
+        <g className={styles.squirrel} transform={SQUIRREL_TRANSFORM}>
+          <path d={SQUIRREL_TAIL_PATH} />
+          <path d={SQUIRREL_BODY_PATH} />
+          <circle className={styles.squirrelEye} {...SQUIRREL_EYE} />
+        </g>
       </svg>
       <p
         className={styles.bubble}

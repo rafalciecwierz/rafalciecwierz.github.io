@@ -17,7 +17,8 @@
   bottom: 0;
   left: calc(max(2.5rem, 14%) - 60px);
   width: 190px;
-  height: 170px;
+  // The street's 170px plus 24px above it for the squirrel (LAMP_VIEW_BOX).
+  height: 194px;
 }
 
 .post {
@@ -28,6 +29,19 @@
 
 .head {
   fill: var(--color-lamp-light);
+}
+
+// A dark silhouette against the dusk, lit from below by the lamp head she sits on.
+.squirrel {
+  fill: var(--color-lamp-post);
+  stroke: var(--color-sodium-dim);
+  stroke-width: 0.5;
+  stroke-linejoin: round;
+}
+
+.squirrelEye {
+  fill: var(--color-lamp-light);
+  stroke: none;
 }
 
 .light {

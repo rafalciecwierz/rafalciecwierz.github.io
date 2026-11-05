@@ -300,9 +300,9 @@ The first part (3.1–3.10) produces a usable, deployed site without motion or t
 - **Done when:** Rafał's list is done, and the Lighthouse thresholds from 3.16 still hold.
 
 ### 3.20 Gallery draft note
-- [ ] **Branch:** `feat/gallery-draft-note`
+- [x] **Branch:** `feat/gallery-draft-note`
 - **Scope:** the published prototypes in `/design/` still carry the early draft copy: placeholders (`TODO`), old wording and a few sentences about Rafał that are wrong or misleading (for example "moved into frontend development after three months at my team's request, and later led a team of six developers"). The source files in `design/prototypes/` stay unedited (`.claude/rules/design-prototypes.md`); everything happens in the published copy, in `scripts/gallery.ts`:
-  - A small bar at the top of every published prototype: it is a design prototype from 24–26.10.2026, its copy is an early draft kept as built, factual corrections are applied, and a link goes back to the site. The gallery index (`design/index.html`) says the same in one sentence.
+  - A small one-line bar fixed to the bottom of every published prototype (Rafał, 5.11.2026: at the top it would clash with the prototypes' fixed headers): it is a design prototype from 24–26.10.2026 (the v2 iteration: 28.10.2026), its copy is an early draft kept as built, factual corrections are applied, and a link goes back to the site. Closing it hides it on every gallery page for the rest of the visit. The gallery index (`design/index.html`) says the same in one sentence.
   - Factual corrections: a list of exact sentences, each replaced with the final wording from the brief. Claude drafts the list from all 16 prototypes and the v2 iteration; Rafał approves it before anything is replaced. Only facts are corrected, not style or placeholders.
   - The build fails when a listed sentence is no longer found, so a correction cannot stop working silently.
 - **Done when:** every published prototype shows the bar, none of the approved sentences is left in `dist/design/`, the source files are unchanged (`git diff design/prototypes` is empty), and the build fails on a missing sentence (covered by a test).

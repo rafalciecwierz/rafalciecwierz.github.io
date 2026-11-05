@@ -70,5 +70,5 @@ Node 24 (`.nvmrc`) and pnpm. After `pnpm install`, a `commit-msg` hook checks co
 ## Current status (keep this updated)
 
 - Phase: 3, implementation
-- Last completed: 3.19 final polish: copy fixes (About, full-stack availability, UltiTracker, AI and process), `translate="no"` on per-letter text so browser translation cannot garble it, "Skip the run" fixed during smooth scroll (`jumpTo` in `src/motion/lenis.ts`), a squirrel on the footer lamp
-- Next step: 3.20 gallery draft note, branch `feat/gallery-draft-note`
+- Last completed: 3.20 gallery draft note: the published prototypes get a one-line draft note at the bottom and corrected facts (`scripts/gallery.corrections.ts`, the build fails when a listed sentence stops matching); the files in `design/` stay as built
+- Next step: 3.21 README, branch `docs/readme`

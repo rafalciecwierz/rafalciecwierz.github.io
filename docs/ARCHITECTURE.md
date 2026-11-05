@@ -60,7 +60,7 @@ Vite, React 19 and TypeScript, with a pre-render step written in the project (ab
    - saves `dist/<route>/index.html`, or `dist/404.html` for a path that names a file.
 
    Then it writes `dist/sitemap.xml` from the server entry's `SITEMAP` and deletes `dist-server`.
-5. `node scripts/gallery.ts`: publishes the prototype gallery (task 3.17). It copies `design/index.html`, `design/prototypes/` and `design/iterations/` to `dist/design/` as they are, outside the React bundle, so the gallery adds nothing to the site's JavaScript. `design/og-image.html` stays out. Then it fails the build if a link in the gallery page points to no file in `dist/` (`findBrokenLinks`). Links to the docs go to GitHub, because `docs/` is not published. The gallery is not in the sitemap, `robots.txt` asks search engines to skip it, and Lighthouse CI audits only the pages listed in `lighthouserc.yml`, so the prototypes are not held to the site's thresholds.
+5. `node scripts/gallery.ts`: publishes the prototype gallery (task 3.17). It copies `design/index.html`, `design/prototypes/` and `design/iterations/` to `dist/design/`, outside the React bundle, so the gallery adds nothing to the site's JavaScript. `design/og-image.html` stays out. In the published copy only (task 3.20), it replaces the draft sentences listed in `scripts/gallery.corrections.ts` with the brief's final wording (`applyCorrections`, which fails the build when a sentence is found a different number of times than listed) and adds a draft note fixed to the bottom of every prototype (`addDraftNote`, `DRAFT_NOTE_TEMPLATE`); the files in `design/` stay as built. Then it fails the build if a link in the gallery page points to no file in `dist/` (`findBrokenLinks`). Links to the docs go to GitHub, because `docs/` is not published. The gallery is not in the sitemap, `robots.txt` asks search engines to skip it, and Lighthouse CI audits only the pages listed in `lighthouserc.yml`, so the prototypes are not held to the site's thresholds.
 
 In the browser, `src/app/entryClient.tsx` calls `hydrateRoot`: React attaches to the HTML that is already on screen instead of rendering it again. It picks the route with `routeForLocation`: GitHub Pages serves `404.html` for every unknown address, so any path without a route is the 404 page, and `/index.html` is `/`. The dev server (`pnpm dev`) serves the template without pre-rendered content, so there the same file renders the page with `createRoot` instead.
 
@@ -81,8 +81,10 @@ scripts/
   prerender.utils.ts           # fillTemplate, outputFileFor, isServerEntry (tested); writes sitemap.xml too
   prerender.constants.ts       # paths and template markers
   gallery.ts                   # step 5 of the build: the prototype gallery at /design/
-  gallery.utils.ts             # findLocalLinks, resolveLink, findBrokenLinks (tested)
-  gallery.constants.ts         # what is published from design/, and the link patterns
+  gallery.utils.ts             # findLocalLinks, resolveLink, findBrokenLinks, applyCorrections, addDraftNote (tested)
+  gallery.constants.ts         # what is published from design/, the link patterns and the draft note
+  gallery.corrections.ts       # factual corrections to the published prototypes, approved by Rafał
+  gallery.types.ts             # GalleryCorrection
   cssModules.utils.ts          # findRawValues: raw values in a stylesheet that have a token (tested)
   cssModules.test.ts           # runs findRawValues on every CSS Module (section 8)
   breakpoints.test.ts          # the SCSS and TypeScript breakpoints match (section 8)

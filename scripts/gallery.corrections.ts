@@ -37,6 +37,13 @@ export const GALLERY_CORRECTIONS: readonly GalleryCorrection[] = [
     count: 4,
   },
   {
+    // 05 The Issue, dark: the career chapter's deck (Rafał, 5.11.2026, after task 3.20).
+    find: 'Three months later, the product team asked for him as a developer.',
+    replace:
+      'Three months later, backed by a great team, he made the switch to developer.',
+    count: 1,
+  },
+  {
     // Availability: full-stack roles were added after the prototypes were built.
     find: 'Open to frontend roles (React / TypeScript), remote or hybrid.',
     replace:

@@ -70,5 +70,5 @@ Node 24 (`.nvmrc`) and pnpm. After `pnpm install`, a `commit-msg` hook checks co
 ## Current status (keep this updated)
 
 - Phase: 3, implementation
-- Last completed: 3.20 gallery draft note: the published prototypes get a one-line draft note at the bottom and corrected facts (`scripts/gallery.corrections.ts`, the build fails when a listed sentence stops matching); the files in `design/` stay as built
-- Next step: 3.21 README, branch `docs/readme`
+- Last completed: 3.21 README (first person, MIT `LICENSE`), with one more gallery correction from 3.20 (the 05 The Issue dark career deck)
+- Next step: every roadmap task is done; new work starts as a new roadmap task

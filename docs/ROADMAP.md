@@ -308,8 +308,8 @@ The first part (3.1–3.10) produces a usable, deployed site without motion or t
 - **Done when:** every published prototype shows the bar, none of the approved sentences is left in `dist/design/`, the source files are unchanged (`git diff design/prototypes` is empty), and the build fails on a missing sentence (covered by a test).
 
 ### 3.21 README
-- [ ] **Branch:** `docs/readme`
-- **Scope:** the repository README covering the stack, how to run it, the architecture overview, how the hero works, performance decisions, AI usage (linking `docs/AI_USAGE.md`) and screenshots or a GIF.
+- [x] **Branch:** `docs/readme`
+- **Scope:** the repository README, short and in the first person (agreed with Rafał, 5.11.2026): who and what, with one static image (the Open Graph image) and the CI badge; the stack; how to run it (`pnpm build && pnpm preview`); the architecture in short (the static page first, motion as a layer on top; no folder map); the performance targets and what was reached; how quality is kept; how it was made (docs and designs before code, AI usage linking `docs/AI_USAGE.md`). How the hero works is left to the docs. The code is licensed MIT (`LICENSE`).
 - **Done when:** a tech lead can understand the project from the README alone.
 
 ---

@@ -31,7 +31,6 @@ function job(
 
 const MOVES: readonly string[] = ['M1', 'M2', 'M3', 'M4', 'M5', 'M6', 'Next'];
 
-// Newest first, as the content lists them: two promotions in the two oldest jobs.
 const JOBS: readonly Job[] = [
   job('newest', ['Engineer']),
   job('third', ['Engineer']),

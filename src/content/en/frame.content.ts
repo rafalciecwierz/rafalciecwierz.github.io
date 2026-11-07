@@ -2,9 +2,6 @@ import { SECTION_IDS } from '@/constants';
 
 import type { Brand, Footer, Nav } from '../frame.types';
 
-// The page frame from the reference design (design/iterations/08-ascent-dark-v2.html):
-// the header, the navigation (brief 4.1) and the footer (brief 4.10).
-
 export const nav: Nav = {
   skipToContent: 'Skip to content',
   label: 'Main',
@@ -37,7 +34,6 @@ export const footer: Footer = {
   bubble: 'Thanks for training with me!',
   sessionOver: 'Session over.',
   line: '22+ years of parkour, and still landing it.',
-  // The arrow is an icon next to the link, hidden from screen readers.
   backToTop: 'Back to the summit',
 };
 

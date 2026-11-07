@@ -9,8 +9,7 @@ import {
   UINT32_RANGE,
 } from './random.constants';
 
-// Turns a text into a 32-bit number (FNV-1a), so a seed can be a readable word such as
-// "night session" instead of a magic number.
+// FNV-1a, so a seed can be a readable word instead of a magic number.
 export function hashString(text: string): number {
   let hash: number = FNV_OFFSET_BASIS;
   for (const character of text) {
@@ -20,9 +19,7 @@ export function hashString(text: string): number {
   return hash >>> 0;
 }
 
-// A seeded random number generator (Mulberry32). Math.random() would draw a different
-// skyline on the server and in the browser; this one draws the same, so the pre-rendered SVG
-// and the hydrated one match (docs/ARCHITECTURE.md section 10).
+// Mulberry32. Math.random() would draw a different skyline on the server and in the browser.
 export function createRandom(seed: number): () => number {
   let state: number = seed;
   return (): number => {

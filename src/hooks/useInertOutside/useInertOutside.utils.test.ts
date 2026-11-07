@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest';
 
 import { elementsOutside } from './useInertOutside.utils';
 
-// <body><header><a/><nav/></header><main/><footer/><script/></body>
 function page(): {
   body: HTMLElement;
   brand: HTMLElement;

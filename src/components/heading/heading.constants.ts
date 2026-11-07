@@ -1,4 +1,3 @@
-// The tag for each heading level.
 export const HEADING_TAGS = {
   1: 'h1',
   2: 'h2',

@@ -14,7 +14,6 @@ import {
 
 const SPOT: RigSpot = { x: 100, y: 200, scale: 0.8, facing: 1 };
 
-// A 6 × 6 canvas with ink (alpha 255) at the given cells.
 function canvasWith(
   cells: readonly (readonly [number, number])[],
 ): Uint8ClampedArray {
@@ -27,7 +26,6 @@ function canvasWith(
 
 describe('glyphTop', (): void => {
   it('finds the highest edge and the middle of the columns that reach it', (): void => {
-    // A stem two pixels wide from row 1, and a lower bowl from row 3.
     const top: GlyphTop = glyphTop(
       canvasWith([
         [1, 1],

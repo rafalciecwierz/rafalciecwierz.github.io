@@ -2,8 +2,7 @@ import type { CareerRunLayout } from '@/components';
 
 import { HALF } from './careerRun.constants';
 
-// The scroll position half-way through a stage, where the runner is on its roof (a stage
-// starts in the middle of the jump onto it). `start` and `end` are the run's scroll range.
+// Half-way through a stage, where the runner is on its roof (a stage starts mid-jump).
 export function stageScroll(
   start: number,
   end: number,

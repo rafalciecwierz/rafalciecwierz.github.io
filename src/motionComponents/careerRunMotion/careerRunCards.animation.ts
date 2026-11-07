@@ -13,8 +13,6 @@ export function cardItem(move: HTMLElement): HTMLElement {
   return move.closest('li') ?? move;
 }
 
-// The roles of each job, oldest first, counted from the move names on its card (one per
-// role). The cards are newest first after the next roof's.
 export function roleCountsOf(moves: readonly HTMLElement[]): number[] {
   return moves
     .slice(1)
@@ -25,11 +23,8 @@ export function roleCountsOf(moves: readonly HTMLElement[]): number[] {
     .reverse();
 }
 
-// Returns the function that shows the card of a stage: the card comes in, the others leave,
-// a promoted job names only the move he is on and dims its promotion until he reaches the
-// tower, and the bar's ticks light up to here. It does nothing while the stage is the same,
-// unless `shouldForce` asks to apply it again: ScrollTrigger reverts what was set before a
-// refresh, so the run shows its stage again after each one.
+// It does nothing while the stage is the same, unless `shouldForce` asks: ScrollTrigger reverts
+// what was set before a refresh, so the run shows its stage again after each one.
 export function createStageSwitcher(
   targets: RunTargets,
   roleCounts: readonly number[],

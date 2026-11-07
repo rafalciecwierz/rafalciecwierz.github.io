@@ -2,8 +2,6 @@ import type { PercentKeyframes } from '@/motion/keyframes.types';
 
 import { PERCENT, SIGN_FLICKER, WINDOW_FLICKER } from './heroMotion.constants';
 
-// SignFlicker's keyframes: the reference's opacities at their places in the move, each step a
-// jump (steps(1)), like a sign that catches and drops out while it warms up.
 export function signFlickerKeyframes(): PercentKeyframes {
   const keyframes: PercentKeyframes = { easeEach: SIGN_FLICKER.ease };
   return SIGN_FLICKER.steps.reduce(

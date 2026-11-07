@@ -6,8 +6,6 @@ import { classNames } from '@/utils';
 import styles from './button.module.scss';
 import type { ButtonProps } from './button.types';
 
-// A button that acts on the page: opens the menu or a project, copies the email, replays the
-// leap. It is always type="button", so it can never submit a form by accident.
 export function Button({
   variant = 'outline',
   size = 'regular',

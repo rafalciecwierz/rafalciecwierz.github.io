@@ -11,10 +11,6 @@ import type {
 } from './careerRunScene.types';
 import { facadeWindows } from './careerRunScene.utils';
 
-// One block of a building in the run: the wall down to the bottom of the world, the ledge
-// with its warm edge, and the windows. The unlit windows are a pattern that starts at the
-// window area, so the lit ones drawn on top fall exactly on its grid. The top roof of a
-// building carries a box and an antenna.
 export function RunFacade({
   facade,
   isTop,

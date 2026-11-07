@@ -1,9 +1,5 @@
 @use '@/styles/careerRun' as *;
 
-// The city of the career run, laid over the run's whole screen. Hidden in the list; shown
-// when the career is the run (the career-run mixin, src/styles/_careerRun.scss). Its two
-// layers stay invisible until CareerRunMotion has placed them and set data-career-run-live,
-// then fade in.
 .careerRunScene {
   position: absolute;
   inset: 0;
@@ -17,7 +13,6 @@
     }
   }
 
-  // The street fades into the page at the bottom, under the progress bar.
   &::after {
     content: '';
     position: absolute;
@@ -31,8 +26,6 @@
   }
 }
 
-// The run's part of the page: one screen plus the run's distance, so its stage stays on
-// screen while the page scrolls that far.
 .runTrack {
   @include career-run {
     height: calc(
@@ -41,8 +34,6 @@
   }
 }
 
-// Each layer is drawn at 1 px per unit from its top left corner. The motion moves it with a
-// transform, which the browser does on its own compositor layer, without repainting the SVG.
 .layer {
   position: absolute;
   top: 0;

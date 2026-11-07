@@ -1,9 +1,7 @@
-// Focused only by the skip link; a ring around the whole page would just be noise.
 .main:focus {
   outline: none;
 }
 
-// Off screen until it gets keyboard focus, then it drops in at the top left, over the header.
 .skipLink {
   position: fixed;
   top: calc(-1 * var(--space-16));

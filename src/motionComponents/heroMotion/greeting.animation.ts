@@ -13,9 +13,7 @@ import { GREETING } from './heroMotion.constants';
 import type { RigSpot } from './heroMotion.types';
 import { stateAt } from './letterHop.utils';
 
-// The greeting as one timeline, in place on his letter: stand up, turn to the viewer, raise an
-// arm, wave three times, lower it, turn back and crouch. Facing the viewer, both sides of the
-// figure share one tone (setTone), as in the footer's landing.
+// Facing the viewer, both sides of the figure share one tone (setTone).
 export function createGreeting(
   rig: RunnerRigHandle,
   spot: RigSpot,

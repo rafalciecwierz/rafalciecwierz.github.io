@@ -19,7 +19,6 @@ function lineAt(text: string, index: number): number {
   return text.slice(0, index).split('\n').length;
 }
 
-// Every declaration in a stylesheet that uses a raw value where a design token exists.
 export function findRawValues(scss: string): RawValue[] {
   const code: string = removeComments(scss);
   const found: RawValue[] = [];

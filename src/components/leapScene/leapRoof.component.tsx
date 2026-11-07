@@ -5,9 +5,6 @@ import styles from './leapScene.module.scss';
 import type { LeapRoofProps, SceneRect } from './leapScene.types';
 import { litWindows, windowArea } from './leapScene.utils';
 
-// One roof of the leap: the facade, the ledge with its warm edge, the windows and the sign.
-// The unlit windows are a pattern that starts at this roof's window area, so the few lit
-// windows drawn on top fall exactly on its grid, and only they are separate elements.
 export function LeapRoof({
   roof,
   sign,
@@ -16,7 +13,7 @@ export function LeapRoof({
 }: LeapRoofProps): ReactElement {
   const area: SceneRect = windowArea(roof);
   const ledgeWidth: number =
-    roof.right - roof.left + LEDGE.overhang + LEDGE.overhang; // past both ends
+    roof.right - roof.left + LEDGE.overhang + LEDGE.overhang;
 
   return (
     <g>

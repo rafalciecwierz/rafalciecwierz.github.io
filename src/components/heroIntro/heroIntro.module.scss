@@ -1,10 +1,6 @@
 @use '@/styles/breakpoints' as *;
 
-// A soft dark halo keeps the text readable where a lit window or a light cone of the scene
-// falls behind it (the plain colours alone drop below AA contrast there).
 .heroIntro {
-  // The column never grows with its content: the role flip writes longer titles into the same
-  // line, and a wider column would re-wrap the tagline and move the sign (layout shift).
   min-width: 0;
   text-shadow:
     0 0 3px var(--color-night),
@@ -19,8 +15,6 @@
   letter-spacing: var(--letter-spacing-xs);
   text-transform: uppercase;
   white-space: nowrap;
-  // A title longer than the column (during the role flip, on phones) is cut at its edge
-  // instead of pushing it wider. The margin keeps the halo of the last letter.
   overflow-x: clip;
   overflow-clip-margin: var(--space-3);
 }
@@ -31,10 +25,6 @@
   font-size: var(--font-size-lead-sm);
 }
 
-// Each part is a unit, so a line that does not fit breaks only after the middle dot (at
-// 900–1021 px the column is narrow). On phones each part takes its own line, so the line count
-// is the same in Barlow and in its fallback. Inline-block, not block, so screen readers still
-// read the paragraph as one sentence.
 .taglineLine {
   display: inline-block;
 

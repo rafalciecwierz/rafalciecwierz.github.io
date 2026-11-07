@@ -56,15 +56,12 @@ describe('rigFoot', (): void => {
   it('puts the ground under the lowest turned joint in a grounded roll', (): void => {
     const body: RunnerBody = solvePose(POSES.hand);
     const [, centreY] = spinCentre(body);
-    // Arms up: his hands are the top of the figure.
     const handY: number = Math.min(
       body.nearArm[2]?.[1] ?? 0,
       body.farArm[2]?.[1] ?? 0,
     );
 
-    // A full turn is upright again.
     expect(rigFoot(body, 360, true)).toBeCloseTo(rigFoot(body, 0, false));
-    // Upside down, the hands are the lowest point and touch the ground.
     expect(rigFoot(body, 180, true)).toBeCloseTo(
       centreY + (centreY - handY) + FOOT_REACH,
     );

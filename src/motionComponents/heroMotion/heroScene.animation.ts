@@ -9,8 +9,7 @@ import {
 import { signFlickerKeyframes, windowFlickerChance } from './heroScene.utils';
 import { scrambleText } from './roleFlip.utils';
 
-// SignFlicker: the sign dims, and each letter flickers back on once, at its own random moment
-// within 0.65 s. It ends fully lit, as the static sign is.
+// It ends fully lit, as the static sign is.
 export function createSignFlicker(letters: HTMLElement[]): gsap.core.Tween {
   gsap.set(letters, { opacity: SIGN_FLICKER.steps[0][1] });
   return gsap.to(letters, {
@@ -21,9 +20,8 @@ export function createSignFlicker(letters: HTMLElement[]): gsap.core.Tween {
   });
 }
 
-// The window flicker: while the hero is on screen, a random window switches off or back on
-// about every 1.3 s. It pauses when the hero leaves the screen; GSAP's clock itself stops while
-// the tab is hidden (it runs on requestAnimationFrame).
+// It pauses when the hero leaves the screen; GSAP's clock itself stops while the tab is hidden
+// (it runs on requestAnimationFrame).
 export function createWindowFlicker(
   hero: HTMLElement,
   windows: HTMLElement[],
@@ -62,8 +60,6 @@ export function createWindowFlicker(
   return clock;
 }
 
-// RoleFlip: after the sign has lit, the role scrambles through each of the other titles like a
-// split-flap board, holds each one, and lands back on the real role.
 export function createRoleFlip(
   role: HTMLElement,
   titles: readonly string[],

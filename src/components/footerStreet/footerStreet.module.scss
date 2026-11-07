@@ -1,6 +1,5 @@
 @use '@/styles/breakpoints' as *;
 
-// The street continues the contact section's warm gradient down to the kerb.
 .street {
   position: relative;
   height: 170px;
@@ -17,7 +16,6 @@
   bottom: 0;
   left: calc(max(2.5rem, 14%) - 60px);
   width: 190px;
-  // The street's 170px plus 24px above it for the squirrel (LAMP_VIEW_BOX).
   height: 194px;
 }
 
@@ -31,7 +29,6 @@
   fill: var(--color-lamp-light);
 }
 
-// A dark silhouette against the dusk, lit from below by the lamp head she sits on.
 .squirrel {
   fill: var(--color-lamp-post);
   stroke: var(--color-sodium-dim);
@@ -49,8 +46,6 @@
   opacity: 0.07;
 }
 
-// He stands at 80% of the width (78% on phones), feet on the street, 125px tall: the reference
-// scales him by the street's height (170 / 150), and his waving pose is 110 rig units tall.
 .runner {
   position: absolute;
   bottom: 0;
@@ -63,14 +58,12 @@
   }
 }
 
-// The bubble to the left of his head, its tail pointing at him.
 .bubble {
   position: absolute;
   right: calc(20% + 30px);
   bottom: 88px;
   z-index: 1;
   max-width: 62vw;
-  // FooterMotion pops it in from the corner by his head.
   transform-origin: 100% 100%;
   padding: var(--space-2-5) var(--space-3-5) var(--space-2);
   background: var(--color-chalk);

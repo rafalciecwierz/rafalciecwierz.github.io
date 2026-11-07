@@ -1,6 +1,5 @@
 import type { PAGE_PATHS } from './site.constants';
 
-// The image link previews show (LinkedIn, Slack, X), served from public/.
 export type ShareImage = {
   path: string;
   width: number;

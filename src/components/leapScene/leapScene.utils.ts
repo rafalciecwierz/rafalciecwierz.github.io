@@ -8,7 +8,7 @@ import {
 } from './leapScene.constants';
 import type { RoofSpec, SceneRect } from './leapScene.types';
 
-// The city far behind the roofs, seeded so the build and the browser draw the same.
+// Seeded, so the build and the browser draw the same.
 export function distantBuildings(): SceneRect[] {
   const random: () => number = createRandom(hashString(DISTANT_SEED));
   const buildings: SceneRect[] = [];
@@ -28,7 +28,6 @@ export function distantBuildings(): SceneRect[] {
   return buildings;
 }
 
-// The area of a roof's facade that holds windows: whole columns and rows of the grid.
 export function windowArea(roof: RoofSpec): SceneRect {
   const left: number = roof.left + WINDOW.insetLeft;
   const top: number = roof.top + WINDOW.dropTop;
@@ -45,8 +44,7 @@ export function windowArea(roof: RoofSpec): SceneRect {
   };
 }
 
-// The lit windows of a roof, seeded by its sign. The unlit ones are an SVG pattern over the
-// whole window area, so only these few are separate elements in the HTML.
+// The unlit ones are an SVG pattern, so only these few are separate elements in the HTML.
 export function litWindows(roof: RoofSpec, sign: string): SceneRect[] {
   const random: () => number = createRandom(hashString(sign));
   const area: SceneRect = windowArea(roof);

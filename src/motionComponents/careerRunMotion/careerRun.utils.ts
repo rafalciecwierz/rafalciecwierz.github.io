@@ -16,9 +16,6 @@ import {
 } from './careerRun.constants';
 import type { RunFrame, StageCard } from './careerRunMotion.types';
 
-// The career run as pure functions: where the runner is at each point of the scroll, which
-// card goes with it, and where the camera puts the world.
-
 function jumpPose(share: number): RunFrame['pose'] {
   if (share < JUMP.reachEnd) {
     return mixPose(POSES.runA, POSES.reach, share / JUMP.reachEnd);
@@ -35,7 +32,6 @@ function jumpPose(share: number): RunFrame['pose'] {
   );
 }
 
-// One piece of the line at `distance` units into it (of `segment.length`).
 function frameOn(
   segment: RunSegment,
   distance: number,
@@ -56,7 +52,6 @@ function frameOn(
     }
     case 'jump': {
       const { fromX, toX, fromHeight, toHeight, stage } = segment;
-      // Higher and longer jumps get a higher arc.
       const arc: number =
         JUMP.baseArc +
         Math.max(0, toHeight - fromHeight) * JUMP.climbArc +
@@ -84,7 +79,6 @@ function frameOn(
   }
 }
 
-// Where he is at this point of the run (0 to 1).
 export function runnerAt(layout: CareerRunLayout, progress: number): RunFrame {
   let distance: number = clamp(progress, 0, 1) * layout.length;
   const last: number = layout.line.length - 1;
@@ -97,8 +91,7 @@ export function runnerAt(layout: CareerRunLayout, progress: number): RunFrame {
   return { x: 0, height: 0, ground: 0, pose: POSES.stand, stage: 0 };
 }
 
-// The card for a stage. The cards are newest first with the next roof at 0, so the oldest
-// job (stages 0 and 1 of the real career) is the last card.
+// The cards are newest first with the next roof at 0, so the oldest job is the last card.
 export function stageCard(
   roleCounts: readonly number[],
   stage: number,
@@ -113,7 +106,6 @@ export function stageCard(
   return { card: 0, role: 0 };
 }
 
-// The first stage of each job, oldest first, and the next roof's: one per progress bar tick.
 export function firstStages(roleCounts: readonly number[]): number[] {
   const stages: number[] = [];
   let first: number = 0;
@@ -125,8 +117,6 @@ export function firstStages(roleCounts: readonly number[]): number[] {
   return stages;
 }
 
-// The first stage of a card: the inverse of stageCard. The next roof (card 0) is the stage
-// after the last role.
 export function cardStage(roleCounts: readonly number[], card: number): number {
   const stages: number[] = firstStages(roleCounts);
   const job: number = card === 0 ? roleCounts.length : roleCounts.length - card;

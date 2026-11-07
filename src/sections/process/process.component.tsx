@@ -20,15 +20,12 @@ import { PROCESS_TITLE_ID } from './process.constants';
 import styles from './process.module.scss';
 import type { ProcessProps } from './process.types';
 
-// Loads the leap's jump as its own chunk (docs/ARCHITECTURE.md section 13).
 async function loadProcessMotion(): Promise<MotionModule> {
   const { ProcessMotion } =
     await import('@/motionComponents/processMotion/processMotion.component');
   return { default: ProcessMotion };
 }
 
-// "The leap": AI and process (brief 4.8). The scene, then two columns: how Rafał works with AI
-// (still a TODO) and how this site was made, with the numbers from the repository.
 export function Process({ process }: ProcessProps): ReactElement {
   const { how, site } = process;
   const sceneRef: RefObject<HTMLDivElement | null> =

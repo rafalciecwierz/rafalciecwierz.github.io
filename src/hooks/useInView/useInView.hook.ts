@@ -1,8 +1,6 @@
 import { type RefObject, useEffect, useState } from 'react';
 
-// Whether the element is on screen. Until the browser reports (on the server, during hydration
-// and where IntersectionObserver is missing) it returns `isInitiallyInView`, so the first render
-// matches the pre-rendered HTML.
+// Until the browser reports, it returns `isInitiallyInView`, so hydration matches.
 export function useInView(
   ref: RefObject<Element | null>,
   isInitiallyInView: boolean,

@@ -1,7 +1,3 @@
-// In the flow at the top of the hero, pushed up by its auto bottom margin while the rest
-// stands at the bottom. The reference placed it absolutely, where on short phones it ran into
-// the name; in the flow it pushes the sign down instead. The bottom padding leaves room for
-// the runner perched above the sign, as tall as he is (set by HeroContent) and a little more.
 .heroMeta {
   display: flex;
   margin-bottom: auto;
@@ -20,10 +16,6 @@
   color: var(--color-sodium);
 }
 
-// The time's slot is reserved from the first paint: wide enough for "09:05 PM" with the
-// letter spacing, and one line tall even while empty (an empty flex item has no height). The
-// line then wraps the same before and after the time appears, so the sign never moves. At the
-// end of the line the empty slot does not show.
 .time {
   min-inline-size: 9.5ch;
   min-block-size: calc(var(--font-size-3xs) * var(--line-height-normal));

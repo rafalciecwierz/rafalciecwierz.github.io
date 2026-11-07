@@ -11,7 +11,6 @@ export type Tool = {
 export type ToolGroup = {
   id: string;
   name: string;
-  // The AI group leads its board and gets an accent.
   isHighlighted: boolean;
   tools: readonly Tool[];
 };

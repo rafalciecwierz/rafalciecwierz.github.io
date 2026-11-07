@@ -11,8 +11,6 @@ import { type CopyResult, copyText } from '@/services';
 import { COPY_RESET_DELAY } from './useCopyToClipboard.constants';
 import type { CopyToClipboard } from './useCopyToClipboard.types';
 
-// Copies text and reports what happened for a few seconds, so a button can say "Copied" and a
-// live region can announce it. The browser API lives in the clipboard service.
 export function useCopyToClipboard(): CopyToClipboard {
   const [result, setResult] = useState<CopyResult | null>(null);
   const timer: RefObject<number | undefined> = useRef<number | undefined>(

@@ -22,7 +22,6 @@ import { CONTACT_TITLE_ID } from './contact.constants';
 import styles from './contact.module.scss';
 import type { ContactProps } from './contact.types';
 
-// "Climb with me.": availability, the channels and the CV. No phone number (brief 4.9).
 export function Contact({ contact, profile }: ContactProps): ReactElement {
   return (
     <Section

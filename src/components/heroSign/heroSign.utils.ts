@@ -1,7 +1,5 @@
 import type { TextLetter, TextWord } from '@/utils';
 
-// The key of the first letter that matches the perch letter, compared in uppercase because the
-// sign is set in capitals. Null when the name has no such letter: the runner is then left out.
 export function perchLetterKey(
   words: readonly TextWord[],
   perchLetter: string,

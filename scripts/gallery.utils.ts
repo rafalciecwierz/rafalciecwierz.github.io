@@ -28,8 +28,6 @@ export function resolveLink(
   return link.endsWith('/') ? join(file, PAGE_FILE_NAME) : file;
 }
 
-// The local links in a page that point to no file. `exists` is passed in, so the check can
-// be tested without a real folder.
 export function findBrokenLinks(
   html: string,
   pageDirectory: string,
@@ -81,7 +79,6 @@ export function applyCorrections(
   return corrected;
 }
 
-// Adds the draft note as the last element of the page's body.
 export function addDraftNote(html: string, note: string): string {
   const end: number = html.lastIndexOf('</body>');
   if (end === -1) {

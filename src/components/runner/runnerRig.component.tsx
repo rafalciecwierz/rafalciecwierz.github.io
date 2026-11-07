@@ -34,11 +34,6 @@ function isRigPart(name: string | null): name is RigPart {
   );
 }
 
-// The runner as a puppet for motion code. It draws the figure once, and its handle redraws it
-// for every frame of a move: GSAP calls set() about 60 times a second, and set() writes the SVG
-// attributes directly. A React render per frame would be far slower, and nothing on the page
-// depends on the figure's state. Only motion components use it, and only inside an SVG that is
-// already decorative. Its first frame is the standing pose at (0, 0) until set() is called.
 export function RunnerRig({ ref, tone }: RunnerRigProps): ReactElement {
   const placeRef: RefObject<SVGGElement | null> = useRef<SVGGElement>(null);
   const spinRef: RefObject<SVGGElement | null> = useRef<SVGGElement>(null);

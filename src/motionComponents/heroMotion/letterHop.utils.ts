@@ -4,13 +4,8 @@ import { clamp, easeInOutQuad } from '@/utils';
 import { GLYPH_SCAN, JUMP, RIG_SCALE } from './heroMotion.constants';
 import type { GlyphTop, Platform, PoseAt, RigSpot } from './heroMotion.types';
 
-// LetterHop as pure functions: where the top of a glyph is, and where the runner is at each
-// moment of a jump or a trick.
-
-// The top edge of a glyph drawn on a canvas, from its pixels (RGBA, row by row). It walks the
-// columns from the left; in each, the first ink from the top is that column's top. The highest
-// of those is the glyph's top, and x is the middle of the columns that reach it (within a
-// pixel), so he lands on the middle of the Ł's stem or of the Ć's acute.
+// In each column the first ink from the top is its top; x is the middle of the columns that
+// reach the highest one, so he lands on the middle of the Ł's stem or of the Ć's acute.
 export function glyphTop(
   pixels: Uint8ClampedArray,
   width: number,
@@ -41,12 +36,10 @@ export function glyphTop(
   return { x: (first + last) * GLYPH_SCAN.half, top: best - baseline };
 }
 
-// His size on a sign of this font size.
 export function rigScale(fontPx: number): number {
   return clamp(fontPx * RIG_SCALE.perFontPx, RIG_SCALE.min, RIG_SCALE.max);
 }
 
-// How high a jump of this distance arcs, and how long it takes (seconds).
 export function jumpArc(distance: number, scale: number): number {
   return (JUMP.arcBase + distance * JUMP.arcPerPx) * (scale / JUMP.arcScale);
 }
@@ -59,7 +52,6 @@ export function jumpDuration(distance: number): number {
   );
 }
 
-// The pose through a plain jump: crouch to reach, reach to tuck, tuck to land.
 export function jumpPose(progress: number): RigState['pose'] {
   if (progress < JUMP.reachEnd) {
     return mixPose(POSES.crouch, POSES.reach, progress / JUMP.reachEnd);
@@ -76,7 +68,6 @@ export function jumpPose(progress: number): RigState['pose'] {
   );
 }
 
-// Him standing (or crouched) at a spot, in a pose.
 export function stateAt(spot: RigSpot, pose: RigState['pose']): RigState {
   return {
     x: spot.x,
@@ -89,7 +80,6 @@ export function stateAt(spot: RigSpot, pose: RigState['pose']): RigState {
   };
 }
 
-// A moment of a jump from one spot to a platform: a straight line with a parabola on top.
 export function jumpState(
   from: RigSpot,
   to: Platform,

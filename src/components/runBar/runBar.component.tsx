@@ -7,11 +7,6 @@ import { PERCENT, PERCENT_DECIMALS } from './runBar.constants';
 import styles from './runBar.module.scss';
 import type { RunBarProps, RunTick } from './runBar.types';
 
-// The foot of the pinned career run: the link that skips it and the progress bar with a tick
-// for each job. Hidden in the list, where there is nothing to skip; shown when CSS makes the
-// career the run (src/styles/_careerRun.scss). The skip link comes first, so a keyboard user
-// reaches it before anything inside the run. The bar only repeats what the scroll shows, so
-// it is hidden from screen readers.
 export function RunBar({
   ticks,
   skipLabel,

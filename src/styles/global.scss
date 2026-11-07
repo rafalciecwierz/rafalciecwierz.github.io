@@ -1,5 +1,3 @@
-// Global styles: the tokens, the fonts and the page-wide base. Imported once, by the browser
-// entry (src/app/entryClient.tsx). Everything else is styled by a component's CSS Module.
 @use 'tokens';
 @use 'fonts';
 
@@ -10,7 +8,6 @@
 }
 
 html {
-  // An anchor jump stops below the fixed header instead of under it.
   scroll-padding-top: var(--layout-header-height);
   background: var(--color-night);
   color: var(--color-chalk);
@@ -25,14 +22,8 @@ body {
   font-size: var(--font-size-md);
   font-weight: var(--font-weight-regular);
   line-height: var(--line-height-body);
-  // `clip`, not `hidden`: it cuts off sideways overflow without making the body a scroll
-  // container, which would break `position: sticky` (the pinned career run).
   overflow-x: clip;
 }
-
-// No CSS smooth scrolling: Lenis scrolls smoothly when motion is allowed (src/motion/lenis.ts),
-// and `scroll-behavior: smooth` would fight it on every frame. Without Lenis (reduced motion,
-// or before the motion layer loads), an anchor link jumps.
 
 a {
   color: var(--color-sodium);
@@ -44,7 +35,6 @@ a:hover {
   text-decoration-thickness: var(--border-medium);
 }
 
-// One focus style for the whole site, shown for keyboard focus only.
 :focus-visible {
   outline: var(--border-thick) solid var(--color-sodium);
   outline-offset: var(--border-thick);
@@ -55,7 +45,6 @@ svg {
   display: block;
 }
 
-// Margins and list styles come from the components, not from the browser.
 h1,
 h2,
 h3,
@@ -76,14 +65,11 @@ ol {
   list-style: none;
 }
 
-// Buttons and inputs inherit the page's font instead of the browser's.
 button,
 input {
   font: inherit;
 }
 
-// The reduced-motion path: no transition or CSS animation runs. `none`, not a tiny duration,
-// so code that measures an element never reads a value halfway through a transition.
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

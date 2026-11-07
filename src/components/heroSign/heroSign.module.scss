@@ -5,8 +5,6 @@
   margin-bottom: clamp(1.25rem, 3vw, 2.25rem);
 }
 
-// The steel truss that holds the sign up, fading out downwards. The stroke colour sits inside
-// the SVG data URI (%23 is "#"), where a token cannot reach.
 .truss {
   position: absolute;
   inset: 42% -1% -150px;
@@ -17,8 +15,6 @@
   mask-image: linear-gradient(to bottom, var(--color-night) 40%, transparent);
 }
 
-// The size comes from the container's width on the first paint (tokens.scss), so the font swap
-// and the layout never resize it.
 .name {
   font-family: var(--font-display);
   font-size: var(--font-size-name);
@@ -33,11 +29,9 @@
   }
 }
 
-// Two stacked words on phones, one line from 900px.
 .word {
   display: block;
 
-  // Room for the acute of the Ć above the tight line.
   & + & {
     margin-top: 0.1em;
   }
@@ -51,13 +45,6 @@
   }
 }
 
-// Each letter is lit from below: a gradient in the shape of the glyph, with a sodium glow.
-//
-// The letter itself is painted in a solid colour, and the gradient is a copy of the glyph laid
-// over it (::after, from data-letter). Text painted transparent, as background-clip: text needs,
-// does not count for Largest Contentful Paint, and the name must be the page's LCP element
-// (brief section 8). The padding lets the gradient reach the acute of the Ć above the tight
-// line box.
 .letter {
   position: relative;
   display: inline-block;
@@ -82,19 +69,11 @@
   }
 }
 
-// The letter the runner stands on. The runner is its sibling, not its child, so the letter's
-// glow filter does not light him up.
 .perch {
   position: relative;
   display: inline-block;
 }
 
-// The runner's feet on the top of the Ł's stem, his hip above its centre. The offsets are in
-// em, so they follow the letter's size at every width. They were measured once in the browser
-// (task 3.8) with the reference's pixel scan of the glyph in Big Shoulders Display 900: the
-// stem's top is 0.188em from the left of this box and 0.006em below its top.
-//
-// His height follows the letter too: --perched-runner-height, set by HeroContent.
 .runner {
   position: absolute;
   top: 0.006em;

@@ -16,7 +16,6 @@ import { ABOUT_TITLE_ID } from './about.constants';
 import styles from './about.module.scss';
 import type { AboutProps } from './about.types';
 
-// "Warm-up": who Rafał is, in three paragraphs, and four facts as big numbers on the wall.
 export function About({ about }: AboutProps): ReactElement {
   return (
     <Section

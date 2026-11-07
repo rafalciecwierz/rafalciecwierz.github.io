@@ -16,7 +16,6 @@ import { NOT_FOUND_TITLE_ID } from './notFound.constants';
 import styles from './notFound.module.scss';
 import type { NotFoundProps } from './notFound.types';
 
-// The 404 page: the hero's night city without the sign, a short line and the way back home.
 export function NotFound({ notFound, homeUrl }: NotFoundProps): ReactElement {
   return (
     <Section

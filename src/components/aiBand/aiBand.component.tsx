@@ -5,8 +5,6 @@ import { TextLink } from '@/components/textLink';
 import styles from './aiBand.module.scss';
 import type { AiBandProps } from './aiBand.types';
 
-// The band above the stack boards: how AI works alongside every tool below, with a link down to
-// the section about it. An aside, named by its title, because it comments on the boards.
 export function AiBand({
   title,
   text,

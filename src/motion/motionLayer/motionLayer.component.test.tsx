@@ -8,8 +8,6 @@ import { setMediaMatches } from '@/test/matchMedia';
 import { MotionLayer } from './motionLayer.component';
 import type { MotionLoader, MotionModule } from './motionLayer.types';
 
-// A stand-in motion component that records when it mounts and unmounts, and the loader that
-// "downloads" it.
 function createFakeMotion(): {
   load: Mock<MotionLoader>;
   onMount: Mock<() => void>;
@@ -53,7 +51,6 @@ describe('MotionLayer', (): void => {
     const { load, onMount } = createFakeMotion();
 
     render(<MotionLayer load={load} />);
-    // Longer than the idle fallback, so the layer has had its chance to load.
     await new Promise<void>((resolve: () => void): void => {
       setTimeout(resolve, 400);
     });
@@ -65,7 +62,6 @@ describe('MotionLayer', (): void => {
   it('never loads its motion component when its media query does not match', async (): Promise<void> => {
     const { load, onMount } = createFakeMotion();
 
-    // The stand-in answers every query with "no": reduced motion is off, the media is wrong.
     render(<MotionLayer load={load} media="(width >= 900px)" />);
     await new Promise<void>((resolve: () => void): void => {
       setTimeout(resolve, 400);

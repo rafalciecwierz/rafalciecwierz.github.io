@@ -1,15 +1,12 @@
 import { FOCUSABLE_SELECTOR } from './useFocusTrap.constants';
 
-// The elements inside the container that Tab can reach, in document order.
 export function focusableIn(container: HTMLElement): HTMLElement[] {
   return Array.from(
     container.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR),
   );
 }
 
-// Where Tab should go so focus never leaves the trap. Only the two ends need help: from the
-// last element forward to the first, and from the first backward to the last. Anywhere else
-// the browser's own Tab order is right, so the answer is null.
+// Only the two ends need help; anywhere else the browser's own Tab order is right (null).
 export function wrapFocusTarget(
   elements: readonly HTMLElement[],
   current: Element | null,

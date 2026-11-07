@@ -28,7 +28,6 @@
   text-transform: uppercase;
 }
 
-// A promoted job covers two moves: "Move 03 · New roof / Move 04 · The crux".
 .mark + .mark::before {
   content: ' / ';
 }
@@ -42,10 +41,6 @@
   text-transform: uppercase;
 }
 
-// In the career run (the career-run mixin, src/styles/_careerRun.scss) the card floats over
-// the city on its own: the run draws the real buildings, so the small one goes, the card is
-// opaque (no sign shows through the text) and casts a shadow, and only the move the runner
-// is on (data-current) is named, without the slash.
 @include career-run {
   :global([data-career-run]) {
     .moveCard {

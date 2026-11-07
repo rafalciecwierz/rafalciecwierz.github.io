@@ -13,8 +13,6 @@ import styles from './careerRunScene.module.scss';
 import type { Facade, RunBuildingProps } from './careerRunScene.types';
 import { RunFacade } from './runFacade.component';
 
-// One company in the run: its base with the company's sign and dates on a dark plate, and a
-// tower painted "Promoted" for each promotion. The towers stand on the base's right end.
 export function RunBuilding({
   building,
   job,

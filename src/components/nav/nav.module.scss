@@ -25,7 +25,6 @@
   }
 }
 
-// The Menu and Close buttons exist only for the mobile menu.
 .menuButton,
 .closeButton {
   display: none;
@@ -36,7 +35,6 @@
     display: block;
   }
 
-  // A full-screen layer over the page, hidden until the menu opens.
   .nav {
     position: fixed;
     inset: 0;

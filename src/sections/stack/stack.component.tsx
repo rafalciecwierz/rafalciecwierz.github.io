@@ -18,8 +18,6 @@ import styles from './stack.module.scss';
 import type { StackProps } from './stack.types';
 import { boardRows, toolTotal } from './stack.utils';
 
-// "Kit": the AI band, then one board per experience level. Strong leads on its own; Medium and
-// Low share the row below it.
 export function Stack({ stack }: StackProps): ReactElement {
   function renderBoard(level: StackLevel): ReactElement {
     const rows: BoardRow[] = boardRows(stack, level);

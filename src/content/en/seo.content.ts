@@ -1,7 +1,5 @@
 import type { Seo } from '../seo.types';
 
-// Brief section 9: the home title as written there, its description from the tagline and
-// availability line. The image alt text and the 404 page's head are new copy (task 3.10).
 export const seo: Seo = {
   imageAlt:
     'Rafał Ciećwierz, Frontend Engineer, in lit letters over a city skyline at night',

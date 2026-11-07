@@ -4,8 +4,6 @@ import { MotionLayer, type MotionModule } from '@/motion/motionLayer';
 
 import type { AppProps } from './app.types';
 
-// Loads the page-wide motion (smooth scroll) as its own chunk. The import() must stay here:
-// a static import would put GSAP and Lenis into the initial bundle (section 13).
 async function loadRootMotion(): Promise<MotionModule> {
   const { RootMotion } =
     await import('@/motionComponents/rootMotion/rootMotion.component');

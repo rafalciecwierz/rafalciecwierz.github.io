@@ -24,10 +24,6 @@ import styles from './leapScene.module.scss';
 import type { LeapSceneProps, SceneRect } from './leapScene.types';
 import { distantBuildings } from './leapScene.utils';
 
-// "The leap": a gap jump from the known roof to one in the fog. This is the scene after the
-// landing, the version for the static page and for reduced motion; ProcessMotion plays the
-// jump itself, with bullet time at the apex. Decorative: the section's text says what it
-// means. Everything but the replay button sits in a "camera" group, so the motion can zoom in.
 export function LeapScene({
   signs,
   replayLabel,
@@ -36,7 +32,6 @@ export function LeapScene({
 }: LeapSceneProps): ReactElement {
   const id: string = useId();
   const fogId: string = `${id}-fog`;
-  // He stands on the landing roof's ledge, placed by his feet.
   const runner: RunnerBox = runnerBox(solvePose(POSES.stand));
   const feet: number = runner.minY + runner.height;
   const runnerPlace: string = `translate(${String(LANDED.x)} ${String(LANDING_ROOF.top - LEDGE.rise)}) scale(${String(LANDED.scale)}) translate(0 ${(-feet).toFixed(1)})`;
@@ -95,7 +90,6 @@ export function LeapScene({
         </g>
       </svg>
       {children}
-      {/* Hidden until the motion layer has loaded: without it there is nothing to replay. */}
       <div
         className={styles.replay}
         data-motion-target={MOTION_TARGETS.leapReplay}

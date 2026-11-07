@@ -1,6 +1,5 @@
 import type { About } from '../about.types';
 
-// Brief 4.3; each fact restates the brief.
 export const about: About = {
   heading: { number: '01', kicker: 'Warm-up', title: 'About' },
   paragraphs: [

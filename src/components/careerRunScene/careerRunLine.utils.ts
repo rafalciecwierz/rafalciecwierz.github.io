@@ -1,8 +1,6 @@
 import { LINE, STAGE_SWITCH } from './careerRunScene.constants';
 import type { RunRoof, RunSegment } from './careerRunScene.types';
 
-// The runner's line over the roofs (part of careerRunLayout).
-
 // Runs across every roof, a jump between each two, and the wait on the last one.
 export function runLine(roofs: readonly RunRoof[]): RunSegment[] {
   const line: RunSegment[] = [];

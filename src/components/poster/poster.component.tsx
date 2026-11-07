@@ -6,9 +6,6 @@ import { classNames, hashString, tornEdge } from '@/utils';
 import styles from './poster.module.scss';
 import type { PosterProps } from './poster.types';
 
-// A recommendation wheat-pasted on the concrete wall: quoted word for word, signed with the
-// author's first name and surname initial (brief section 5.6). The torn edge is seeded by the
-// author's name, so each poster keeps its own shape on every visit.
 export function Poster({
   quote,
   heading,

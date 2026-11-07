@@ -11,33 +11,27 @@ import {
   MS_PER_SECOND,
 } from './lenis.constants';
 
-// The running Lenis, or null while smooth scrolling is off (reduced motion, or before it starts).
 let activeLenis: Lenis | null = null;
 
-// A jump to a section that must not be undone by a smooth scroll still easing out. Lenis keeps
-// animating towards its own target for a moment after the wheel stops, and a link's native jump
-// made in that moment was pulled back ("Skip the run" needed two clicks, task 3.19). An
-// immediate Lenis scroll stops that animation and lands on the target at once; the browser's own
-// jump that follows the click then changes the URL and moves the focus, as before. Without
-// Lenis there is no animation to stop, and the browser's jump is enough.
+// Lenis keeps easing towards its own target for a moment after the wheel stops, and a link's
+// native jump made then was pulled back. An immediate Lenis scroll stops that animation; the
+// browser's own jump that follows still changes the URL and moves the focus.
 export function jumpTo(target: Element): void {
   activeLenis?.scrollTo(target, { immediate: true });
 }
 
-// Starts smooth scrolling and returns the function that stops it (DECISIONS.md #004). Only the
-// root motion component calls it, and only when reduced motion is off.
+// Only the root motion component calls it, and only when reduced motion is off (DECISIONS.md
+// #004).
 //
 // Lenis and ScrollTrigger must agree on the scroll position in every frame, so:
 // - GSAP's ticker drives Lenis (one animation loop instead of two), and
 // - every Lenis scroll updates ScrollTrigger at once.
 export function startSmoothScroll(): () => void {
   const lenis: Lenis = new Lenis({
-    // A click on a link to a section scrolls there smoothly. The browser still changes the URL
-    // and moves the focus start point, and Lenis stops below the fixed header because it reads
+    // The browser still changes the URL, and Lenis stops below the fixed header because it reads
     // the page's scroll-padding-top.
     anchors: true,
-    // Lenis stops while <html> has overflow: hidden (useScrollLock: the mobile menu, a dialog)
-    // and starts again when the lock ends.
+    // Lenis stops while <html> has overflow: hidden (useScrollLock) and starts again after.
     autoToggle: true,
     // Scrollable boxes inside the page, such as a long dialog, keep their native scroll.
     allowNestedScroll: true,

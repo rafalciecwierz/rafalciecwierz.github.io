@@ -2,10 +2,8 @@ import type { SectionHeading } from './shared.types';
 
 export type Quote = {
   id: string;
-  // First name and surname initial, as the brief asks (section 5.6).
   author: string;
   role: string;
-  // Word for word; shortened only with "…".
   paragraphs: readonly string[];
 };
 
@@ -14,7 +12,6 @@ export type Team = {
   intro: string;
   posterHeading: string;
   source: string;
-  // Under the author's name: "Frontend Developer · Mood up, 2024".
   caption: (role: string, source: string) => string;
   quotes: readonly Quote[];
 };

@@ -4,7 +4,6 @@ import { LAMP } from './careerRunScene.constants';
 import styles from './careerRunScene.module.scss';
 import type { RunStreetProps } from './careerRunScene.types';
 
-// The street under the line: the ground, and a sodium lamp every 260 units with its glow.
 export function RunStreet({ box }: RunStreetProps): ReactElement {
   const glowId: string = useId();
   const right: number = box.minX + box.width;

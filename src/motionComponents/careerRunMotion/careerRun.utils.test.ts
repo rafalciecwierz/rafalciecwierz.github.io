@@ -10,7 +10,6 @@ import {
 } from './careerRunCamera.utils';
 import type { RunFrame, RunView } from './careerRunMotion.types';
 
-// The real career, oldest first: two promoted jobs, then two with one role each.
 const ROLE_COUNTS: readonly number[] = [2, 2, 1, 1];
 const LAYOUT: CareerRunLayout = careerRunLayout(ROLE_COUNTS);
 
@@ -63,7 +62,6 @@ describe('runnerAt', (): void => {
 
 describe('stageCard', (): void => {
   it('finds the card of each stage: newest first, the next roof first of all', (): void => {
-    // Stages 0 and 1 are the oldest job (card 4), 4 and 5 the two newest (cards 2 and 1).
     expect(stageCard(ROLE_COUNTS, 0)).toEqual({ card: 4, role: 0 });
     expect(stageCard(ROLE_COUNTS, 1)).toEqual({ card: 4, role: 1 });
     expect(stageCard(ROLE_COUNTS, 2)).toEqual({ card: 3, role: 0 });
@@ -109,7 +107,6 @@ describe('layerTransform', (): void => {
   it('puts the focus point on the anchor', (): void => {
     const view: RunView = { scale: 2, anchorX: 500, anchorY: 300 };
 
-    // The focus (100, -50) is 200 and 50 units from the layer's corner (-100, -100).
     expect(
       layerTransform({ x: 100, y: -50 }, { minX: -100, minY: -100 }, view),
     ).toBe('translate3d(100.0px, 200.0px, 0) scale(2.0000)');
@@ -121,7 +118,6 @@ describe('rigCameraTransform', (): void => {
     const view: RunView = { scale: 2, anchorX: 500, anchorY: 300 };
     const frame: RunFrame = runnerAt(LAYOUT, 0);
 
-    // He starts at x 40 on the 170-unit roof: 500 - 40 × 2 = 420 and 300 + 170 × 2 = 640.
     expect(rigCameraTransform(frame, view)).toBe(
       'translate(420.0 640.0) scale(2.0000)',
     );

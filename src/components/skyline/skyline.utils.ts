@@ -31,8 +31,7 @@ function round(value: number): number {
   return Math.round(value * COORDINATE_PRECISION) / COORDINATE_PRECISION;
 }
 
-// One row of buildings, left to right. The random numbers are drawn in the reference's order
-// (width, height, antenna, roof box, windows, gap), so the city looks the same as there.
+// The random numbers are drawn in the reference's order, so the city looks the same as there.
 function drawLayer(
   spec: SkylineLayerSpec,
   random: () => number,
@@ -98,8 +97,6 @@ function drawLayer(
   }
 }
 
-// A city skyline drawn from a seed: the far row, then the near row in front of it, each
-// building with a few lit windows. The same seed always gives the same drawing.
 export function drawSkyline(seed: string): SkylineDrawing {
   const random: () => number = createRandom(hashString(seed));
   const buildings: SkylineBuilding[] = [];

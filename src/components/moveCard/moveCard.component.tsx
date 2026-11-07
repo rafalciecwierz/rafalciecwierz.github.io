@@ -6,10 +6,6 @@ import { MOTION_TARGETS } from '@/constants';
 import styles from './moveCard.module.scss';
 import type { MoveCardProps } from './moveCard.types';
 
-// One move of the career: its building, then the card with the move's name and the company.
-// The rest of the card (roles, dates, points, stack) comes in as children. The pinned career
-// run shows one card at a time and one move name of a promoted job at a time, so the card and
-// its move names are marked for it.
 export function MoveCard({
   marks,
   currentMark,

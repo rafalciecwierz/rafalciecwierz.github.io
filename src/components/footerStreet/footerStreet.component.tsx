@@ -16,10 +16,6 @@ import {
 import styles from './footerStreet.module.scss';
 import type { FooterStreetProps } from './footerStreet.types';
 
-// The street at the bottom of the page: a lamp with a squirrel on it, and the runner who has come down from the
-// rooftops, facing the viewer with an arm up and a speech bubble. This is the last frame of
-// his landing, and the whole scene for the static page and reduced motion; FooterMotion
-// animates the drop, the roll and the wave. Decorative.
 export function FooterStreet({
   bubble,
   ref,

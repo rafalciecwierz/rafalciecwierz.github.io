@@ -8,8 +8,6 @@ import styles from './sectionHeading.module.scss';
 import type { SectionHeadingProps } from './sectionHeading.types';
 import { sectionNumber } from './sectionHeading.utils';
 
-// The head of every section after the hero: the kicker (with the section's number), the big
-// title split into letters for the motion layer, and an optional intro.
 export function SectionHeading({
   heading,
   titleId,

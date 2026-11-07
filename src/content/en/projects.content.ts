@@ -1,7 +1,5 @@
 import type { Projects } from '../projects.types';
 
-// Brief 5.5.
-// Adding, removing or reordering a project only changes `items` below.
 export const projects: Projects = {
   heading: { number: '04', kicker: 'Spots', title: 'Projects' },
   intro: 'Where I train outside of work. Every project is a spot on the map.',
@@ -14,7 +12,6 @@ export const projects: Projects = {
     archived: 'Archived',
   },
   tagsLabel: 'Tags',
-  // The arrows are icons next to the links, hidden from screen readers.
   repoLink: 'Repository',
   demoLink: 'Live demo',
   panel: {
@@ -36,8 +33,6 @@ export const projects: Projects = {
       todo: 'Rafał to provide one or two sentences',
     },
   },
-  // Newest first, live before archived. Role and learned: Rafał's answers (3.11.2026).
-  // Screenshots: WebP files in public/projects/.
   items: [
     {
       id: 'ashenContracts',

@@ -20,16 +20,12 @@ import { HERO_TITLE_ID, PERCH_LETTER } from './hero.constants';
 import styles from './hero.module.scss';
 import type { HeroProps } from './hero.types';
 
-// Loads the hero's motion as its own chunk (docs/ARCHITECTURE.md section 13).
 async function loadHeroMotion(): Promise<MotionModule> {
   const { HeroMotion } =
     await import('@/motionComponents/heroMotion/heroMotion.component');
   return { default: HeroMotion };
 }
 
-// The summit: the name as a lit rooftop sign over the city at night, the role, and the two
-// actions a recruiter needs first. Everything here is in the pre-rendered HTML; HeroMotion
-// adds the sign flicker, the role flip, the window flicker and the runner's hops and tricks.
 export function Hero({ profile, hero }: HeroProps): ReactElement {
   const heroRef: RefObject<HTMLElement | null> = useRef<HTMLElement>(null);
 

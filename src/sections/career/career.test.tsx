@@ -73,7 +73,6 @@ describe('Career', (): void => {
   it('says a promotion in words and names the moves of each job', (): void => {
     render(<Career career={CAREER} availability="Open to roles." />);
 
-    // The run's city paints "Promoted" on the tower too, but it is hidden from screen readers.
     expect(
       screen.getByText('Promoted', {
         ignore: 'script, style, [aria-hidden="true"] *',

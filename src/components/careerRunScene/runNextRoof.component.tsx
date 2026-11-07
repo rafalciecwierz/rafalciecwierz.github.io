@@ -5,8 +5,6 @@ import { HALF, NEXT_ROOF } from './careerRunScene.constants';
 import styles from './careerRunScene.module.scss';
 import type { Crane, RunNextRoofProps } from './careerRunScene.types';
 
-// The roof that is not built yet: a dashed outline in scaffolding, a tower crane lifting a
-// beam over it, and its sign ("Next").
 export function RunNextRoof({ roof, sign }: RunNextRoofProps): ReactElement {
   const top: number = -roof.height;
   const right: number = roof.x + roof.width;

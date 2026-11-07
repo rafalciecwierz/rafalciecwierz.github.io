@@ -5,7 +5,6 @@ import { GREETING, RESIZE_SETTLE_MS, SCAN_IDLE } from './heroMotion.constants';
 import type { HeroRunner, RunnerParts } from './heroMotion.types';
 import { createHeroRunner } from './heroRunner.animation';
 
-// Runs a task in the browser's next idle moment, and returns the function that cancels it.
 function whenIdle(task: () => void): () => void {
   if ('requestIdleCallback' in window) {
     const handle: number = window.requestIdleCallback(task, {
@@ -23,9 +22,8 @@ function whenIdle(task: () => void): () => void {
   };
 }
 
-// Starts the runner: he waves once after the sign has lit (the greeting), and then LetterHop's
-// pointer easter egg: a click on a letter sends him there, a click on him plays the next trick. The sign is measured once its font has loaded
-// (the glyph scan needs the real font) and again after a resize. Returns the cleanup.
+// The sign is measured once the font has loaded (the glyph scan needs the real font) and again
+// after a resize. Returns the cleanup.
 export function startHeroInteractions(
   parts: RunnerParts,
   contextSafe: ContextSafe,
@@ -36,7 +34,6 @@ export function startHeroInteractions(
   let cancelScan: (() => void) | null = null;
   let greetingTimer: number | undefined;
 
-  // One click handler per letter, kept so they can be removed again.
   const letterClicks: (() => void)[] = parts.letters.map(
     (letter: HTMLElement): (() => void) =>
       (): void => {

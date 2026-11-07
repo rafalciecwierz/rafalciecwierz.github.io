@@ -1,6 +1,5 @@
 import type { IconName } from './icon.types';
 
-// Every icon is drawn with square-capped lines on a 24 × 24 grid.
 export const ICON_VIEW_BOX: string = '0 0 24 24';
 
 export const ICON_STROKE_WIDTH: number = 2.4;

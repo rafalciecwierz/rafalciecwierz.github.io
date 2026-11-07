@@ -10,7 +10,6 @@ import styles from './team.module.scss';
 import type { PosterLook, TeamProps } from './team.types';
 import { posterLook } from './team.utils';
 
-// "Spotters": recommendations from the team at Mood up, pasted on the wall as posters.
 export function Team({ team }: TeamProps): ReactElement {
   return (
     <Section

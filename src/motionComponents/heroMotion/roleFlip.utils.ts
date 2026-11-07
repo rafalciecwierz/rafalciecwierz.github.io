@@ -1,8 +1,7 @@
 import { ROLE_FLIP } from './heroMotion.constants';
 
-// One frame of the split-flap scramble from one title to the next. Each letter shows a random
-// glyph until its moment to settle, then the new title's letter; letters settle left to right,
-// and spaces stay spaces. `random` is passed in, so the test can make it repeatable.
+// Letters settle left to right, and spaces stay spaces. `random` is passed in, so the test can
+// make it repeatable.
 export function scrambleText(
   from: string,
   to: string,
@@ -25,8 +24,6 @@ export function scrambleText(
   return text;
 }
 
-// How long the whole flip runs, in seconds, after its start delay: one flip to each title and
-// one back to the role, with a hold on each title.
 export function roleFlipDuration(titleCount: number): number {
   return (
     (titleCount + 1) * ROLE_FLIP.flipDuration + titleCount * ROLE_FLIP.hold

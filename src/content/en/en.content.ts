@@ -12,7 +12,6 @@ import { seo } from './seo.content';
 import { stack } from './stack.content';
 import { team } from './team.content';
 
-// The English content. Typing it as Content makes the compiler check every area against the shape.
 export const en: Content = {
   seo,
   profile,

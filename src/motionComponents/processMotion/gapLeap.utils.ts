@@ -13,8 +13,6 @@ import {
   SLOWEST_SHARE,
 } from './gapLeap.constants';
 
-// The leap as pure functions of its progress (0 to 1), in the scene's units.
-
 // How deep in bullet time the move is: 0 is real time, 1 is the slowest.
 export function slowAt(progress: number): number {
   return (
@@ -23,7 +21,6 @@ export function slowAt(progress: number): number {
   );
 }
 
-// The speed of time at this point of the move, for GSAP's timeScale.
 export function timeScaleAt(progress: number): number {
   return 1 - SLOWEST_SHARE * slowAt(progress);
 }
@@ -48,7 +45,6 @@ function flightPose(flight: number): RigState['pose'] {
   );
 }
 
-// Where he is and what he does at this point of the move.
 export function leapState(progress: number): RigState {
   const { takeOffFeet, landingFeet, landedX } = LEAP_GEOMETRY;
   if (progress <= 0) {
@@ -68,7 +64,6 @@ export function leapState(progress: number): RigState {
   if (progress < PHASES.flightEnd) {
     const flight: number =
       (progress - PHASES.runUpEnd) / (PHASES.flightEnd - PHASES.runUpEnd);
-    // A parabola over the straight line between the two ledges.
     const rise: number =
       FLIGHT.arcFactor * FLIGHT.height * flight * (1 - flight);
     return at(

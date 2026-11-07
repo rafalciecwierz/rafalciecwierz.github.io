@@ -13,8 +13,6 @@ import { padNumber } from '@/utils';
 import styles from './spotPanel.module.scss';
 import type { PanelField, SpotPanelProps } from './spotPanel.types';
 
-// The details of one project, shown in the dialog: the map zoomed on its pin, what it is, its
-// stack, and the fields Rafał still has to write (a visible TODO until then, task 3.18).
 export function SpotPanel({
   project,
   index,

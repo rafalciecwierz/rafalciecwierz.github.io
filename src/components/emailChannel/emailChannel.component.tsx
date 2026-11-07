@@ -13,10 +13,6 @@ import { joinEmail } from '@/utils';
 import styles from './emailChannel.module.scss';
 import type { EmailChannelProps } from './emailChannel.types';
 
-// The email address with a Copy button. The address is joined from its parts only after
-// hydration, so it is never in the pre-rendered HTML (brief section 4.9); until then its line
-// is reserved, so nothing below moves when it appears. If the clipboard is blocked, the address
-// is selected instead, and a live region tells screen reader users either way.
 export function EmailChannel({
   email,
   labels,

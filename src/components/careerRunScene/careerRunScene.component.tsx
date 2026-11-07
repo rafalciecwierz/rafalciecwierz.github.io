@@ -24,12 +24,6 @@ function viewBoxOf(box: WorldBox): string {
   return `${String(box.minX)} ${String(box.minY)} ${String(box.width)} ${String(box.height)}`;
 }
 
-// "The line" as one city: a building per company (oldest on the left), a tower per promotion,
-// the unbuilt next roof, the street and the far city behind. Drawn at build time and hidden:
-// only the pinned career run (CareerRunMotion, 900 px and wider, motion allowed) shows it,
-// moving the two layers with CSS transforms. Decorative: the list of jobs says it all in words.
-// Each layer is drawn in its own units at 1 px per unit; the motion only translates and
-// scales it, so the browser never has to paint the SVG again while it scrolls.
 export function CareerRunScene({
   jobs,
   promotedLabel,

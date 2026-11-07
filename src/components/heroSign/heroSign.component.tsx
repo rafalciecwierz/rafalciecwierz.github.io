@@ -9,11 +9,6 @@ import styles from './heroSign.module.scss';
 import type { HeroSignProps } from './heroSign.types';
 import { perchLetterKey } from './heroSign.utils';
 
-// The name as a lit rooftop sign: the page's h1, and the largest text on screen (the LCP).
-// Screen readers get the name once, whole; the letters are for the eye, one element each, so
-// the motion layer can flicker them on and the runner can jump between them (task 3.14).
-// The runner perches on the Ł here, placed with CSS relative to the letter (heroSign.module.scss),
-// so he is in the pre-rendered HTML and needs no script.
 export function HeroSign({
   name,
   titleId,
@@ -51,8 +46,6 @@ export function HeroSign({
   return (
     <div className={styles.sign}>
       <div className={styles.truss} aria-hidden="true" />
-      {/* A name is not translated. Browser translation (Chrome with Google Translate) rewrote the
-          per-letter spans and mangled the sign, so translation is off for the heading. */}
       <h1 id={titleId} className={styles.name} translate="no">
         <VisuallyHidden>{name}</VisuallyHidden>
         <span aria-hidden="true">

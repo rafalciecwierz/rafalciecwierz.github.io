@@ -20,8 +20,7 @@ import {
 } from './gapLeap.utils';
 import type { LeapParts, LeapTargets } from './processMotion.types';
 
-// Draws one frame of the leap. The runner, the after-images and the vignette are the motion
-// layer's own; the camera and the fog belong to the static scene, so both cameras move together.
+// The camera and the fog belong to the static scene, so both cameras move together.
 export function drawLeap(parts: LeapParts, progress: number): void {
   const state: RigState = leapState(progress);
   const slow: number = slowAt(progress);
@@ -43,10 +42,8 @@ export function drawLeap(parts: LeapParts, progress: number): void {
   );
 }
 
-// GapLeap as one paused tween. GSAP moves `progress` from 0 to 1 and every frame is drawn from
-// it. Bullet time is the tween's own timeScale: each frame sets it from the progress, so time
-// slows down smoothly around the apex and snaps back for the landing. play() starts it and
-// restart() replays it.
+// Bullet time is the tween's own timeScale: each frame sets it from the progress, so time slows
+// down smoothly around the apex and snaps back for the landing.
 export function createGapLeap(parts: LeapParts): gsap.core.Tween {
   const clock: { progress: number } = { progress: 0 };
   const leap: gsap.core.Tween = gsap.to(clock, {
@@ -62,8 +59,7 @@ export function createGapLeap(parts: LeapParts): gsap.core.Tween {
   return leap;
 }
 
-// Finds the static scene's parts the leap needs inside its frame, or null when one is missing
-// (then the leap does not run and the static scene stays as it is).
+// Null when a part is missing: then the static scene stays as it is.
 export function findLeapTargets(frame: Element): LeapTargets | null {
   const staticCamera: Element | null = motionTarget(
     frame,

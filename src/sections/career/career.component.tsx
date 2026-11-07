@@ -44,21 +44,12 @@ import {
   runTicks,
 } from './career.utils';
 
-// Loads the pinned career run as its own chunk, only from the desktop breakpoint, so phones
-// never download it (docs/ARCHITECTURE.md section 13).
 async function loadCareerRunMotion(): Promise<MotionModule> {
   const { CareerRunMotion } =
     await import('@/motionComponents/careerRunMotion/careerRunMotion.component');
   return { default: CareerRunMotion };
 }
 
-// "The line": the jobs as moves up the rooftops, newest first, starting with the roof that is
-// not built yet. This list is the whole career on phones, with reduced motion and without
-// JavaScript. From 900 px, CSS lays the section out as the run (DECISIONS.md #010): RunTrack
-// makes it as long as the run, its stage is held on screen while the page scrolls, the city
-// (CareerRunScene), the skip link and the progress bar (RunBar) show, and the cards float
-// over the city one at a time, starting with the first stage. The motion layer brings it to
-// life.
 export function Career({ career, availability }: CareerProps): ReactElement {
   const moves: string[][] = jobMoveNames(career.jobs, career.moveNames);
   const sectionRef: RefObject<HTMLElement | null> = useRef<HTMLElement>(null);
@@ -91,7 +82,6 @@ export function Career({ career, availability }: CareerProps): ReactElement {
                 intro={career.intro}
               />
             </Box>
-            {/* The section after the career is the team's. */}
             <RunBar
               ticks={runTicks(career.jobs, career.next.sign)}
               skipLabel={career.skipRun}

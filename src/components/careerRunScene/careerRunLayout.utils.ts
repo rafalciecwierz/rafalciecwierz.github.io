@@ -16,11 +16,9 @@ import type {
   WorldBox,
 } from './careerRunScene.types';
 
-// The career run worked out from the number of roles in each job (oldest first). The static
-// scene draws it and the motion layer moves the runner along it, so both always agree, and a
-// new job in the content gets its building without new numbers.
+// The static scene and the motion layer both use it, so they always agree, and a new job in
+// the content gets its building without new numbers.
 
-// The height of the roof for a role: the first role is level 0.
 function levelHeight(level: number): number {
   return LEVELS.first + LEVELS.step * level;
 }
@@ -57,7 +55,6 @@ function runBuildings(roleCounts: readonly number[]): RunBuilding[] {
   return buildings;
 }
 
-// The roofs in the order he crosses them: each building's base, then its towers.
 function runRoofs(buildings: readonly RunBuilding[]): RunRoof[] {
   return buildings.flatMap((building: RunBuilding): RunRoof[] => [
     {

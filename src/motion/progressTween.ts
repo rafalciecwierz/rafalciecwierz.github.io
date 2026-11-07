@@ -1,9 +1,7 @@
 import { gsap } from './gsap';
 
-// A tween of time only: GSAP moves `progress` from 0 to 1 over `duration` seconds (linearly)
-// and calls `onProgress` every frame. Motion that is drawn by a pure function of progress (the
-// runner's moves) uses it, so the maths stay in testable functions and GSAP only gives them
-// time, pausing and reverting.
+// A tween of time only. Motion drawn by a pure function of progress (the runner's moves) uses
+// it, so the maths stay testable and GSAP only gives them time, pausing and reverting.
 export function progressTween(
   duration: number,
   onProgress: (progress: number) => void,

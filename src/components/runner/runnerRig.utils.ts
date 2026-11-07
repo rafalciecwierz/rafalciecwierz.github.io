@@ -19,15 +19,11 @@ import type {
 } from './runner.types';
 import { pointsAttribute } from './runner.utils';
 
-// Pure functions behind RunnerRig: they turn a frame of motion (RigState) into SVG attributes.
-// Keeping them pure lets the tests check the maths without a browser.
-
 function isPose(angles: readonly number[]): angles is Pose {
   return angles.length === POSE_LENGTH;
 }
 
-// Blends two poses angle by angle: 0 gives `from`, 1 gives `to`. Every move of the runner is
-// a chain of these blends between the keyframe poses in POSES.
+// Every move of the runner is a chain of these blends between the keyframe poses.
 export function mixPose(from: Pose, to: Pose, amount: number): Pose {
   const mixed: number[] = from.map((angle: number, index: number): number =>
     lerp(angle, to[index] ?? angle, amount),
@@ -35,12 +31,10 @@ export function mixPose(from: Pose, to: Pose, amount: number): Pose {
   return isPose(mixed) ? mixed : from;
 }
 
-// The middle of the torso: the point he turns around in a roll or a flip.
 export function spinCentre(body: RunnerBody): Point {
   return [body.shoulder[0] / SIDES, body.shoulder[1] / SIDES];
 }
 
-// Every joint of the figure, for finding its lowest point.
 function joints(body: RunnerBody): Point[] {
   return [
     [0, 0],
@@ -53,9 +47,8 @@ function joints(body: RunnerBody): Point[] {
   ];
 }
 
-// How far below the hip the ground is. Normally that is the lower ankle plus the foot's
-// stroke. In a grounded roll the figure is turned, so the ground is under its lowest turned
-// joint (for example his back), and he rolls along the street instead of sinking into it.
+// In a grounded roll the ground is under the lowest turned joint (his back), so he rolls along
+// the street instead of sinking into it.
 export function rigFoot(
   body: RunnerBody,
   spin: number,
@@ -77,15 +70,12 @@ export function rigFoot(
   return Math.max(...turnedHeights) + FOOT_REACH;
 }
 
-// The transform that places the figure: its feet (or its lowest point in a roll) at (x, y),
-// scaled, and mirrored when he faces left. The figure is drawn with its hip at (0, 0), so it is lifted by `foot` first.
+// The figure is drawn with its hip at (0, 0), so it is lifted by `foot` first.
 export function rigTransform(state: RigState, foot: number): string {
-  // Facing left mirrors him horizontally around his hip.
   const scaleX: number = state.scale * (state.facing ?? 1);
   return `translate(${state.x.toFixed(1)} ${state.y.toFixed(1)}) scale(${scaleX.toFixed(SCALE_DECIMALS)} ${state.scale.toFixed(SCALE_DECIMALS)}) translate(0 ${(-foot).toFixed(1)})`;
 }
 
-// The rotation of a roll or a flip, around the middle of the torso; none when he is upright.
 export function spinTransform(body: RunnerBody, spin: number): string {
   if (spin === 0) {
     return '';
@@ -94,7 +84,6 @@ export function spinTransform(body: RunnerBody, spin: number): string {
   return `rotate(${spin.toFixed(1)} ${centreX.toFixed(1)} ${centreY.toFixed(1)})`;
 }
 
-// The attributes that draw each part of the figure, matching RunnerFigure's elements.
 export function rigPartAttributes(body: RunnerBody): RigPartAttributes {
   return {
     farLeg: { points: pointsAttribute(body.farLeg) },
@@ -109,9 +98,7 @@ export function rigPartAttributes(body: RunnerBody): RigPartAttributes {
   };
 }
 
-// The waving pose at this point of a wave (0 to 1): the raised arm's elbow and shoulder swing on
-// a sine. It starts and ends on POSES.wave, so a wave can follow raising the arm and end on the
-// still pose without a jump. Used by the footer's landing and the hero's greeting.
+// It starts and ends on POSES.wave, so a wave can follow raising the arm without a jump.
 export function wavePose(progress: number): Pose {
   const swing: number = Math.sin(progress * FULL_CYCLE * WAVE.cycles);
   const [lean, head, nearShoulder, nearElbow, farShoulder, , ...legs] =

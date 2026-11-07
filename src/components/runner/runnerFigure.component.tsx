@@ -10,9 +10,6 @@ import styles from './runner.module.scss';
 import type { RunnerBody, RunnerFigureProps } from './runner.types';
 import { pointsAttribute, solvePose } from './runner.utils';
 
-// The figure itself, as an SVG group with the hip at (0, 0): for a scene that places him with a
-// transform (the leap). Runner wraps it in its own <svg> for everywhere else. Each moving part
-// is marked with `data-rig-part`, so RunnerRig can redraw it in every frame of a move.
 export function RunnerFigure({
   pose,
   tone = 'profile',

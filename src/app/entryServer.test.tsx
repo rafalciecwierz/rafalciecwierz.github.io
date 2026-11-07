@@ -6,7 +6,6 @@ import { content } from '@/content';
 import type { RenderResult } from './app.types';
 import { render, ROUTE_PATHS, SITEMAP } from './entryServer';
 
-// Runs in Node, as the pre-render step does: no window and no document.
 describe('render', (): void => {
   it('pre-renders every route without browser APIs', (): void => {
     for (const path of ROUTE_PATHS) {

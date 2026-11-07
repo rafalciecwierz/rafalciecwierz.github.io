@@ -1,6 +1,5 @@
 import type { Contact } from '../contact.types';
 
-// Brief 4.9. The phone number is never shown on the site.
 export const contact: Contact = {
   heading: { number: '06', kicker: 'Contact', title: 'Climb with me.' },
   channels: {

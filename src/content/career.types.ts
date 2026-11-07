@@ -2,7 +2,6 @@ import type { NumberedSectionHeading } from './shared.types';
 
 export type YearMonth = {
   year: number;
-  // 1–12
   month: number;
 };
 
@@ -19,9 +18,7 @@ export type YearSpan = {
 export type Job = {
   id: string;
   company: string;
-  // The short name painted on the company's building in the career run.
   sign: string;
-  // More than one role means a promotion, shown as "first → second".
   roles: readonly [string, ...string[]];
   period: Period;
   points: readonly string[];
@@ -40,7 +37,6 @@ export type Career = {
   skipRun: string;
   promoted: string;
   stackLabel: string;
-  // The name of each move in the run, oldest first, ending with the unbuilt roof.
   moveNames: readonly string[];
   next: {
     sign: string;
@@ -49,10 +45,8 @@ export type Career = {
     text: string;
     cta: string;
   };
-  // Newest first, as the list shows them.
   jobs: readonly Job[];
   educationLabel: string;
-  // "Engineer's degree in Computer Science, 2015–2021"
   educationDetail: (degree: string, years: string) => string;
   education: Education;
 };

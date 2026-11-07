@@ -8,8 +8,7 @@ import {
   TOP_STEP_PERCENT,
 } from './tornEdge.constants';
 
-// A clip-path that makes a rectangle look like paper torn off a roll: a slightly uneven top
-// edge and a ragged bottom one. Seeded, so the build and the browser cut the same edge.
+// Seeded, so the build and the browser cut the same edge.
 export function tornEdge(seed: number): string {
   const random: () => number = createRandom(seed);
   const points: string[] = [];

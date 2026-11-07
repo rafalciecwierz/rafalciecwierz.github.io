@@ -3,11 +3,9 @@ import { describe, expect, it } from 'vitest';
 import { craneOver } from './careerRunCrane.utils';
 import type { Crane, Facade } from './careerRunScene.types';
 
-// The real next roof: 300 units wide at x 2210, its top 680 units above the street.
 const ROOF: Facade = { x: 2210, width: 300, height: 680 };
 const CRANE_SHAPE: Crane = craneOver(ROOF);
 
-// Every "x y" pair of a path made only of M and L commands.
 function pointsOf(path: string): [number, number][] {
   const numbers: number[] = path
     .replace(/[ML]/g, ' ')

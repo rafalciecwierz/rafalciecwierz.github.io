@@ -13,10 +13,6 @@ import styles from './spotMap.module.scss';
 import type { MapPoint, SpotMapProps, Street } from './spotMap.types';
 import { mapStreets, zoomViewBox } from './spotMap.utils';
 
-// The night map of the projects: a seeded street grid, a river, and one numbered pin per
-// project. It is a picture of the list beside it, so it is hidden from screen readers; every
-// action is also on the cards. Pointing at a pin highlights its card, and the reverse, and
-// clicking a pin opens the project like the card's button does.
 export function SpotMap({
   pins,
   hotIndex,

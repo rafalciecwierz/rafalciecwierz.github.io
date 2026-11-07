@@ -1,5 +1,5 @@
 // Step 5 of `pnpm build` (docs/ARCHITECTURE.md section 2): publishes the design prototypes
-// as static files at /design/, outside the React bundle (roadmap task 3.17). It runs after
+// as static files at /design/, outside the React bundle. It runs after
 // the pre-render, so the site's own pages exist when the gallery's links are checked.
 import { existsSync } from 'node:fs';
 import { cp, readdir, readFile, rm, writeFile } from 'node:fs/promises';
@@ -31,8 +31,8 @@ for (const entry of GALLERY_ENTRIES) {
   });
 }
 
-// Roadmap task 3.20: the published prototypes keep their draft copy, with the facts about
-// Rafał corrected and a note saying so. The build fails if a correction no longer matches.
+// The published prototypes keep their draft copy, with the facts about Rafał corrected and a
+// note saying so. The build fails if a correction no longer matches.
 const pages: Map<string, string> = new Map<string, string>();
 const texts: Map<string, DraftNoteText> = new Map<string, DraftNoteText>();
 for (const [folder, text] of Object.entries(DRAFT_NOTE_TEXTS)) {

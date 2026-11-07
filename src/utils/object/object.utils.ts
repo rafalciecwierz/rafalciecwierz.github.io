@@ -16,8 +16,7 @@ function joinPath(parent: string, key: string): string {
   return parent === '' ? key : `${parent}.${key}`;
 }
 
-// Walks objects and arrays and returns every other value with its path. Tests use it to check
-// the whole content at once: unique ids, valid links and every `null` being a listed TODO.
+// Lets tests check the whole content at once: unique ids, valid links and listed TODOs.
 export function collectLeaves(value: unknown, path: string = ''): Leaf[] {
   if (Array.isArray(value)) {
     return value.flatMap((item: unknown, index: number): Leaf[] =>

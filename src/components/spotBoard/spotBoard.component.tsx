@@ -11,14 +11,9 @@ import { PANEL_TITLE_ID } from './spotBoard.constants';
 import styles from './spotBoard.module.scss';
 import type { SpotBoardProps } from './spotBoard.types';
 
-// The projects as a map and a list that know about each other: pointing at a card lights its
-// pin and the reverse, and a card's button or its pin opens the project's details. It holds
-// that state, so the section stays a plain composition. The list grows from the content alone.
 export function SpotBoard({ projects }: SpotBoardProps): ReactElement {
   const [hotIndex, setHotIndex] = useState<number | null>(null);
   const [openIndex, setOpenIndex] = useState<number | null>(null);
-  // Each card's "Spot details" button, and the project whose button gets focus back when the
-  // panel closes.
   const openButtons: RefObject<(HTMLButtonElement | null)[]> = useRef<
     (HTMLButtonElement | null)[]
   >([]);
@@ -36,17 +31,10 @@ export function SpotBoard({ projects }: SpotBoardProps): ReactElement {
     setOpenIndex(index);
   }
 
-  // The panel's Close button: the Dialog closes when the state says so.
   function closePanel(): void {
     setOpenIndex(null);
   }
 
-  // The dialog has closed (Close, Escape): focus goes back to the project's card button. The
-  // browser's own focus return is not enough. It restores only what had focus before the
-  // dialog opened, and Safari does not focus a clicked button, a pin cannot hold focus, and
-  // Chrome skips it when the Close button leaves the page before the dialog closes. Focusing
-  // in closePanel() fails too, because the page behind an open modal dialog is inert. The
-  // dialog's close event comes after it has closed, when the page can take focus again.
   function handleDialogClosed(): void {
     const index: number | null = returnFocusIndex.current;
     returnFocusIndex.current = null;

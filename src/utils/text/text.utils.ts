@@ -1,9 +1,8 @@
 import { WHITESPACE } from './text.constants';
 import type { TextLetter, TextWord } from './text.types';
 
-// Splits a text into words, and each word into letters, so each letter can be styled or animated on its
-// own. Array.from splits by code point, so a letter such as "ć" stays one letter. The keys come
-// from the positions: the same text always gives the same keys, on the server and in the browser.
+// Array.from splits by code point, so "ć" stays one letter. Keys come from positions, so the
+// server and the browser agree.
 export function splitIntoWords(text: string): TextWord[] {
   const words: string[] = text.trim().split(WHITESPACE).filter(Boolean);
 

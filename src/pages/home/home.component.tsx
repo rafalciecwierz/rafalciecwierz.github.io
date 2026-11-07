@@ -16,7 +16,6 @@ import {
   Team,
 } from '@/sections';
 
-// The landing page: every section in the brief's order (section 4), fed from the content layer.
 export function HomePage(): ReactElement {
   return (
     <PageLayout

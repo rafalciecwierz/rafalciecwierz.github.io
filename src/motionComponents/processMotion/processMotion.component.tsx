@@ -11,13 +11,6 @@ import { GHOST_OPACITIES, TRIGGER_START, VIGNETTE } from './gapLeap.constants';
 import styles from './processMotion.module.scss';
 import type { LeapParts, LeapTargets } from './processMotion.types';
 
-// GapLeap (docs/ARCHITECTURE.md section 11): the runner takes the gap between the two roofs,
-// with bullet time at the apex, and a button replays it. The static scene shows him landed.
-// When the scene starts below the screen, he is put back on the take-off roof and the leap
-// plays once 80% of the scene is in view; when it is already on screen, he stays landed until
-// the reader presses Replay. The motion draws him in its own SVG over the scene and moves the
-// static scene's camera with it. Unmounting (reduced motion turned on) puts the static scene
-// back and hides the replay button.
 export function ProcessMotion({ scope }: MotionComponentProps): ReactElement {
   const gradientId: string = `${useId()}-vignette`;
   const overlayRef: RefObject<SVGSVGElement | null> =
@@ -31,82 +24,74 @@ export function ProcessMotion({ scope }: MotionComponentProps): ReactElement {
     (RunnerRigHandle | null)[]
   >([]);
 
-  // contextSafe() wraps code that runs later (a scroll or click callback), so the animations it
-  // creates still belong to this component and are reverted when it unmounts.
   const { contextSafe }: { contextSafe: ContextSafe } = useGSAP();
-  useGSAP(
-    (): (() => void) | undefined => {
-      const frame: HTMLElement | null | undefined = scope?.current;
-      const overlay: SVGSVGElement | null = overlayRef.current;
-      const camera: SVGGElement | null = cameraRef.current;
-      const vignette: SVGRectElement | null = vignetteRef.current;
-      const rig: RunnerRigHandle | null = rigRef.current;
-      if (
-        frame === null ||
-        frame === undefined ||
-        overlay === null ||
-        camera === null ||
-        vignette === null ||
-        rig === null
-      ) {
-        return undefined;
-      }
-      const targets: LeapTargets | null = findLeapTargets(frame);
-      if (targets === null) {
-        return undefined;
-      }
-      const { staticCamera, fog, staticRunner, replayBox, replayButton } =
-        targets;
-      const ghosts: RunnerRigHandle[] = ghostRefs.current.filter(
-        (ghost: RunnerRigHandle | null): ghost is RunnerRigHandle =>
-          ghost !== null,
-      );
-      const parts: LeapParts = {
-        staticCamera,
-        fog,
-        camera,
-        rig,
-        ghosts,
-        vignette,
-      };
-      const leap: gsap.core.Tween = createGapLeap(parts);
+  useGSAP((): (() => void) | undefined => {
+    const frame: HTMLElement | null | undefined = scope?.current;
+    const overlay: SVGSVGElement | null = overlayRef.current;
+    const camera: SVGGElement | null = cameraRef.current;
+    const vignette: SVGRectElement | null = vignetteRef.current;
+    const rig: RunnerRigHandle | null = rigRef.current;
+    if (
+      frame === null ||
+      frame === undefined ||
+      overlay === null ||
+      camera === null ||
+      vignette === null ||
+      rig === null
+    ) {
+      return undefined;
+    }
+    const targets: LeapTargets | null = findLeapTargets(frame);
+    if (targets === null) {
+      return undefined;
+    }
+    const { staticCamera, fog, staticRunner, replayBox, replayButton } =
+      targets;
+    const ghosts: RunnerRigHandle[] = ghostRefs.current.filter(
+      (ghost: RunnerRigHandle | null): ghost is RunnerRigHandle =>
+        ghost !== null,
+    );
+    const parts: LeapParts = {
+      staticCamera,
+      fog,
+      camera,
+      rig,
+      ghosts,
+      vignette,
+    };
+    const leap: gsap.core.Tween = createGapLeap(parts);
 
-      // The motion layer's runner takes over from the static one.
-      const takeOver: () => void = contextSafe((): void => {
-        gsap.set(staticRunner, { autoAlpha: 0 });
-        gsap.set(overlay, { autoAlpha: 1 });
+    const takeOver: () => void = contextSafe((): void => {
+      gsap.set(staticRunner, { autoAlpha: 0 });
+      gsap.set(overlay, { autoAlpha: 1 });
+    });
+    const replay: () => void = contextSafe((): void => {
+      takeOver();
+      drawLeap(parts, 0);
+      leap.restart();
+    });
+    gsap.set(replayBox, { display: 'block' });
+    replayButton.addEventListener('click', replay);
+
+    if (isBelowViewport(frame)) {
+      takeOver();
+      drawLeap(parts, 0);
+      ScrollTrigger.create({
+        trigger: frame,
+        start: TRIGGER_START,
+        once: true,
+        onEnter: (): void => {
+          leap.play();
+        },
       });
-      const replay: () => void = contextSafe((): void => {
-        takeOver();
-        drawLeap(parts, 0);
-        leap.restart();
-      });
-      gsap.set(replayBox, { display: 'block' });
-      replayButton.addEventListener('click', replay);
+    }
 
-      if (isBelowViewport(frame)) {
-        takeOver();
-        drawLeap(parts, 0);
-        ScrollTrigger.create({
-          trigger: frame,
-          start: TRIGGER_START,
-          once: true,
-          onEnter: (): void => {
-            leap.play();
-          },
-        });
-      }
-
-      // GSAP reverts what it set; the attributes drawLeap wrote every frame are removed here.
-      return (): void => {
-        replayButton.removeEventListener('click', replay);
-        staticCamera.removeAttribute('transform');
-        fog.style.removeProperty('opacity');
-      };
-    },
-    // No scope: this code targets elements, never selector text, which is all a scope limits.
-    [],
-  );
+    return (): void => {
+      replayButton.removeEventListener('click', replay);
+      staticCamera.removeAttribute('transform');
+      fog.style.removeProperty('opacity');
+    };
+  }, []);
 
   return (
     <svg

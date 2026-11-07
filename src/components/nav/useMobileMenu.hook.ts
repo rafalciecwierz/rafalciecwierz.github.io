@@ -12,10 +12,6 @@ import { mediaQueryBelow } from '@/utils';
 import { MOBILE_MENU_BREAKPOINT } from './nav.constants';
 import type { MobileMenu } from './nav.types';
 
-// The state of the mobile menu and everything an open full-screen menu needs: focus moves in
-// and is trapped, the page behind it is inert (also for screen readers), Escape closes it, the page under it does not scroll, and focus returns to
-// the Menu button when it closes. The menu is closed on the server, so hydration matches.
-//
 // The menu counts as open only while the layout is the mobile one. If the window grows past
 // the breakpoint with the menu open (a rotated tablet), the trap and the scroll lock end at
 // once, derived during render instead of synced by an effect.

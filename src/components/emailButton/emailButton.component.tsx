@@ -6,8 +6,6 @@ import { joinEmail } from '@/utils';
 
 import type { EmailButtonProps } from './emailButton.types';
 
-// "Write an email": a mailto link, added after hydration for the same reason as EmailChannel.
-// It comes last in its row, so nothing moves when it appears.
 export function EmailButton({
   email,
   label,

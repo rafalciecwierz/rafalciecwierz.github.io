@@ -1,12 +1,9 @@
 import type { Profile } from '../profile.types';
 
-// Brief section 5.1.
 export const profile: Profile = {
   name: 'Rafał Ciećwierz',
   initials: 'RC',
   role: 'Frontend Engineer',
-  // Rafał's own titles (27.10.2026, cut to two on 2.11.2026). At most two, so the flip ends
-  // within WCAG 2.2.2's 5 s (roleFlipDuration in src/motionComponents/heroMotion/).
   roleFlips: ['Parkour & Climbing Addict', 'Backend Explorer'],
   tagline: 'React & TypeScript · 5+ years building production apps',
   availability:

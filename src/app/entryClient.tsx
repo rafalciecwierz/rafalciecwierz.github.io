@@ -1,4 +1,3 @@
-// The global styles: tokens, fonts and the page-wide base (src/styles/global.scss).
 import '@/styles/global.scss';
 
 import { createRoot, hydrateRoot } from 'react-dom/client';
@@ -22,8 +21,6 @@ const route: AppRoute = routeForLocation(
   window.location.pathname,
 );
 
-// A built page already holds the HTML, so React only attaches to it (hydration).
-// The dev server sends the empty template, so React renders the page itself.
 if (hasPrerenderedContent(rootElement)) {
   hydrateRoot(rootElement, <App route={route} />);
 } else {

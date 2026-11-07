@@ -13,8 +13,8 @@ describe('solvePose', (): void => {
     const body: RunnerBody = solvePose(POSES.stand);
 
     expect(distance([0, 0], body.shoulder)).toBeCloseTo(LIMBS.torso);
-    expect(body.shoulder[0]).toBeGreaterThan(0); // leans forward, to the right
-    expect(body.shoulder[1]).toBeLessThan(0); // above the hip
+    expect(body.shoulder[0]).toBeGreaterThan(0);
+    expect(body.shoulder[1]).toBeLessThan(0);
   });
 
   it('keeps every limb its length, whatever the pose', (): void => {

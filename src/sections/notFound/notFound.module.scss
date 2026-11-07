@@ -1,5 +1,3 @@
-// The hero's night sky over the city, filling the screen. Isolation keeps the backdrop's
-// negative z-index layers inside the section (see heroBackdrop.module.scss).
 .notFound {
   display: flex;
   flex-direction: column;
@@ -15,7 +13,6 @@
   );
 }
 
-// Above the parapet (z-index 1), like the hero text.
 .container {
   position: relative;
   z-index: 2;
@@ -23,8 +20,6 @@
   padding: var(--space-26) var(--layout-gutter);
 }
 
-// Narrow enough to read in one glance. The hero's dark halo (heroIntro.module.scss) keeps the
-// text readable where a lit window of the skyline falls behind it.
 .content {
   display: grid;
   text-shadow:
@@ -45,6 +40,5 @@
 
 .actions {
   margin-top: var(--space-3);
-  // The button has its own solid background; the halo would only blur its dark label.
   text-shadow: none;
 }

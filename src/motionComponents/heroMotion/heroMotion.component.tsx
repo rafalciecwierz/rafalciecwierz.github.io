@@ -17,12 +17,6 @@ import {
   createWindowFlicker,
 } from './heroScene.animation';
 
-// The hero scene (docs/ARCHITECTURE.md section 9): the sign flickers on once, the role flips
-// through Rafał's other titles and lands on the real one, the skyline's windows switch on and
-// off while the hero is on screen, and the runner jumps to a clicked letter or plays a trick
-// when clicked. The static page already shows him on the Ł, so he does not hop in; he greets
-// the viewer once instead: stands up, turns, waves and crouches back.
-// Unmounting (reduced motion turned on) puts the static hero back.
 export function HeroMotion({ scope }: MotionComponentProps): ReactElement {
   const overlayRef: RefObject<SVGSVGElement | null> =
     useRef<SVGSVGElement>(null);
@@ -31,10 +25,7 @@ export function HeroMotion({ scope }: MotionComponentProps): ReactElement {
     useRef<SVGCircleElement>(null);
   const rigRef: RefObject<RunnerRigHandle | null> =
     useRef<RunnerRigHandle>(null);
-  // contextSafe() wraps code that runs later (a click), so the animations it creates are
-  // reverted when the component unmounts.
   const { contextSafe }: { contextSafe: ContextSafe } = useGSAP();
-  // In profile while he moves; facing the viewer while he waves.
   const [tone, setTone] = useState<RunnerTone>('profile');
 
   useGSAP((): (() => void) | undefined => {
@@ -76,7 +67,6 @@ export function HeroMotion({ scope }: MotionComponentProps): ReactElement {
       createRoleFlip(role, titles);
     }
 
-    // The letter the static runner perches on (his sibling in HeroSign).
     const staticRunner: Element | null = motionTarget(
       hero,
       MOTION_TARGETS.heroRunner,
@@ -104,7 +94,6 @@ export function HeroMotion({ scope }: MotionComponentProps): ReactElement {
             contextSafe,
           );
 
-    // Runs after GSAP has reverted its tweens.
     return (): void => {
       stopInteractions();
       restoreStyles();

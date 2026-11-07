@@ -20,6 +20,7 @@ paths:
 - Every variable, parameter and return type is written out, callbacks included. Hooks get their type argument: `useState<boolean>(false)`.
 - Types go in the folder's `.types.ts`, numbers in `.constants.ts` or a design token, calculations in `.utils.ts` with a test.
 - Use `.hook.ts`, `.service.ts` or `.animation.ts` for side effects, never a bare `window`, `document` or `navigator` in a component.
+- Comments live only in logic files (`.utils.ts`, `.hook.ts`, `.animation.ts`, `.service.ts`, `src/motion/`, build scripts), and only where they explain *why* a function or hook works the way it does: a browser quirk, an accessibility or performance reason, a workaround. Components, types, styles, constants, content and tests have no comments (an empty function body keeps one, because lint needs it). Don't comment what the name or the code already says, and leave out task numbers and dates (git and the roadmap keep the history).
 
 ## After writing
 

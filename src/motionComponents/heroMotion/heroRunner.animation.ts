@@ -17,10 +17,8 @@ import { createJump, measurePlatforms } from './letterHop.animation';
 import { rigScale, stateAt } from './letterHop.utils';
 import { createTrick } from './tricks.animation';
 
-// The runner's state and moves: which letter he is on, whether he is moving, and which trick
-// comes next. Until his first move the static runner stands on the Ł; the first move hands over
-// to the rig at exactly that spot, and the rig stays from then on. Everything that creates
-// animations later (on a click) goes through contextSafe, so it is reverted on unmount.
+// Until his first move the static runner stands on the Ł; the first move hands over to the rig
+// at exactly that spot, and the rig stays from then on.
 export function createHeroRunner(
   parts: RunnerParts,
   contextSafe: ContextSafe,
@@ -41,9 +39,8 @@ export function createHeroRunner(
   // Where the static runner stands, from his box: the greeting happens there, before any scan.
   let staticSpot: RigSpot = { x: 0, y: 0, scale, facing: 1 };
 
-  // Cheap, on mount: the click target goes on the static runner. The glyph scan waits for an
-  // idle moment (prepare) or the first click, so the mount adds no canvas work while the page
-  // is still busy loading.
+  // The glyph scan waits for an idle moment or the first click, so the mount adds no canvas work
+  // while the page is still loading.
   function placeOnStaticRunner(): void {
     const box: DOMRect = fitOverlay(parts.hero, parts.overlay);
     staticSpot = staticRunnerSpot(
@@ -56,7 +53,6 @@ export function createHeroRunner(
     placeHit(parts.hit, staticSpot.x, staticSpot.y, scale);
   }
 
-  // The full measurement: every letter's top, by the pixel scan; the rig on his letter.
   function measure(): void {
     fitOverlay(parts.hero, parts.overlay);
     const measured: ReturnType<typeof measurePlatforms> = measurePlatforms(
@@ -93,7 +89,6 @@ export function createHeroRunner(
     gsap.set(parts.rigBox, { autoAlpha: 1 });
   });
 
-  // Runs a move, then lets him take the next click.
   const play: (move: gsap.core.Timeline, landsOn: number) => void = contextSafe(
     (move: gsap.core.Timeline, landsOn: number): void => {
       move.eventCallback('onComplete', (): void => {
@@ -142,8 +137,7 @@ export function createHeroRunner(
     play(move, landsOn);
   });
 
-  // The greeting, once at the start and only before any other move: the rig takes over on the
-  // static runner's spot, waves, and hands back to him (its last frame is his crouch).
+  // Only before any other move: its last frame is the static runner's crouch.
   const greet: () => void = contextSafe((): void => {
     if (isBusy || hasMoved) {
       return;

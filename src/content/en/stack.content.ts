@@ -1,7 +1,5 @@
 import type { Stack } from '../stack.types';
 
-// Brief 5.2. The AI group is Rafał's (28.10.2026); every item is backed by this repository or
-// Ashen Contracts. It comes first so that it leads the Medium board.
 export const stack: Stack = {
   heading: { number: '02', kicker: 'Kit', title: 'Stack' },
   intro:
@@ -18,7 +16,6 @@ export const stack: Stack = {
   ai: {
     title: 'AI in the loop',
     text: 'Every tool on these boards I now use with AI agents alongside me: from specs and code to tests and reviews. I set the direction and check the output.',
-    // The arrow is an icon next to the link, hidden from screen readers.
     link: 'How I work with AI',
   },
   groups: [

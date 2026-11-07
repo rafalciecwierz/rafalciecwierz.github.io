@@ -5,7 +5,7 @@
   align-items: center;
   justify-content: center;
   gap: var(--space-2-5);
-  min-height: 3.25rem; // 52px: a comfortable touch target
+  min-height: 3.25rem;
   padding: var(--space-3) var(--space-5-5) var(--space-2-5);
   border: var(--border-medium) solid var(--color-chalk);
   background: transparent;
@@ -22,13 +22,10 @@
     box-shadow var(--duration-fast),
     background-color var(--duration-fast);
 
-  // On narrow phones each button in a row (an ActionGroup) takes the full width, so both
-  // are easy to tap and their labels never wrap.
   @include below(xs) {
     flex: 1 1 100%;
   }
 
-  // It lifts off the ground on hover and its shadow lands under it, like a step up.
   &:hover {
     transform: translateY(-3px);
     box-shadow: 0 5px 0 var(--color-sodium-dim);
@@ -39,7 +36,6 @@
     box-shadow: none;
   }
 
-  // No movement at all with reduced motion; the shadow alone still shows the hover.
   @media (prefers-reduced-motion: reduce) {
     &:hover,
     &:active {

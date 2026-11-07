@@ -1,7 +1,4 @@
 // @vitest-environment node
-// Checks the rule of docs/ARCHITECTURE.md section 8 on every CSS Module of the site: a module
-// never uses a raw value that has a design token. It lives in scripts/ because it reads files
-// with Node, and the code in src/ has no Node types (it must also run in the browser).
 import { globSync, readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 

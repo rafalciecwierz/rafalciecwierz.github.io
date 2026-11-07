@@ -1,7 +1,5 @@
 @use '@/styles/breakpoints' as *;
 
-// The map, then the list; side by side from 960px, the map staying in view while the list
-// scrolls past it.
 .spotBoard {
   display: grid;
   gap: var(--space-10);

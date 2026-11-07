@@ -3,7 +3,6 @@ import type { NumberedSectionHeading, Stat } from './shared.types';
 export type Process = {
   heading: NumberedSectionHeading;
   intro: string;
-  // The signs on the two roofs of the leap.
   sceneSigns: readonly [string, string];
   replay: string;
   how: { title: string; paragraphs: readonly string[] | null; todo: string };
@@ -15,7 +14,6 @@ export type Process = {
     role: string | null;
     roleTodo: string;
     galleryLabel: string;
-    // The static prototype gallery, published outside the React bundle (scripts/gallery.ts).
     galleryUrl: string;
   };
 };

@@ -14,8 +14,7 @@ import type {
   RunView,
 } from './careerRunMotion.types';
 
-// Finds the static page's parts of the run inside the career section, or null when one is
-// missing (then the run does not start and the list stays as it is).
+// Null when a part is missing: then the run does not start and the list stays as it is.
 export function findRunTargets(section: Element): RunTargets | null {
   const world: Element | null = motionTarget(
     section,
@@ -45,15 +44,12 @@ export function findRunTargets(section: Element): RunTargets | null {
   };
 }
 
-// A layer's top left corner in its own units, from its viewBox.
 function originOf(svg: SVGSVGElement): LayerOrigin {
   const { x, y }: DOMRect = svg.viewBox.baseVal;
   return { minX: x, minY: y };
 }
 
-// Draws one frame: the city layers follow the roof under him (the far one slower and
-// smaller), he is drawn where he runs, and the bar fills. Only transforms change, so nothing
-// on the page is laid out again.
+// Only transforms change, so nothing on the page is laid out again.
 export function drawRun(
   parts: RunParts,
   layout: CareerRunLayout,
@@ -87,11 +83,8 @@ export function drawRun(
   return frame;
 }
 
-// The run itself. The section is as tall as the run, and its screen sticks to the top of the
-// window while the page scrolls through it (CSS position: sticky, so the browser keeps it in
-// place with no layout shift and no lag). ScrollTrigger only scrubs a progress value from 0 to
-// 1 between the section's top reaching the top of the window and its bottom reaching the
-// bottom, and every change draws a frame.
+// The section's screen sticks with CSS position: sticky, so the browser keeps it in place with
+// no layout shift and no lag. ScrollTrigger only scrubs a progress value from 0 to 1.
 export function createCareerRun(
   section: HTMLElement,
   onProgress: (progress: number) => void,

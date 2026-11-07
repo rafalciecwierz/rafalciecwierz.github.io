@@ -29,13 +29,10 @@ describe('Hero', (): void => {
       name: PROFILE.name,
     });
     expect(region).toHaveAttribute('id', 'top');
-    // Once for screen readers, once (hidden from them) for the eye and the role flip.
     expect(screen.getAllByText(PROFILE.role)).toHaveLength(2);
     expect(screen.getByText(PROFILE.tagline)).toBeInTheDocument();
   });
 
-  // The role flip writes the visible role letter by letter; a browser translating the page at the
-  // same time froze it on a scrambled frame (task 3.19). Job titles stay in English.
   it('asks browsers not to translate the role the flip rewrites', (): void => {
     render(<Hero profile={PROFILE} hero={HERO} />);
 

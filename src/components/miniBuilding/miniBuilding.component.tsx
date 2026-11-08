@@ -24,8 +24,6 @@ import {
   windowArea,
 } from './miniBuilding.utils';
 
-// The small building beside a job in the career list: the newer the job, the higher the roof,
-// and a promotion adds a tower lit in sodium. Seeded, so it is drawn at build time. Decorative.
 export function MiniBuilding({
   height,
   hasTower,
@@ -91,7 +89,6 @@ export function MiniBuilding({
           />
         </>
       )}
-      {/* The dark windows are one pattern; only the lit ones are elements of their own. */}
       <rect
         x={area.x}
         y={area.y}

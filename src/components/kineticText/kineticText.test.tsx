@@ -24,9 +24,6 @@ describe('KineticText', (): void => {
     );
   });
 
-  // Browser translation rewrites text nodes, and on a title split into one span per letter it
-  // mixed the letters up (Chrome with Google Translate on a phone, task 3.19). The letters stay
-  // untranslated; the whole text for screen readers is still translated.
   it('keeps browser translation off the letters, not off the text for screen readers', (): void => {
     const { container } = render(<KineticText text="About" />);
 

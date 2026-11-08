@@ -6,8 +6,6 @@ import { classNames } from '@/utils';
 import styles from './buttonLink.module.scss';
 import type { ButtonLinkProps } from './buttonLink.types';
 
-// A link that looks like a button. Every big action on the page goes somewhere (an anchor, the
-// CV, an email), so it is a link: it keeps the link's keyboard and context-menu behaviour.
 export function ButtonLink({
   href,
   variant,

@@ -24,12 +24,10 @@ export function jobMoveNames(
   return oldestFirst.reverse();
 }
 
-// The last move name is the next, unbuilt roof.
 export function nextMoveName(moveNames: readonly string[]): string {
   return moveNames.at(-1) ?? '';
 }
 
-// The height of the building beside the job at this position (newest first).
 export function buildingHeight(index: number): number {
   return BUILDING_HEIGHTS[index] ?? BUILDING_HEIGHTS.at(-1) ?? 0;
 }

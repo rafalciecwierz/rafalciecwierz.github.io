@@ -25,23 +25,12 @@
   margin-top: var(--space-4-5);
 }
 
-// The career run (the career-run mixin, src/styles/_careerRun.scss). RunTrack makes the
-// section as tall as the run, and its stage, one screen of night sky, sticks to the top of
-// the window while the page scrolls past: the browser holds it in place, so nothing shifts or
-// lags. The heading sits top left, the card of the current move on the right, and
-// CareerRunScene and RunBar fill the rest. Before the motion has loaded, the page shows the
-// run's first stage, without its card at first (see below).
 @include career-run {
-  // In the run the header lies over the stage, so a link to Career lands with the stage at the
-  // very top of the window: the margin cancels the page's scroll-padding (Lenis reads both).
   .career:has([data-career-run]) {
     padding: 0;
     scroll-margin-top: calc(-1 * var(--layout-header-height));
   }
 
-  // The first stage's card (the oldest job, the last in the list) waits for the motion, which
-  // shows the card for the scroll position: a reload can land anywhere in the run, and the
-  // first card would only flash there. If the motion is late or fails, it appears anyway.
   .career:not([data-career-run-live]) .move:last-child {
     animation-name: first-card-fallback;
     animation-delay: var(--duration-run-fallback);
@@ -70,9 +59,6 @@
     pointer-events: none;
   }
 
-  // Every card in one grid cell, so they stack; the motion shows one at a time. The cards fit
-  // between the header and the progress bar; on a short window a long card scrolls inside
-  // (browsers let the keyboard focus a scrollable box), so it never covers the skip link.
   .moves {
     position: absolute;
     top: calc(var(--layout-header-height) + var(--space-4));
@@ -93,16 +79,12 @@
     scrollbar-width: thin;
   }
 
-  // The cards of the later stages wait below, faded out; the motion brings each one in.
   .move:not(:last-child) {
     opacity: 0;
     pointer-events: none;
     transform: translateY(var(--space-7));
   }
 
-  // The run has no room for the education line (the reference hides it there), so it is hidden
-  // from sight only: screen readers still read it (the visually hidden pattern, not
-  // display: none, which would take it out of the page for them too).
   .education {
     position: absolute;
     width: 1px;
@@ -113,7 +95,6 @@
   }
 }
 
-// No duration: hidden while it waits (fill backwards), shown from then on (fill forwards).
 @keyframes first-card-fallback {
   from {
     opacity: 0;

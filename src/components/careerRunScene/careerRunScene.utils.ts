@@ -18,11 +18,6 @@ import type {
   WorldBox,
 } from './careerRunScene.types';
 
-// The run's generated graphics, seeded so the build and the browser draw the same SVG
-// (docs/ARCHITECTURE.md section 10).
-
-// A facade's windows: the grid from under the ledge down to just above the street. The unlit
-// ones are one SVG pattern over `area`; only the lit ones become elements of their own.
 export function facadeWindows(facade: Facade, seed: string): FacadeWindows {
   const random: () => number = createRandom(hashString(seed));
   const left: number = facade.x + WINDOW.insetLeft;
@@ -57,7 +52,6 @@ export function facadeWindows(facade: Facade, seed: string): FacadeWindows {
   };
 }
 
-// The far city: a row of tall buildings with a few faint windows, from edge to edge.
 export function farBuildings(): FarBuilding[] {
   const random: () => number = createRandom(hashString(FAR_SEED));
   const buildings: FarBuilding[] = [];
@@ -101,8 +95,6 @@ export function farBuildings(): FarBuilding[] {
   return buildings;
 }
 
-// The far city's area in its own units: from its first building to past its last, from the
-// tallest roof it can have down to the bottom of its walls.
 export function farBox(): WorldBox {
   const tallest: number = FAR.minHeight + FAR.heightRange;
   return {
@@ -113,14 +105,10 @@ export function farBox(): WorldBox {
   };
 }
 
-// The number of roles in each job, oldest first, as careerRunLayout() takes them. The content
-// lists the jobs newest first.
 export function roleCountsOf(jobs: readonly Job[]): number[] {
   return jobs.map((job: Job): number => job.roles.length).reverse();
 }
 
-// How far the page scrolls through the run, as a CSS length in screens (vh), so the browser
-// keeps it right when the window changes height.
 export function runDistance(segmentCount: number): string {
   return `${(segmentCount * SCREENS_PER_SEGMENT * VH_PER_SCREEN).toFixed(1)}vh`;
 }

@@ -1,7 +1,5 @@
 @use '@/styles/breakpoints' as *;
 
-// The night sky over the roofs, wide on large screens; on phones the scene is squarer and runs
-// to the screen's edges.
 .frame {
   position: relative;
   overflow: hidden;
@@ -63,13 +61,10 @@
   stop-color: var(--color-fog);
 }
 
-// After the landing the fog has mostly lifted.
 .fog {
   opacity: 0.2;
 }
 
-// The replay button, in the scene's corner on a dark plate so it reads over the roofs.
-// ProcessMotion shows it; the static scene has nothing to replay.
 .replay {
   position: absolute;
   right: var(--space-3-5);

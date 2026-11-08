@@ -1,8 +1,5 @@
 import type { Team } from '../team.types';
 
-// Brief 5.6: LinkedIn recommendations from Rafał's team at Mood up (June 2024), word for word.
-// Shown without asking the authors (Rafał, 3.11.2026): the recommendations are public on
-// LinkedIn and the site gives no surnames.
 export const team: Team = {
   heading: { kicker: 'Spotters', title: 'From the team' },
   intro:

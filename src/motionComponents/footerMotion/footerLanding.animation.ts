@@ -27,7 +27,6 @@ export function measureStreet(street: HTMLElement): StreetGeometry {
   );
 }
 
-// One part of the landing: GSAP gives the pure step function (footerLanding.utils.ts) time.
 function landingPart(
   { rig, geometry }: FooterLandingOptions,
   duration: number,
@@ -38,9 +37,7 @@ function landingPart(
   });
 }
 
-// FooterLanding as one timeline: drop, roll, stand up, turn to the viewer, raise an arm and
-// wave. The callbacks let the component change what GSAP does not draw: the figure's tone and
-// the speech bubble.
+// The callbacks change what GSAP does not draw: the figure's tone and the speech bubble.
 export function createFooterLanding(
   options: FooterLandingOptions,
 ): gsap.core.Timeline {
@@ -58,7 +55,6 @@ export function createFooterLanding(
     .call(options.onEnd);
 }
 
-// The speech bubble pops in from the corner by his head.
 export function popBubble(bubble: Element): gsap.core.Tween {
   return gsap.fromTo(
     bubble,

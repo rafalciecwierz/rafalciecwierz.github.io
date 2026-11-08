@@ -14,8 +14,6 @@ import {
   kongTarget,
 } from './tricks.utils';
 
-// The runner's tricks as timelines. Clicks on him play them in turn (HeroRunner).
-
 // A backflip (direction -1) or a front flip (1) in place.
 export function createFlip(
   rig: RunnerRigHandle,
@@ -85,8 +83,6 @@ export function createHandstand(
     });
 }
 
-// The move for one trick from where he stands on letter `at`, the letter he ends on, and the
-// way he faces after it.
 export function createTrick(
   kind: Trick,
   rig: RunnerRigHandle,

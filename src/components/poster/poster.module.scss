@@ -13,7 +13,6 @@
   --ink-soft: var(--color-ink-soft-on-sodium);
 }
 
-// The sheet of paper: a fold down the middle, a light sheen at the top and a grain of noise.
 .sheet {
   position: relative;
   padding: var(--space-6-5) clamp(1.25rem, 2.2vw, 1.75rem) var(--space-8);

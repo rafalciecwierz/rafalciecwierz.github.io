@@ -29,7 +29,6 @@ async function openMenu(): Promise<void> {
 }
 
 describe('Nav', (): void => {
-  // The mobile layout, where the menu exists.
   beforeEach((): void => {
     setMediaMatches(true);
   });

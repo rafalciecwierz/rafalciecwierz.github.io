@@ -19,8 +19,7 @@ import {
   stateAt,
 } from './letterHop.utils';
 
-// Draws one letter on an offscreen canvas in the sign's font and finds the top of its glyph
-// (glyphTop). The canvas also gives the font's ascent and descent, for placing the baseline.
+// The canvas also gives the font's ascent and descent, for placing the baseline.
 function scanGlyph(
   character: string,
   font: string,
@@ -53,7 +52,6 @@ function scanGlyph(
   };
 }
 
-// Where his feet go on each letter of the sign, in the hero's pixels, and the sign's font size.
 // A letter's baseline sits in its line box the way CSS places it: half of the spare line height
 // above the font's ascent, below the letter's top padding.
 export function measurePlatforms(
@@ -88,8 +86,6 @@ export function measurePlatforms(
   return { platforms, fontPx };
 }
 
-// One jump from where he is to a platform, then a settle into a crouch (unless it chains into
-// the next move).
 export function createJump(
   rig: RunnerRigHandle,
   from: RigSpot,

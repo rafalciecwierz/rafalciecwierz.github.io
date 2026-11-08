@@ -21,7 +21,6 @@ function round(value: number): number {
   return Math.round(value);
 }
 
-// The street grid: nine streets each way, each a little crooked, every third a wide avenue.
 // Seeded, so the map is the same at build time and in the browser.
 export function mapStreets(): Street[] {
   const random: () => number = createRandom(hashString(STREETS_SEED));
@@ -66,8 +65,8 @@ function isTooClose(point: MapPoint, others: readonly MapPoint[]): boolean {
   );
 }
 
-// One pin per project, placed by a generator seeded with the project's name: a project keeps
-// its spot when others are added, removed or reordered. Pins keep apart from each other.
+// Seeded with the project's name, so a project keeps its spot when others are added, removed
+// or reordered.
 export function pinPositions(names: readonly string[]): MapPoint[] {
   const pins: MapPoint[] = [];
   names.forEach((name: string): void => {
@@ -86,7 +85,6 @@ export function pinPositions(names: readonly string[]): MapPoint[] {
   return pins;
 }
 
-// The viewBox of the panel's zoomed map, centred a little above the pin.
 export function zoomViewBox(pin: MapPoint): string {
   return `${String(pin[0] - ZOOM_OFFSET_X)} ${String(pin[1] - ZOOM_OFFSET_Y)} ${String(ZOOM_WIDTH)} ${String(ZOOM_HEIGHT)}`;
 }

@@ -1,6 +1,5 @@
 import type { Career } from '../career.types';
 
-// Brief 5.3 and 5.4. The copy around the jobs comes from the reference design.
 export const career: Career = {
   heading: { number: '03', kicker: 'The line', title: 'Career' },
   intro:

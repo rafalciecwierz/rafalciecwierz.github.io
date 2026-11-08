@@ -9,9 +9,6 @@ import {
 } from './footerLanding.constants';
 import type { StreetGeometry } from './footerMotion.types';
 
-// The states of each part of FooterLanding, as pure functions of the progress (0 to 1).
-
-// Where he lands on a street of this size.
 export function streetGeometry(
   width: number,
   height: number,
@@ -38,7 +35,6 @@ function upright(geometry: StreetGeometry, x: number): Omit<RigState, 'pose'> {
   };
 }
 
-// He falls in from above and to the left, faster and faster (y grows with progress²).
 export function dropState(
   geometry: StreetGeometry,
   progress: number,
@@ -57,7 +53,6 @@ export function dropState(
   };
 }
 
-// A forward roll along the street into a crouch at his spot.
 export function rollState(
   geometry: StreetGeometry,
   progress: number,
@@ -108,8 +103,7 @@ export function raiseArmState(
   };
 }
 
-// The raised arm waves three times and ends on the static waving pose, so the static runner
-// can take over.
+// Ends on the static waving pose, so the static runner can take over.
 export function waveState(
   geometry: StreetGeometry,
   progress: number,

@@ -12,7 +12,6 @@ import {
   runDistance,
 } from './careerRunScene.utils';
 
-// The real career, oldest first: two promoted jobs, then two with one role each.
 const ROLE_COUNTS: readonly number[] = [2, 2, 1, 1];
 const LAYOUT: CareerRunLayout = careerRunLayout(ROLE_COUNTS);
 
@@ -59,7 +58,6 @@ describe('careerRunLayout', (): void => {
       'hold',
     ]);
     expect(LAYOUT.line[0]).toMatchObject({ fromX: 40, toX: 260, stage: 0 });
-    // Onto the first tower: from 20 before its edge to 30 into the tower.
     expect(LAYOUT.line[1]).toMatchObject({
       fromX: 260,
       fromHeight: 170,
@@ -71,7 +69,6 @@ describe('careerRunLayout', (): void => {
       kind: 'hold',
       x: 2050,
       height: 595,
-      // Six roles, so the next roof is stage 6.
       stage: 6,
     });
   });

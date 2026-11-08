@@ -1,8 +1,6 @@
 import { useCallback, useSyncExternalStore } from 'react';
 
-// Whether a media query matches, kept up to date as the window changes. useSyncExternalStore
-// gives the server (and the first render in the browser) `isServerMatch`, so hydration
-// matches; React then reads the real value (docs/ARCHITECTURE.md section 6).
+// The server and the first browser render get `isServerMatch`, so hydration matches.
 export function useMediaQuery(query: string, isServerMatch: boolean): boolean {
   const subscribe: (onChange: () => void) => () => void = useCallback(
     (onChange: () => void): (() => void) => {

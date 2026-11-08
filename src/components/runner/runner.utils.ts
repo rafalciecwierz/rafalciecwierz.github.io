@@ -40,8 +40,7 @@ function solveLeg(hipAngle: number, kneeAngle: number): Point[] {
   return [[0, 0], knee, ankle, toe];
 }
 
-// Forward kinematics: from the ten angles of a pose to the position of every joint, with the
-// hip at (0, 0). Pure, so the build and the browser draw the same figure.
+// Forward kinematics. Pure, so the build and the browser draw the same figure.
 export function solvePose(pose: Pose): RunnerBody {
   const [
     lean,
@@ -76,8 +75,7 @@ export function solvePose(pose: Pose): RunnerBody {
   };
 }
 
-// The viewBox for a solved figure. It is symmetric around the hip, so the figure can be placed
-// by its hip; its bottom edge is the ground the feet stand on (the lower ankle).
+// Symmetric around the hip, so the figure can be placed by its hip.
 export function runnerBox(body: RunnerBody): RunnerBox {
   const joints: Point[] = [
     [0, 0],
@@ -115,7 +113,6 @@ export function pointsAttribute(points: readonly Point[]): string {
     .join(' ');
 }
 
-// The SVG viewBox attribute for a box, one decimal.
 export function viewBoxAttribute(box: RunnerBox): string {
   return [box.minX, box.minY, box.width, box.height]
     .map((value: number): string => value.toFixed(1))

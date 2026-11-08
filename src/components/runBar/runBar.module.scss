@@ -1,7 +1,5 @@
 @use '@/styles/careerRun' as *;
 
-// Along the bottom of the pinned run: the bar fills the width, the skip link sits at its
-// right end (it comes first in the HTML, so the keyboard reaches it first).
 .runBar {
   position: absolute;
   right: var(--layout-gutter);
@@ -27,7 +25,6 @@
   background: var(--color-line);
 }
 
-// CareerRunMotion scales it from 0 to the run's progress; a transform needs no layout.
 .fill {
   position: absolute;
   inset: 0;
@@ -59,8 +56,6 @@
     background: currentcolor;
   }
 
-  // Reached: the runner has got to this stage. The first one always is, so it is lit before
-  // the motion has loaded too.
   &:first-child,
   &[data-reached] {
     color: var(--color-sodium);

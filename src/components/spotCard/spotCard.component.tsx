@@ -10,9 +10,6 @@ import { STATUS_BADGES } from './spotCard.constants';
 import styles from './spotCard.module.scss';
 import type { SpotCardProps } from './spotCard.types';
 
-// One project in the list: its number, status, name, description, tags and links, and a
-// button that opens its details. Pointing at the card, or focusing its button, highlights its
-// pin on the map.
 export function SpotCard({
   project,
   number,
@@ -31,8 +28,6 @@ export function SpotCard({
 
   return (
     <li>
-      {/* The pointer anywhere on the card highlights its pin; keyboard focus does it from the
-          card's button, and the card itself lights up with :focus-within. */}
       <div
         className={classNames(styles.spotCard, isHot && styles.hot)}
         onPointerEnter={handleEnter}

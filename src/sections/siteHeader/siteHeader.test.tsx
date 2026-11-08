@@ -24,7 +24,6 @@ describe('SiteHeader', (): void => {
     render(<SiteHeader nav={NAV} brand={BRAND} initials="RC" />);
 
     expect(screen.getByRole('banner')).toBeInTheDocument();
-    // The accessible name starts with the visible text (WCAG 2.5.3).
     expect(
       screen.getByRole('link', { name: 'RC Portfolio, back to top' }),
     ).toHaveAttribute('href', '#top');

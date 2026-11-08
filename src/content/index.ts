@@ -10,6 +10,7 @@ export type {
 export type { Contact } from './contact.types';
 export { PROJECT_STATUSES, STACK_LEVELS } from './content.constants';
 export type { Content } from './content.types';
+export { en as content } from './en';
 export type { Brand, Footer, Nav, NavLink } from './frame.types';
 export type { Hero, HeroMeta } from './hero.types';
 export type { NotFound } from './notFound.types';
@@ -32,5 +33,3 @@ export type {
 } from './shared.types';
 export type { Stack, StackLevel, Tool, ToolGroup } from './stack.types';
 export type { Quote, Team } from './team.types';
-// English is the only locale until a locale switch exists (brief section 2).
-export { en as content } from './en';

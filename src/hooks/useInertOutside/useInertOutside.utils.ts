@@ -5,9 +5,6 @@ const SKIPPED_TAGS: ReadonlySet<string> = new Set<string>([
   'TEMPLATE',
 ]);
 
-// Every element outside `container`, found by walking up to `root` and collecting the siblings
-// at each level. Making these inert leaves only the container (and its ancestors, which hold
-// nothing else) reachable.
 export function elementsOutside(
   container: HTMLElement,
   root: HTMLElement,

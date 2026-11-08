@@ -2,10 +2,8 @@ import { HIT } from './heroMotion.constants';
 import type { RigSpot } from './heroMotion.types';
 import { rigScale } from './letterHop.utils';
 
-// Layout reads and writes for the runner's overlay: they touch the DOM, so they live here and
-// HeroRunner stays about state and moves.
+// Layout reads and writes touch the DOM, so they live here and HeroRunner stays about state.
 
-// Sizes the overlay's viewBox to the hero in pixels, and returns the hero's box.
 export function fitOverlay(hero: HTMLElement, overlay: SVGSVGElement): DOMRect {
   const box: DOMRect = hero.getBoundingClientRect();
   overlay.setAttribute(
@@ -15,7 +13,6 @@ export function fitOverlay(hero: HTMLElement, overlay: SVGSVGElement): DOMRect {
   return box;
 }
 
-// Puts the click target around him: a circle above his feet at (x, y).
 export function placeHit(
   hit: SVGCircleElement,
   x: number,
@@ -27,8 +24,6 @@ export function placeHit(
   hit.setAttribute('r', (HIT.radius * scale).toFixed(1));
 }
 
-// Where the static runner stands, from his box (feet at its bottom edge, hip in its middle),
-// and his size from the sign's font size. Cheap: no glyph scan.
 export function staticRunnerSpot(
   heroBox: DOMRect,
   staticRunner: Element,

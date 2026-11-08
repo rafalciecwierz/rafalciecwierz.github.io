@@ -11,8 +11,6 @@ import {
 import type { RigSpot } from './heroMotion.types';
 import { stateAt } from './letterHop.utils';
 
-// The runner's tricks (clicks on him cycle them) as pure functions of their progress.
-
 // The pose through a kong vault: he dives over with his hands down.
 export function kongPose(progress: number): RigState['pose'] {
   if (progress < KONG.reachEnd) {
@@ -37,8 +35,6 @@ export function kongPose(progress: number): RigState['pose'] {
   );
 }
 
-// A moment of a flip in place, in the air: up and down on a parabola, one full turn.
-// direction -1 is a backflip, 1 a front flip.
 export function flipState(
   spot: RigSpot,
   direction: number,
@@ -61,7 +57,6 @@ export function flipState(
   };
 }
 
-// The handstand: kicking up onto his hands (half a turn on the ground) or stepping down.
 export function handstandTurnState(
   spot: RigSpot,
   isKickingUp: boolean,
@@ -80,7 +75,6 @@ export function handstandTurnState(
   };
 }
 
-// Holding the handstand: the legs scissor back and forth.
 export function handstandHoldState(spot: RigSpot, progress: number): RigState {
   const swing: number =
     Math.sin(progress * FULL_CYCLE * HANDSTAND.scissorCycles) *

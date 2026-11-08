@@ -6,9 +6,6 @@ import { classNames } from '@/utils';
 import styles from './levelBoard.module.scss';
 import type { BoardRow, LevelBoardProps } from './levelBoard.types';
 
-// One experience level as a board: its name, how many tools, what the level means, and the
-// tools grouped in rows. The level is told three ways, never by colour alone: the title, the
-// board's top edge (solid sodium, solid chalk, dashed) and the style of its chips.
 export function LevelBoard({
   level,
   titleId,

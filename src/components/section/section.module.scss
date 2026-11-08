@@ -1,7 +1,6 @@
 .section {
   position: relative;
 
-  // Focused only by links to it; a ring around the whole section would just be noise.
   &:focus {
     outline: none;
   }
@@ -11,8 +10,6 @@
   padding: var(--space-section) var(--layout-gutter);
 }
 
-// The concrete wall: a bolt hole and the joints of a 240 × 120 px panel, repeated, under a
-// light noise. The SVG noise holds no colour of its own: its matrix makes white at 7% opacity.
 .concrete {
   background-color: var(--color-wall);
   background-image:
@@ -43,7 +40,6 @@
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .07 0'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23n)'/%3E%3C/svg%3E");
   }
 
-  // The content sits above the noise.
   > * {
     position: relative;
   }

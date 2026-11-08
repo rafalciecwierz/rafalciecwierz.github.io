@@ -3,10 +3,7 @@ import { useEffect } from 'react';
 import type { FocusTrapOptions } from './useFocusTrap.types';
 import { focusableIn, wrapFocusTarget } from './useFocusTrap.utils';
 
-// Keeps keyboard focus inside a container while it is active (the open mobile menu): focus
-// moves to its first element when it opens, Tab and Shift+Tab wrap around at the ends, and
-// focus goes back to `returnFocusRef` when it closes. Our own few lines instead of the
-// focus-trap package (docs/ARCHITECTURE.md section 12).
+// Our own few lines instead of the focus-trap package (docs/ARCHITECTURE.md section 12).
 export function useFocusTrap({
   containerRef,
   returnFocusRef,

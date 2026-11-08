@@ -6,8 +6,6 @@ import { classNames } from '@/utils';
 import styles from './statList.module.scss';
 import type { StatListProps } from './statList.types';
 
-// Big numbers with their captions, e.g. "22+" and "years of parkour". A description list, so a
-// screen reader reads each number together with what it counts.
 export function StatList({
   stats,
   size = 'regular',

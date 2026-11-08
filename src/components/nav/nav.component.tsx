@@ -10,15 +10,9 @@ import styles from './nav.module.scss';
 import type { MobileMenu, NavProps } from './nav.types';
 import { useMobileMenu } from './useMobileMenu.hook';
 
-// The anchor links to the sections. On wide screens they sit in the header. Below 760px the
-// same list becomes a full-screen menu behind a Menu button, so the links exist only once.
-// A link closes the menu, and the browser then jumps to the section.
 export function Nav({ nav }: NavProps): ReactElement {
-  // Destructured, so the refs and the state are separate values (the React Compiler treats a
-  // whole object as a ref when it holds one).
   const { isOpen, open, close, panelRef, buttonRef }: MobileMenu =
     useMobileMenu();
-  // The link of the section being read is marked; memoised, so the observer starts only once.
   const sectionIds: string[] = useMemo<string[]>(
     (): string[] => nav.links.map((link: NavLink): string => link.sectionId),
     [nav.links],

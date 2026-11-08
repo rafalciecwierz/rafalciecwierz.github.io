@@ -13,9 +13,6 @@ import type {
 } from './skyline.types';
 import { drawSkyline } from './skyline.utils';
 
-// The city at night behind the hero. Drawn from a seed while rendering, so it ships in the
-// pre-rendered HTML and needs no script. HeroMotion switches its windows on and off. `slice` keeps it filling the box at any width, cut at
-// the sides, with the buildings standing on the bottom edge. Decorative.
 export function Skyline({ seed, className }: SkylineProps): ReactElement {
   const { buildings, windows }: SkylineDrawing = drawSkyline(seed);
 

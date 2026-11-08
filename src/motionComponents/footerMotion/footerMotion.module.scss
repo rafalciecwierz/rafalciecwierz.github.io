@@ -1,5 +1,3 @@
-// The rig's own drawing, laid over the street in its pixels. He drops in from above the
-// street, so the drawing may reach past its top edge. Hidden until the landing starts.
 .overlay {
   position: absolute;
   inset: 0;

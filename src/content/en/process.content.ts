@@ -1,7 +1,5 @@
 import type { Process } from '../process.types';
 
-// "The leap" (brief 4.8), as in the reference design. The text comes from brief 5.7; the pull-ups
-// are Rafał's (20 a day since the first commit on 22.10.2026, 3.11.2026).
 export const process: Process = {
   heading: { number: '05', kicker: 'AI & process', title: 'The leap' },
   intro:

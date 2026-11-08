@@ -14,18 +14,15 @@ export type Nav = {
 
 export type Brand = {
   text: string;
-  // The accessible name starts with the visible text (WCAG 2.5.3).
   accessibleName: (initials: string, text: string) => string;
 };
 
 export type Footer = {
   builtWith: string;
-  // Between the build line and the repo link.
   separator: string;
   repoUrl: string;
   repoLabel: string;
   sign: string;
-  // "© 2026 Rafał Ciećwierz"; the year is the build year.
   copyright: (year: number, sign: string) => string;
   bubble: string;
   sessionOver: string;

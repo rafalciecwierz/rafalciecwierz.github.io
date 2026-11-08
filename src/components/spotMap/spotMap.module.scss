@@ -28,7 +28,6 @@
   stroke-width: 8;
 }
 
-// A pin grows from its tip when its card is highlighted.
 .pin {
   transform-box: fill-box;
   transform-origin: 50% 100%;
@@ -39,7 +38,6 @@
   transform: scale(1.3);
 }
 
-// On the projects map a pin opens its project; in the detail panel's zoom it does not.
 .clickable {
   cursor: pointer;
 }
@@ -55,7 +53,6 @@
   font-weight: var(--font-weight-black);
 }
 
-// The ring pings around the highlighted pin (no animation with reduced motion: global.scss).
 .ring {
   fill: none;
   stroke: var(--color-sodium);

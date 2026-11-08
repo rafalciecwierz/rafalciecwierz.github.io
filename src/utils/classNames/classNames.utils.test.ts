@@ -8,7 +8,6 @@ describe('classNames', (): void => {
   });
 
   it('skips values that are not a class name', (): void => {
-    // `false` is what `isActive && styles.active` gives when the flag is off.
     expect(classNames('button', false, undefined, null, '')).toBe('button');
   });
 

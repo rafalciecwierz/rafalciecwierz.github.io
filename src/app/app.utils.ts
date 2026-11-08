@@ -29,7 +29,6 @@ export function routeForLocation(
   );
 }
 
-// Link previews and search engines need full addresses, not paths.
 function absoluteUrl(path: string): string {
   return new URL(path, SITE_URL).href;
 }
@@ -70,7 +69,6 @@ export function renderHead(route: AppRoute, imageAlt: string): string {
   ].join('\n');
 }
 
-// The sitemap search engines read (linked from public/robots.txt): every indexed page.
 export function renderSitemap(routes: readonly AppRoute[]): string {
   const entries: string[] = routes
     .filter((route: AppRoute): boolean => route.isIndexed)

@@ -1,5 +1,3 @@
-// The runner's own drawing, laid over the whole hero in its pixels. It lets clicks through to
-// the page, except on the circle around him. Above the hero text, so he stands on the sign.
 .overlay {
   position: absolute;
   inset: 0;
@@ -10,12 +8,10 @@
   pointer-events: none;
 }
 
-// The rig is hidden until his first move; the static runner stands on the Ł until then.
 .rig {
   visibility: hidden;
 }
 
-// The invisible click target around him.
 .hit {
   fill: transparent;
   cursor: pointer;

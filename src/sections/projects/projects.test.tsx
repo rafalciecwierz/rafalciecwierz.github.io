@@ -115,7 +115,6 @@ describe('Projects', (): void => {
 
   it('opens a project from its pin on the map, and gives focus to its card’s button on close', async (): Promise<void> => {
     const { container } = render(<Projects projects={PROJECTS} />);
-    // The map is hidden from screen readers, so its pins are found in the DOM: one group each.
     const pins: SVGGElement[] = [
       ...container.querySelectorAll<SVGGElement>('svg > g'),
     ];
